@@ -606,6 +606,7 @@
       <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
         <button class="btn-primary" onclick="goTo('screen-signup')">Get Started</button>
         <button class="btn-ghost" onclick="goTo('screen-login')">Sign In</button>
+        <button onclick="enterPreviewMode()" style="background:none;border:none;color:var(--stone);font-size:0.75rem;cursor:pointer;padding:0.25rem;text-decoration:underline;text-underline-offset:3px;letter-spacing:0.03em;">Preview app without account</button>
       </div>
     </div>
   </div>
@@ -1169,7 +1170,7 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-complete">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:2rem;">
 
       <div class="confetti-row fade-up" style="margin-top:0.5rem;">
         <div class="confetti-dot" style="background:var(--gold);"></div>
@@ -1187,30 +1188,30 @@
       <div class="celebration-unit fade-up-2" id="complete-streak-label">day streak</div>
 
       <div class="display fade-up-3" style="font-size:1.6rem;margin-top:0.5rem;margin-bottom:0.5rem;" id="complete-title">Day 1 <em>complete.</em></div>
-      <p class="body-text fade-up-4" style="width:100%;margin-bottom:1.5rem;font-style:italic;text-align:center;" id="complete-verse-note">"But seek first the kingdom of God and his righteousness, and all these things will be added to you." — Matthew 6:33</p>
+      <p class="body-text fade-up-4" style="width:100%;margin-bottom:1rem;font-style:italic;text-align:center;" id="complete-verse-note">"But seek first the kingdom of God and his righteousness, and all these things will be added to you." — Matthew 6:33</p>
 
       <!-- Stat row -->
-      <div class="stat-row fade-up-4" style="width:100%;">
+      <div class="stat-row fade-up-4" style="width:100%;margin-bottom:0.75rem;">
         <div class="stat-card"><div class="stat-num" id="stat-streak">1</div><div class="stat-label">Day streak</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-verses">1</div><div class="stat-label">Verses read</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-days">1</div><div class="stat-label">Total days</div></div>
       </div>
 
       <!-- Do more section -->
-      <div class="card-warm fade-up-4" style="width:100%;margin-top:0.75rem;" id="do-more-section">
+      <div class="card-warm fade-up-4" style="width:100%;margin-bottom:0.75rem;" id="do-more-section">
         <p class="eyebrow" style="margin-bottom:0.5rem;">Want to do more?</p>
         <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Keep going before you scroll — read another verse, chapter, or practice memorization.</p>
         <div style="display:flex;gap:0.5rem;">
-          <button onclick="doMore('verse')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--stone)'">📖<br>Verse</button>
-          <button onclick="doMore('chapter')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--stone)'">📜<br>Chapter</button>
-          <button onclick="doMore('memorize')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--stone)'">✏️<br>Memorize</button>
+          <button onclick="doMore('verse')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;">📖<br>Verse</button>
+          <button onclick="doMore('chapter')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;">📜<br>Chapter</button>
+          <button onclick="doMore('memorize')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;">✏️<br>Memorize</button>
         </div>
       </div>
 
-      <div style="width:100%;margin-top:0.75rem;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
+      <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
         <button class="btn-primary" id="share-milestone-btn" onclick="goTo('screen-milestone-celebrate')" style="display:none;">🎉 Share this milestone</button>
         <button class="btn-primary" id="unlock-btn" onclick="goTo('screen-unlock')">Unlock My Feed →</button>
-        <button class="btn-ghost" onclick="goTo('screen-home')">Back to Home</button>
+        <button class="btn-ghost" onclick="backToHome()">Back to Home</button>
       </div>
     </div>
   </div>
@@ -1514,6 +1515,7 @@
     memorizedRefs: [],
     weeklyMemRefs: [],
     lastQuizDate: null,
+    memQueue: [],
     chapterBook: 'John',
     chapterNum: 1,
     mode: 'verse',
@@ -1548,10 +1550,16 @@
       if (saved) {
         const parsed = JSON.parse(saved);
         Object.assign(STATE, parsed);
+
+        // Reset todayComplete if it's a new calendar day
+        const today = new Date().toDateString();
+        if (STATE.lastCompletedDate !== today) {
+          STATE.todayComplete = false;
+        }
+
+        // Auto-login if user session exists — no need to re-enter credentials
         if (STATE.user) {
-          updateHomeGreeting();
-          buildStreakRow();
-          updateStats();
+          enterApp();
         }
       }
     } catch(e) {}
@@ -1671,6 +1679,31 @@
     goTo('screen-splash');
   }
 
+  function enterPreviewMode() {
+    // Load dummy data so all screens are explorable without localStorage
+    STATE.user = { name: 'Preview User', email: 'preview@test.com', password: 'preview123' };
+    STATE.streak = 7;
+    STATE.totalDays = 7;
+    STATE.versesRead = 7;
+    STATE.versesMemorized = 2;
+    STATE.memorizedRefs = ['Psalm 119:105', 'Philippians 4:13'];
+    STATE.weeklyMemRefs = ['Psalm 119:105'];
+    STATE.chapterBook = 'John';
+    STATE.chapterNum = 1;
+    STATE.mode = 'verse';
+    STATE.todayComplete = false;
+    // Don't save to localStorage — preview is session only
+    updateHomeGreeting();
+    buildStreakRow();
+    updateStats();
+    updateProfileUI();
+    loadTodayVerse();
+    syncModePills();
+    setTimeout(renderMemorizeScreens, 200);
+    switchTab('home');
+    showToast('Preview mode — changes won\'t be saved 👀');
+  }
+
   // ── ONBOARDING ──
   let selectedMode = 'verse';
 
@@ -1684,7 +1717,7 @@
   }
 
   function enterApp() {
-    STATE.todayComplete = false;
+    // Don't reset todayComplete here — loadState already resets it at midnight
     updateHomeGreeting();
     buildStreakRow();
     updateStats();
@@ -1738,8 +1771,8 @@
     if (preview) preview.textContent = currentVerse.text;
     if (status) {
       if (STATE.todayComplete) {
-        status.textContent = '✓ Completed today';
-        status.style.color = 'var(--success)';
+        status.textContent = '✓ Done for today — tap to read more →';
+        status.style.color = 'var(--gold)';
       } else {
         status.textContent = 'Tap to begin today\'s reading →';
         status.style.color = 'var(--gold)';
@@ -1775,9 +1808,36 @@
     syncModePills();
   }
 
+  function backToHome() {
+    // Reset extra session flag and return to home cleanly
+    window._extraSession = false;
+    loadTodayVerse();
+    updateHomeGreeting();
+    buildStreakRow();
+    switchTab('home');
+  }
+
   function startTodayHabit() {
-    if (STATE.todayComplete) { goTo('screen-unlock'); return; }
+    // Always allow reading regardless of todayComplete
+    // todayComplete only prevents streak from incrementing again — not from reading
+    window._extraSession = STATE.todayComplete;
     const modeMap = { verse: 'screen-verse', chapter: 'screen-chapter', memorize: 'screen-memorize-main' };
+
+    // Reset the relevant screen's checkbox and button
+    if (STATE.mode === 'verse') {
+      const chk = document.getElementById('read-checkbox');
+      const btn = document.getElementById('verse-continue-btn');
+      if (chk) chk.classList.remove('checked');
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+      readChecked = false;
+    }
+    if (STATE.mode === 'chapter') {
+      const chk = document.getElementById('chapter-checkbox');
+      const btn = document.getElementById('chapter-continue-btn');
+      if (chk) chk.classList.remove('checked');
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+      readChecked = false;
+    }
     goTo(modeMap[STATE.mode] || 'screen-verse');
   }
 
@@ -1822,30 +1882,44 @@
       updateStats();
       updateProfileUI();
       showToast('Well done — keep going! 🙏');
+      updateCompleteScreen();
       goTo('screen-complete');
       return;
     }
     if (STATE.todayComplete) { goTo('screen-complete'); return; }
     STATE.todayComplete = true;
+    STATE.lastCompletedDate = new Date().toDateString();
     STATE.streak += 1;
     STATE.totalDays += 1;
     STATE.versesRead += 1;
     if (STATE.mode === 'memorize') STATE.versesMemorized += 1;
 
     // Advance chapter position for next day
-    const completedChapterRef = `${STATE.chapterBook} ${STATE.chapterNum}`;
     if (STATE.mode === 'chapter') advanceChapter();
     saveState();
 
-    // Update complete screen
+    buildStreakRow();
+    updateHomeGreeting();
+    loadTodayVerse();
+    updateStats();
+    updateProfileUI();
+    updateCompleteScreen();
+    goTo('screen-complete');
+    readChecked = false;
+  }
+
+  function updateCompleteScreen() {
+    // Always recalculate from current STATE so extra sessions show correct next chapter
     document.getElementById('complete-streak-num').textContent = STATE.streak;
     document.getElementById('complete-streak-label').textContent = 'day streak';
     document.getElementById('complete-title').innerHTML = `Day ${STATE.totalDays} <em>complete.</em>`;
-    // Show what was read
+
+    // Show what was just read and what's next
     const note = STATE.mode === 'chapter'
-      ? `${completedChapterRef} · Tomorrow: ${STATE.chapterBook} ${STATE.chapterNum}`
+      ? `Up next: ${STATE.chapterBook} ${STATE.chapterNum}`
       : '"' + currentVerse.text + '" — ' + currentVerse.ref.split(' ·')[0];
     document.getElementById('complete-verse-note').textContent = note;
+
     document.getElementById('stat-streak').textContent = STATE.streak;
     document.getElementById('stat-verses').textContent = STATE.versesRead;
     document.getElementById('stat-days').textContent = STATE.totalDays;
@@ -1858,14 +1932,6 @@
       document.getElementById('milestone-num').textContent = STATE.streak;
       document.getElementById('share-milestone-num').textContent = STATE.streak;
     }
-
-    buildStreakRow();
-    updateHomeGreeting();
-    loadTodayVerse();
-    updateStats();
-    updateProfileUI();
-    goTo('screen-complete');
-    readChecked = false;
   }
 
   function updateStats() {
@@ -2033,13 +2099,56 @@
   // STATE.memorizedRefs = array of refs completed
   // STATE.weeklyMemRefs = array of refs memorized this week (reset Sunday)
   // STATE.lastQuizDate = ISO date string of last quiz taken
+  // STATE.memQueue = shuffled queue of unmemorized verse refs
+
+  function shuffleArray(arr) {
+    // Fisher-Yates shuffle — truly random order
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 
   function getNextMemVerse() {
     if (!STATE.memorizedRefs) STATE.memorizedRefs = [];
-    // Find first verse not yet memorized
-    const next = MEM_VERSES.find(v => !STATE.memorizedRefs.includes(v.ref));
-    // If all done, start cycling review (oldest first)
-    return next || MEM_VERSES[STATE.memorizedRefs.length % MEM_VERSES.length];
+    if (!STATE.memQueue) STATE.memQueue = [];
+
+    // Get all verses not yet memorized
+    const unmemorized = MEM_VERSES.filter(v => !STATE.memorizedRefs.includes(v.ref));
+
+    if (unmemorized.length === 0) {
+      // All memorized — shuffle all verses for review cycle
+      if (!STATE.memQueue || STATE.memQueue.length === 0) {
+        STATE.memQueue = shuffleArray(MEM_VERSES.map(v => v.ref));
+        saveState();
+      }
+      const nextRef = STATE.memQueue[0];
+      return MEM_VERSES.find(v => v.ref === nextRef) || MEM_VERSES[0];
+    }
+
+    // Filter queue to only unmemorized verses, rebuild if empty or stale
+    const validQueue = (STATE.memQueue || []).filter(ref =>
+      unmemorized.some(v => v.ref === ref)
+    );
+
+    if (validQueue.length === 0) {
+      // Build a fresh shuffled queue from unmemorized verses
+      STATE.memQueue = shuffleArray(unmemorized.map(v => v.ref));
+      saveState();
+      return MEM_VERSES.find(v => v.ref === STATE.memQueue[0]);
+    }
+
+    // Return the first verse in the queue
+    return MEM_VERSES.find(v => v.ref === validQueue[0]) || unmemorized[0];
+  }
+
+  function advanceMemQueue() {
+    // Called after a verse is successfully memorized — remove it from the queue
+    if (!STATE.memQueue || STATE.memQueue.length === 0) return;
+    STATE.memQueue = STATE.memQueue.slice(1);
+    saveState();
   }
 
   function getThisWeekVerses() {
@@ -2143,6 +2252,8 @@
       if (!STATE.weeklyMemRefs.includes(currentMemVerse.ref)) {
         STATE.weeklyMemRefs.push(currentMemVerse.ref);
       }
+      // Advance the shuffled queue so next session gets a different verse
+      advanceMemQueue();
       saveState();
       completeHabit();
     } else {
@@ -2401,24 +2512,51 @@
   // Simple chapter cache so we don't re-fetch the same chapter twice
   const chapterCache = {};
 
-  function getBookInfo(bookName) {
-    return BIBLE_BOOKS.find(b => b.name === bookName) || { name: bookName, chapters: 1 };
-  }
+  // ── OFFLINE FALLBACK CHAPTERS ──
+  // Used when API is unreachable (preview panel, no connection)
+  const FALLBACK_CHAPTERS = {
+    'John_1': [
+      {v:1,t:'In the beginning was the Word, and the Word was with God, and the Word was God.'},{v:2,t:'He was in the beginning with God.'},{v:3,t:'All things were made through him, and without him was not any thing made that was made.'},{v:4,t:'In him was life, and the life was the light of men.'},{v:5,t:'The light shines in the darkness, and the darkness has not overcome it.'},{v:6,t:'There was a man sent from God, whose name was John.'},{v:7,t:'He came as a witness, to bear witness about the light, that all might believe through him.'},{v:8,t:'He was not the light, but came to bear witness about the light.'},{v:9,t:'The true light, which gives light to everyone, was coming into the world.'},{v:10,t:'He was in the world, and the world was made through him, yet the world did not know him.'},{v:11,t:'He came to his own, and his own people did not receive him.'},{v:12,t:'But to all who did receive him, who believed in his name, he gave the right to become children of God,'},{v:13,t:'who were born, not of blood nor of the will of the flesh nor of the will of man, but of God.'},{v:14,t:'And the Word became flesh and dwelt among us, and we have seen his glory, glory as of the only Son from the Father, full of grace and truth.'},{v:15,t:'John bore witness about him, and cried out, "This was he of whom I said, He who comes after me ranks before me, because he was before me."'},{v:16,t:'For from his fullness we have all received, grace upon grace.'},{v:17,t:'For the law was given through Moses; grace and truth came through Jesus Christ.'},{v:18,t:'No one has ever seen God; the only God, who is at the Father\'s side, he has made him known.'},{v:29,t:'The next day he saw Jesus coming toward him, and said, "Behold, the Lamb of God, who takes away the sin of the world!"'},{v:42,t:'He brought him to Jesus. Jesus looked at him and said, "You are Simon the son of John. You shall be called Cephas" (which means Peter).'},{v:51,t:'And he said to him, "Truly, truly, I say to you, you will see heaven opened, and the angels of God ascending and descending on the Son of Man."'}
+    ],
+    'John_3': [
+      {v:1,t:'Now there was a man of the Pharisees named Nicodemus, a ruler of the Jews.'},{v:2,t:'This man came to Jesus by night and said to him, "Rabbi, we know that you are a teacher come from God, for no one can do these signs that you do unless God is with him."'},{v:3,t:'Jesus answered him, "Truly, truly, I say to you, unless one is born again he cannot see the kingdom of God."'},{v:4,t:'Nicodemus said to him, "How can a man be born when he is old? Can he enter a second time into his mother\'s womb and be born?"'},{v:5,t:'Jesus answered, "Truly, truly, I say to you, unless one is born of water and the Spirit, he cannot enter the kingdom of God."'},{v:6,t:'"That which is born of the flesh is flesh, and that which is born of the Spirit is spirit."'},{v:16,t:'"For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life."'},{v:17,t:'"For God did not send his Son into the world to condemn the world, but in order that the world might be saved through him."'},{v:36,t:'"Whoever believes in the Son has eternal life; whoever does not obey the Son shall not see life, but the wrath of God remains on him."'}
+    ],
+    'Psalms_23': [
+      {v:1,t:'The Lord is my shepherd; I shall not want.'},{v:2,t:'He makes me lie down in green pastures. He leads me beside still waters.'},{v:3,t:'He restores my soul. He leads me in paths of righteousness for his name\'s sake.'},{v:4,t:'Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.'},{v:5,t:'You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.'},{v:6,t:'Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.'}
+    ],
+    'Psalms_119': [
+      {v:1,t:'Blessed are those whose way is blameless, who walk in the law of the Lord!'},{v:2,t:'Blessed are those who keep his testimonies, who seek him with their whole heart,'},{v:9,t:'How can a young man keep his way pure? By guarding it according to your word.'},{v:10,t:'With my whole heart I seek you; let me not wander from your commandments!'},{v:11,t:'I have stored up your word in my heart, that I might not sin against you.'},{v:105,t:'Your word is a lamp to my feet and a light to my path.'},{v:130,t:'The unfolding of your words gives light; it imparts understanding to the simple.'}
+    ],
+    'Romans_8': [
+      {v:1,t:'There is therefore now no condemnation for those who are in Christ Jesus.'},{v:2,t:'For the law of the Spirit of life has set you free in Christ Jesus from the law of sin and death.'},{v:28,t:'And we know that for those who love God all things work together for good, for those who are called according to his purpose.'},{v:31,t:'What then shall we say to these things? If God is for us, who can be against us?'},{v:32,t:'He who did not spare his own Son but gave him up for us all, how will he not also with him graciously give us all things?'},{v:38,t:'For I am sure that neither death nor life, nor angels nor rulers, nor things present nor things to come, nor powers,'},{v:39,t:'nor height nor depth, nor anything else in all creation, will be able to separate us from the love of God in Christ Jesus our Lord.'}
+    ],
+    'Matthew_5': [
+      {v:1,t:'Seeing the crowds, he went up on the mountain, and when he sat down, his disciples came to him.'},{v:2,t:'And he opened his mouth and taught them, saying:'},{v:3,t:'"Blessed are the poor in spirit, for theirs is the kingdom of heaven."'},{v:4,t:'"Blessed are those who mourn, for they shall be comforted."'},{v:5,t:'"Blessed are the meek, for they shall inherit the earth."'},{v:6,t:'"Blessed are those who hunger and thirst for righteousness, for they shall be satisfied."'},{v:7,t:'"Blessed are the merciful, for they shall receive mercy."'},{v:8,t:'"Blessed are the pure in heart, for they shall see God."'},{v:9,t:'"Blessed are the peacemakers, for they shall be called sons of God."'},{v:14,t:'"You are the light of the world. A city set on a hill cannot be hidden."'},{v:16,t:'"In the same way, let your light shine before others, so that they may see your good works and give glory to your Father who is in heaven."'}
+    ],
+    'Philippians_4': [
+      {v:4,t:'Rejoice in the Lord always; again I will say, rejoice.'},{v:5,t:'Let your reasonableness be known to everyone. The Lord is at hand.'},{v:6,t:'do not be anxious about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God.'},{v:7,t:'And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus.'},{v:8,t:'Finally, brothers, whatever is true, whatever is honorable, whatever is just, whatever is pure, whatever is lovely, whatever is commendable, if there is any excellence, if there is anything worthy of praise, think about these things.'},{v:11,t:'Not that I am speaking of being in need, for I have learned, in whatever situation I am, to be content.'},{v:13,t:'I can do all things through him who strengthens me.'}
+    ]
+  };
 
   async function fetchChapter(book, chapter) {
     const cacheKey = `${book}_${chapter}`;
     if (chapterCache[cacheKey]) return chapterCache[cacheKey];
 
+    // Check offline fallback first if API likely to fail (preview/offline)
+    const fallback = FALLBACK_CHAPTERS[cacheKey];
+
     const bookId = BOOK_API_IDS[book];
-    if (!bookId) return null;
+    if (!bookId) return fallback || null;
 
     try {
       const url = `https://bible.helloao.org/api/BSB/${bookId}/${chapter}.json`;
-      const res = await fetch(url);
-      if (!res.ok) return null;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) return fallback || null;
       const data = await res.json();
 
-      // Extract verses from the API response
       const verses = (data.chapter?.content || [])
         .filter(item => item.type === 'verse')
         .map(item => ({
@@ -2426,16 +2564,23 @@
           t: item.content
             .filter(c => typeof c === 'string' || c.text)
             .map(c => typeof c === 'string' ? c : c.text || '')
-            .join('')
-            .trim()
+            .join('').trim()
         }))
         .filter(v => v.t);
 
-      chapterCache[cacheKey] = verses;
-      return verses;
+      if (verses.length > 0) {
+        chapterCache[cacheKey] = verses;
+        return verses;
+      }
+      return fallback || null;
     } catch(e) {
-      return null;
+      // Network error or timeout — use fallback if available
+      return fallback || null;
     }
+  }
+
+  function getBookInfo(bookName) {
+    return BIBLE_BOOKS.find(b => b.name === bookName) || { name: bookName, chapters: 1 };
   }
 
   async function renderChapterScreen() {
@@ -2491,7 +2636,7 @@
         textEl.innerHTML = `
           <div style="text-align:center;padding:2rem 0;">
             <p style="font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--muted);margin-bottom:0.75rem;">${book} ${chapter}</p>
-            <p style="font-size:0.85rem;color:var(--stone);line-height:1.7;margin-bottom:1rem;">Unable to load this chapter. Please check your connection and try again, or read it in your Bible app.</p>
+            <p style="font-size:0.85rem;color:var(--stone);line-height:1.7;margin-bottom:1rem;">This chapter isn't available offline. Try a fallback chapter like John 1, John 3, Psalm 23, Romans 8, Matthew 5, or Philippians 4 — or visit the live app for full access.</p>
             <button onclick="renderChapterScreen()" style="background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.5rem 1rem;font-size:0.78rem;color:var(--gold);cursor:pointer;">Try again</button>
           </div>`;
       }
