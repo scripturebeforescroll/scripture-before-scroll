@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Scripture Before Scroll" />
+  <meta name="theme-color" content="#FAF7F2" />
+  <title>Scripture Before Scroll</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    (function() { emailjs.init({ publicKey: 'mhxDvFbwQp6PFzUAF' }); })();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --cream: #FAF7F2;
+      --warm: #F2EBE0;
+      --stone: #C8B99A;
+      --ink: #1E1A16;
+      --muted: #7A6E64;
+      --gold: #B07D3A;
+      --gold-lt: #D4A45A;
+      --white: #FFFFFF;
+      --success: #4A7C59;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', sans-serif;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    #app {
+      height: 100%;
+      max-width: 430px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      background: var(--cream);
+    }
+
+    /* ── SCREENS ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      padding: env(safe-area-inset-top, 20px) 0 env(safe-area-inset-bottom, 20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      transform: translateX(30px);
+      overflow-y: auto;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(0);
+    }
+    .screen.exit {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    .screen-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1.5rem 2rem;
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .serif { font-family: var(--serif); }
+    .eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 500;
+    }
+    .display {
+      font-family: var(--serif);
+      font-size: 2.4rem;
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--ink);
+    }
+    .display em { font-style: italic; color: var(--gold); }
+    .body-text {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      width: 100%;
+      padding: 1rem;
+      background: var(--gold);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:active { transform: scale(0.98); background: var(--gold-lt); }
+    .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+
+    .btn-ghost {
+      width: 100%;
+      padding: 0.875rem;
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-ghost:active { background: var(--warm); }
+
+    .btn-text {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ── INPUTS ── */
+    .input-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .input-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; }
+    .input-field {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      background: var(--white);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius-sm);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(176,125,58,0.12);
+    }
+    .input-field::placeholder { color: var(--stone); }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+    .card-warm {
+      background: var(--warm);
+      border: 1px solid rgba(200,185,154,0.5);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    /* ── DIVIDER ── */
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--stone); opacity: 0.3; }
+    .divider span { font-size: 0.7rem; color: var(--stone); letter-spacing: 0.1em; }
+
+    /* ── STATUS BAR MOCK ── */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.5rem 0.25rem;
+      flex-shrink: 0;
+    }
+    .status-time { font-size: 0.8rem; font-weight: 500; color: var(--ink); }
+    .status-icons { font-size: 0.7rem; color: var(--ink); display: flex; gap: 6px; align-items: center; }
+
+    /* ── NAV BAR ── */
+    .nav-bar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-top: 1px solid rgba(200,185,154,0.3);
+      background: var(--cream);
+      flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 0.25rem 1rem;
+      border-radius: var(--radius-sm);
+      transition: background 0.2s;
+      background: none;
+      border: none;
+    }
+    .nav-item:active { background: var(--warm); }
+    .nav-icon { font-size: 1.2rem; line-height: 1; }
+    .nav-label { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .nav-item.active .nav-label { color: var(--gold); }
+
+    /* ── CROSS LOGO ── */
+    .cross {
+      width: 44px; height: 44px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .cross::before {
+      content: '';
+      position: absolute;
+      width: 4px; height: 44px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+    .cross::after {
+      content: '';
+      position: absolute;
+      width: 32px; height: 4px;
+      background: var(--gold);
+      border-radius: 2px;
+      top: 10px;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { width: 100%; height: 3px; background: var(--warm); border-radius: 2px; margin-bottom: 1.5rem; }
+    .progress-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s ease; }
+
+    /* ── STREAK DOTS ── */
+    .streak-row { display: flex; gap: 6px; }
+    .streak-dot {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .streak-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--stone);
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      color: var(--stone);
+    }
+    .streak-circle.done { background: var(--gold); border-color: var(--gold); color: var(--white); font-size: 0.7rem; }
+    .streak-circle.today { background: var(--warm); border-color: var(--gold); color: var(--gold); font-weight: 500; }
+    .streak-day-label { font-size: 0.6rem; color: var(--stone); }
+
+    /* ── MODE CARDS ── */
+    .mode-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--white);
+      border: 1.5px solid var(--stone);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 0.75rem;
+    }
+    .mode-card:active { transform: scale(0.99); }
+    .mode-card.selected { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(176,125,58,0.12); }
+    .mode-icon-wrap {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      background: var(--warm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .mode-info { flex: 1; }
+    .mode-title { font-size: 0.9rem; font-weight: 500; color: var(--ink); }
+    .mode-desc { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+    .mode-time { font-size: 0.65rem; color: var(--stone); margin-top: 2px; }
+
+    /* ── VERSE DISPLAY ── */
+    .verse-ref { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; }
+    .verse-text {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.6;
+      color: var(--ink);
+      margin-bottom: 1rem;
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+    .stat-card { flex: 1; background: var(--white); border: 1px solid var(--stone); border-radius: var(--radius-sm); padding: 0.875rem; text-align: center; }
+    .stat-num { font-family: var(--serif); font-size: 1.6rem; color: var(--gold); line-height: 1; }
+    .stat-label { font-size: 0.65rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
+
+    /* ── CHECKBOX ── */
+    .check-row { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 0.5rem 0; }
+    .check-box {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 1.5px solid var(--stone);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .check-box.checked { background: var(--gold); border-color: var(--gold); }
+    .check-box.checked::after {
+      content: '';
+      display: block;
+      width: 11px; height: 6px;
+      border-left: 2px solid var(--white);
+      border-bottom: 2px solid var(--white);
+      transform: rotate(-45deg) translate(1px, -1px);
+    }
+    .check-label { font-size: 0.85rem; color: var(--ink); }
+
+    /* ── CELEBRATION ── */
+    .celebration-num {
+      font-family: var(--serif);
+      font-size: 5rem;
+      color: var(--gold);
+      line-height: 1;
+      text-align: center;
+    }
+    .celebration-unit {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--stone);
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .confetti-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 1rem; }
+    .confetti-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── SOCIAL APPS ── */
+    .app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .app-btn {
+      background: var(--white);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      padding: 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.1s;
+      font-size: 0.8rem;
+      color: var(--ink);
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .app-btn:active { transform: scale(0.97); border-color: var(--gold); }
+    .app-icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    /* ── MEMORIZE ── */
+    .mem-word {
+      display: inline-block;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--ink);
+      margin: 0.2rem;
+    }
+    .mem-blank {
+      display: inline-block;
+      min-width: 60px;
+      border-bottom: 2px solid var(--stone);
+      margin: 0 0.2rem;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--gold);
+      text-align: center;
+      outline: none;
+      background: transparent;
+      transition: border-color 0.2s;
+      vertical-align: bottom;
+      padding: 0 4px;
+    }
+    .mem-blank:focus { border-color: var(--gold); }
+    .mem-blank.correct { border-color: var(--success); color: var(--success); }
+    .mem-blank.incorrect { border-color: #C0392B; color: #C0392B; }
+
+    /* ── FRIEND ACTIVITY ── */
+    .milestone-item {
+      display: flex;
+      gap: 0.875rem;
+      align-items: flex-start;
+      padding: 0.875rem;
+      background: var(--white);
+      border: 1px solid var(--stone);
+      border-radius: var(--radius);
+      margin-bottom: 0.75rem;
+    }
+    .milestone-badge {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--warm);
+      border: 1px solid var(--stone);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .milestone-badge-num { font-family: var(--serif); font-size: 1rem; color: var(--gold); line-height: 1; }
+    .milestone-badge-label { font-size: 0.55rem; color: var(--stone); letter-spacing: 0.05em; }
+    .milestone-body { flex: 1; }
+    .milestone-name { font-size: 0.85rem; font-weight: 500; color: var(--ink); }
+    .milestone-desc { font-size: 0.75rem; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+    .milestone-time { font-size: 0.65rem; color: var(--stone); margin-top: 4px; }
+    .encourage-btn {
+      font-size: 0.7rem;
+      color: var(--gold);
+      border: 1px solid var(--stone);
+      border-radius: 6px;
+      padding: 3px 10px;
+      background: transparent;
+      cursor: pointer;
+      margin-top: 6px;
+      display: inline-block;
+      transition: all 0.15s;
+    }
+    .encourage-btn:active { background: var(--warm); }
+    .encourage-btn.sent { color: var(--stone); border-color: transparent; cursor: default; }
+
+    /* ── SHARE CARD ── */
+    .share-card-dark {
+      background: var(--ink);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .share-cross {
+      position: absolute;
+      top: 16px; right: 20px;
+      opacity: 0.1;
+      width: 32px; height: 32px;
+    }
+    .share-cross::before { content: ''; position: absolute; width: 3px; height: 32px; background: var(--stone); border-radius: 2px; left: 50%; transform: translateX(-50%); }
+    .share-cross::after { content: ''; position: absolute; width: 24px; height: 3px; background: var(--stone); border-radius: 2px; top: 8px; left: 50%; transform: translateX(-50%); }
+
+    /* ── GRACE NOTE ── */
+    .grace-note {
+      background: var(--warm);
+      border-radius: var(--radius-sm);
+      padding: 0.875rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .grace-note p { font-size: 0.78rem; color: var(--muted); text-align: center; font-style: italic; line-height: 1.6; }
+
+    /* ── PROFILE ── */
+    .avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--warm);
+      border: 2px solid var(--stone);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      color: var(--gold);
+      margin: 0 auto 1rem;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-up-2 { animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .fade-up-3 { animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
+    .fade-up-4 { animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--cream);
+      font-size: 0.8rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Empty state */
+    .empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 2rem 0; text-align: center; }
+    .empty-icon { font-size: 2rem; opacity: 0.3; }
+    .empty-text { font-size: 0.85rem; color: var(--stone); line-height: 1.6; }
+
+    /* Tab content */
+    .tab-content { display: none; }
+    .tab-content.active { display: flex; flex-direction: column; }
+
+    /* Error message */
+    .error-msg { font-size: 0.75rem; color: #C0392B; margin-top: 0.25rem; display: none; }
+    .error-msg.show { display: block; }
+
+    /* Success circle */
+    .success-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--warm);
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+    }
+    .success-check {
+      width: 26px; height: 15px;
+      border-left: 3px solid var(--gold);
+      border-bottom: 3px solid var(--gold);
+      transform: rotate(-45deg) translate(2px, -2px);
+    }
+
+    .privacy-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--white);
+      border: 1px solid var(--stone);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin: 0.75rem auto;
+    }
+    .privacy-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+    /* scrollable content area */
+    .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .scroll-area::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: SPLASH
+  ══════════════════════════════════════════ -->
+  <div class="screen active" id="screen-splash">
+    <div class="screen-inner" style="justify-content:center;align-items:center;text-align:center;gap:0;">
+      <div class="cross fade-up" style="margin-bottom:1.5rem;"></div>
+      <div class="display fade-up-2" style="font-size:2rem;margin-bottom:0.25rem;">Scripture</div>
+      <div class="display fade-up-2" style="font-size:2rem;margin-bottom:1.5rem;"><em>Before Scroll</em></div>
+      <p class="body-text fade-up-3" style="max-width:28ch;margin:0 auto 3rem;">Start each day in the Word before you open your feed.</p>
+      <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
+        <button class="btn-primary" onclick="goTo('screen-signup')">Get Started</button>
+        <button class="btn-ghost" onclick="goTo('screen-login')">Sign In</button>
+        <button onclick="enterPreviewMode()" style="background:none;border:none;color:var(--stone);font-size:0.75rem;cursor:pointer;padding:0.25rem;text-decoration:underline;text-underline-offset:3px;letter-spacing:0.03em;">Preview app without account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: SIGN UP
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-signup">
+    <div class="status-bar"><span class="status-time" id="time-signup"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-splash')">←</button>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Create account</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;">Welcome to<br><em>the community.</em></div>
+      <p class="body-text fade-up-3" style="margin-bottom:1.5rem;">Join thousands of Christians building a daily scripture habit.</p>
+
+      <div class="fade-up-3">
+        <div class="input-group">
+          <label class="input-label">Full Name</label>
+          <input class="input-field" type="text" id="signup-name" placeholder="Your name" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Email Address</label>
+          <input class="input-field" type="email" id="signup-email" placeholder="you@email.com" />
+          <span class="error-msg" id="signup-email-err">Please enter a valid email address.</span>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input class="input-field" type="password" id="signup-password" placeholder="Min. 8 characters" />
+          <span class="error-msg" id="signup-pass-err">Password must be at least 8 characters.</span>
+        </div>
+        <button class="btn-primary" style="margin-top:0.5rem;" onclick="handleSignup()">Create Account</button>
+        <div class="divider"><span>or</span></div>
+        <p style="text-align:center;font-size:0.8rem;color:var(--muted);">Already have an account? <button class="btn-text" style="display:inline;padding:0;" onclick="goTo('screen-login')">Sign in</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: LOGIN
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-login">
+    <div class="status-bar"><span class="status-time" id="time-login"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-splash')">←</button>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Welcome back</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:1.5rem;">Good to see<br>you <em>again.</em></div>
+
+      <div class="fade-up-3">
+        <div class="input-group">
+          <label class="input-label">Email Address</label>
+          <input class="input-field" type="email" id="login-email" placeholder="you@email.com" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input class="input-field" type="password" id="login-password" placeholder="Your password" />
+          <span class="error-msg" id="login-err">Invalid email or password.</span>
+        </div>
+        <div style="text-align:right;margin-bottom:1rem;margin-top:-0.25rem;">
+          <button class="btn-text" style="display:inline;padding:0;font-size:0.78rem;color:var(--gold);" onclick="startForgotPassword()">Forgot password?</button>
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+        <div class="divider"><span>or</span></div>
+        <p style="text-align:center;font-size:0.8rem;color:var(--muted);">New here? <button class="btn-text" style="display:inline;padding:0;" onclick="goTo('screen-signup')">Create an account</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: FORGOT PASSWORD — ENTER EMAIL
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-forgot-pw">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-login')">←</button>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Reset password</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">No worries —<br>we've got <em>you.</em></div>
+      <p class="body-text fade-up-3" style="margin-bottom:1.5rem;">Enter the email address you signed up with. We'll send you a 6-digit reset code.</p>
+
+      <div class="fade-up-3">
+        <div class="input-group">
+          <label class="input-label">Email Address</label>
+          <input class="input-field" type="email" id="forgot-email" placeholder="you@email.com" />
+          <span class="error-msg" id="forgot-email-err">Please enter a valid email address.</span>
+          <span class="error-msg" id="forgot-notfound-err">No account found with that email.</span>
+        </div>
+        <button class="btn-primary" onclick="sendResetCode()">Send Reset Code</button>
+
+        <div class="card-warm" style="margin-top:1.25rem;">
+          <p style="font-size:0.78rem;color:var(--muted);text-align:center;line-height:1.6;">
+            Check your inbox after tapping Send. The code expires in 15 minutes.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: FORGOT PASSWORD — ENTER CODE
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-enter-code">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-forgot-pw')">←</button>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Check your email</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Enter your<br><em>reset code.</em></div>
+      <p class="body-text fade-up-3" style="margin-bottom:0.5rem;">We sent a 6-digit code to:</p>
+      <p style="font-weight:500;color:var(--gold);font-size:0.9rem;margin-bottom:1.5rem;" id="reset-email-display">you@email.com</p>
+
+      <div class="fade-up-3">
+        <div class="input-group">
+          <label class="input-label">6-Digit Code</label>
+          <input class="input-field" type="number" id="reset-code-input" placeholder="123456" maxlength="6"
+            style="font-size:1.4rem;letter-spacing:0.2em;text-align:center;font-family:var(--serif);" />
+          <span class="error-msg" id="reset-code-err">Incorrect or expired code. Please try again.</span>
+        </div>
+        <button class="btn-primary" onclick="verifyResetCode()">Verify Code</button>
+        <div style="text-align:center;margin-top:1rem;">
+          <button class="btn-text" style="font-size:0.78rem;color:var(--muted);" onclick="sendResetCode(true)">Resend code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: FORGOT PASSWORD — NEW PASSWORD
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-new-password">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Almost done</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Create your<br><em>new password.</em></div>
+      <p class="body-text fade-up-3" style="margin-bottom:1.5rem;">Choose something memorable. At least 8 characters.</p>
+
+      <div class="fade-up-3">
+        <div class="input-group">
+          <label class="input-label">New Password</label>
+          <input class="input-field" type="password" id="new-password" placeholder="Min. 8 characters" />
+          <span class="error-msg" id="new-pass-err">Password must be at least 8 characters.</span>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Confirm Password</label>
+          <input class="input-field" type="password" id="confirm-password" placeholder="Same password again" />
+          <span class="error-msg" id="confirm-pass-err">Passwords don't match.</span>
+        </div>
+        <button class="btn-primary" style="margin-top:0.5rem;" onclick="saveNewPassword()">Save New Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: PASSWORD RESET SUCCESS
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-reset-success">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
+      <div class="success-circle fade-up" style="margin-bottom:1rem;"><div class="success-check"></div></div>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">All set</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Password<br><em>reset successfully.</em></div>
+      <p class="body-text fade-up-3" style="max-width:28ch;margin-bottom:2rem;">You can now sign in with your new password. Welcome back.</p>
+      <button class="btn-primary fade-up-4" style="width:100%;" onclick="goTo('screen-login')">Sign In →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: ONBOARDING — CHOOSE MODE
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-onboarding">
+    <div class="status-bar"><span class="status-time" id="time-onboard"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div class="progress-wrap"><div class="progress-fill" style="width:33%"></div></div>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Step 1 of 3</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;">What fits your<br><em>schedule?</em></div>
+      <p class="body-text fade-up-3" style="margin-bottom:1.5rem;">Pick your default daily habit. You can always switch it up each morning.</p>
+
+      <div class="fade-up-3" style="flex:1;">
+        <div class="mode-card selected" id="mode-verse" onclick="selectMode('verse')">
+          <div class="mode-icon-wrap">📖</div>
+          <div class="mode-info">
+            <div class="mode-title">Daily Verse</div>
+            <div class="mode-desc">Read one verse and reflect on it</div>
+            <div class="mode-time">~ 1 minute</div>
+          </div>
+          <div id="mode-verse-check" style="color:var(--gold);font-size:1.1rem;">✓</div>
+        </div>
+        <div class="mode-card" id="mode-chapter" onclick="selectMode('chapter')">
+          <div class="mode-icon-wrap">📜</div>
+          <div class="mode-info">
+            <div class="mode-title">Daily Chapter</div>
+            <div class="mode-desc">Read a full chapter of scripture</div>
+            <div class="mode-time">~ 5–10 minutes</div>
+          </div>
+          <div id="mode-chapter-check" style="color:var(--gold);font-size:1.1rem;visibility:hidden;">✓</div>
+        </div>
+        <div class="mode-card" id="mode-memorize" onclick="selectMode('memorize')">
+          <div class="mode-icon-wrap">✏️</div>
+          <div class="mode-info">
+            <div class="mode-title">Memorize a Verse</div>
+            <div class="mode-desc">Build scripture memory over time</div>
+            <div class="mode-time">~ 2–3 minutes</div>
+          </div>
+          <div id="mode-memorize-check" style="color:var(--gold);font-size:1.1rem;visibility:hidden;">✓</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="goTo('screen-onboard2')">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: ONBOARDING 2 — NOTIFICATIONS
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-onboard2">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;">
+      <div class="progress-wrap" style="width:100%;"><div class="progress-fill" style="width:66%"></div></div>
+      <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Step 2 of 3</p>
+      <div style="font-size:3rem;margin:1rem 0;">🔔</div>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">A gentle<br><em>morning reminder.</em></div>
+      <p class="body-text fade-up-3" style="margin-bottom:2rem;max-width:30ch;">We'll send one notification each morning to remind you to open Scripture Before Scroll — not a guilt trip, just a nudge.</p>
+      <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
+        <button class="btn-primary" onclick="goTo('screen-onboard3')">Allow Notifications</button>
+        <button class="btn-ghost" onclick="goTo('screen-onboard3')">Maybe Later</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: ONBOARDING 3 — ALL SET
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-onboard3">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
+      <div class="progress-wrap" style="width:100%;"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="cross fade-up" style="margin-bottom:1.5rem;"></div>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">You're all set,<br><em id="user-first-name">friend.</em></div>
+      <p class="body-text fade-up-3" style="max-width:30ch;margin-bottom:3rem;">Your streak starts today. Open the app each morning, read your scripture, then scroll with purpose.</p>
+      <button class="btn-primary fade-up-4" onclick="enterApp()" style="width:100%;">Begin Day 1 →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: MAIN APP — HOME (DAILY HABIT)
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-home">
+    <div class="status-bar"><span class="status-time" id="time-home"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="padding-bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;">
+
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <div>
+          <p class="eyebrow" id="home-time-greeting">Good morning</p>
+          <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);" id="home-greeting">Ready to begin?</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:var(--warm);padding:6px 12px;border-radius:20px;border:1px solid var(--stone);">
+          <span style="font-size:0.9rem;">🔥</span>
+          <span style="font-family:var(--serif);font-size:1rem;color:var(--gold);" id="home-streak-count">0</span>
+          <span style="font-size:0.65rem;color:var(--muted);">days</span>
+        </div>
+      </div>
+
+      <!-- Today's mode selector -->
+      <div style="margin-bottom:1rem;">
+        <p class="eyebrow" style="margin-bottom:0.75rem;">Today's habit</p>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="mode-pill active" id="pill-verse" onclick="setHomePill('verse')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--gold);background:var(--gold);color:var(--white);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">📖 Verse</button>
+          <button class="mode-pill" id="pill-chapter" onclick="setHomePill('chapter')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">📜 Chapter</button>
+          <button class="mode-pill" id="pill-memorize" onclick="setHomePill('memorize')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">✏️ Memorize</button>
+        </div>
+      </div>
+
+      <!-- This week streak -->
+      <div class="card" style="margin-bottom:1rem;">
+        <p class="eyebrow" style="margin-bottom:0.75rem;">This week</p>
+        <div class="streak-row" id="home-streak-row"></div>
+      </div>
+
+      <!-- Today's verse preview -->
+      <div class="card-warm" style="margin-bottom:1rem;cursor:pointer;" onclick="startTodayHabit()" id="today-card">
+        <p class="verse-ref" id="home-verse-ref">Matthew 6:33 · ESV</p>
+        <p class="verse-text" style="font-size:1.05rem;line-height:1.7;overflow:visible;display:block;white-space:normal;" id="home-verse-preview">"But seek first the kingdom of God and his righteousness, and all these things will be added to you."</p>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:0.75rem;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;"></div>
+          <span style="font-size:0.75rem;color:var(--gold);font-weight:500;" id="today-status">Tap to begin today's reading →</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="nav-bar" id="nav-home">
+      <button class="nav-item active" onclick="switchTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+      <button class="nav-item" onclick="switchTab('community')"><span class="nav-icon">👥</span><span class="nav-label">Friends</span></button>
+      <button class="nav-item" onclick="switchTab('profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: DAILY VERSE READING
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-verse">
+    <div class="status-bar"><span class="status-time" id="time-verse"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
+        <p class="eyebrow">Daily Verse</p>
+        <div style="width:24px;"></div>
+      </div>
+
+      <div class="scroll-area">
+        <p class="verse-ref fade-up" id="verse-ref-display">Matthew 6:33 · ESV</p>
+        <p class="verse-text fade-up-2" id="verse-text-display">"But seek first the kingdom of God and his righteousness, and all these things will be added to you."</p>
+
+        <div class="card fade-up-3" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.5rem;">Reflection</p>
+          <p class="body-text" id="verse-reflection">Jesus invites us to reorder our priorities — when we put God's kingdom above our own anxieties and ambitions, He promises to take care of everything else. This isn't passive; it's an active daily choice to trust Him first.</p>
+        </div>
+
+        <div class="card fade-up-4" style="margin-bottom:1.5rem;">
+          <p class="eyebrow" style="margin-bottom:0.5rem;">Pause & consider</p>
+          <p class="body-text" style="font-style:italic;">What are you seeking first today — and how might this verse redirect your morning?</p>
+        </div>
+
+        <div class="check-row fade-up-4" onclick="toggleReadCheck()" id="read-check-row">
+          <div class="check-box" id="read-checkbox"></div>
+          <span class="check-label">I've read and reflected on this verse</span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="verse-continue-btn" onclick="completeHabit()" style="margin-top:1rem;opacity:0.4;" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: DAILY CHAPTER READING
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-chapter">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
+        <p class="eyebrow">Daily Chapter</p>
+        <button onclick="goTo('screen-chapter-select')" style="font-size:0.72rem;color:var(--gold);background:transparent;border:1px solid var(--stone);border-radius:20px;padding:4px 10px;cursor:pointer;">Change ↓</button>
+      </div>
+
+      <!-- Progress within book -->
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+        <div class="progress-wrap" style="flex:1;margin-bottom:0;"><div class="progress-fill" id="chapter-progress-fill" style="width:10%;"></div></div>
+        <span style="font-size:0.7rem;color:var(--stone);white-space:nowrap;" id="chapter-progress-label">Ch. 1 of 28</span>
+      </div>
+
+      <div class="scroll-area">
+        <p class="verse-ref fade-up" id="chapter-ref-display">John 15 · ESV</p>
+        <div style="font-family:var(--serif);font-size:1rem;line-height:1.9;color:var(--ink);" id="chapter-text-display" class="fade-up-2"></div>
+        <div style="height:1rem;"></div>
+        <div class="check-row" onclick="toggleReadCheck('chapter')" id="chapter-check-row" style="margin-top:1rem;">
+          <div class="check-box" id="chapter-checkbox"></div>
+          <span class="check-label">I've finished today's chapter</span>
+        </div>
+      </div>
+      <button class="btn-primary" id="chapter-continue-btn" onclick="completeHabit()" style="margin-top:1rem;opacity:0.4;" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: CHAPTER SELECTOR
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-chapter-select">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-chapter')">←</button>
+        <p class="eyebrow">Choose a chapter</p>
+      </div>
+
+      <div class="display" style="font-size:1.5rem;margin-bottom:0.5rem;">Pick where to <em>read today.</em></div>
+      <p class="body-text" style="margin-bottom:1.25rem;">Choose a book and chapter. Your progress will continue from here each day.</p>
+
+      <div class="input-group">
+        <label class="input-label">Book</label>
+        <select class="input-field" id="book-select" onchange="updateChapterOptions()" style="cursor:pointer;"></select>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Chapter</label>
+        <select class="input-field" id="chapter-select" style="cursor:pointer;"></select>
+      </div>
+
+      <button class="btn-primary" style="margin-top:0.5rem;" onclick="applyChapterSelection()">Go to this chapter →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: MEMORIZE — PAGE 1 (READ & STUDY)
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-memorize-main">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
+        <p class="eyebrow">Memorize · Step 1 of 2</p>
+        <div style="width:24px;"></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" style="width:50%"></div></div>
+
+      <div class="scroll-area">
+        <p class="eyebrow fade-up" style="margin-bottom:0.25rem;">This week's verse</p>
+        <p class="verse-ref fade-up" id="mem-verse-ref">Psalm 119:105 · ESV</p>
+
+        <div class="card-warm fade-up-2" style="margin-bottom:1rem;text-align:center;padding:1.5rem;">
+          <p class="verse-text" style="font-size:1.2rem;margin-bottom:0;" id="mem-verse-full">"Your word is a lamp to my feet and a light to my path."</p>
+        </div>
+
+        <div class="card fade-up-3" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.5rem;">Context</p>
+          <p class="body-text" id="mem-verse-context">Psalm 119 is the longest chapter in the Bible — a meditation on God's Word. This verse captures the essence of why scripture matters: it lights the path ahead even when we can't see far.</p>
+        </div>
+
+        <div class="card fade-up-4" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.5rem;">How to memorize it</p>
+          <p class="body-text">Read it aloud 3 times. Then close your eyes and try to say it from memory. When you feel ready, tap Continue to test yourself — the verse will disappear.</p>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="margin-top:1rem;" onclick="goTo('screen-memorize-test')">I'm ready to be tested →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: MEMORIZE — PAGE 2 (FILL IN BLANKS, NO VERSE VISIBLE)
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-memorize-test">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-memorize-main')">←</button>
+        <p class="eyebrow">Memorize · Step 2 of 2</p>
+        <div style="width:24px;"></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" style="width:100%"></div></div>
+
+      <div class="scroll-area">
+        <p class="verse-ref fade-up" id="mem-test-ref">Psalm 119:105 · ESV</p>
+
+        <div class="card fade-up-2" style="margin-bottom:1rem;text-align:center;padding:1.5rem;">
+          <p class="eyebrow" style="margin-bottom:0.75rem;">Type the missing words</p>
+          <div style="line-height:2.8;font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--ink);" id="mem-test-exercise"></div>
+          <p style="font-size:0.7rem;color:var(--stone);margin-top:0.75rem;">The verse is hidden — recall it from memory</p>
+        </div>
+
+        <div style="background:var(--warm);border-radius:var(--radius-sm);padding:0.875rem;margin-bottom:1rem;display:none;" id="mem-hint-reveal">
+          <p class="eyebrow" style="margin-bottom:0.25rem;">Hint</p>
+          <p class="body-text" id="mem-hint-text" style="font-size:0.8rem;"></p>
+        </div>
+
+        <button onclick="toggleMemHint()" style="background:none;border:none;color:var(--stone);font-size:0.78rem;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;margin-bottom:1rem;" id="mem-hint-btn">Need a hint?</button>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+        <button class="btn-ghost" style="flex:1;" onclick="goTo('screen-memorize-main')">← Study again</button>
+        <button class="btn-primary" style="flex:2;" id="mem-submit-btn" onclick="submitMemorization()" disabled style="opacity:0.4;">Check answers →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: MEMORIZED VERSES RECAP
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-mem-recap">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="padding-bottom:0;">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="switchTab('profile')">←</button>
+        <div>
+          <p class="eyebrow">Your treasury</p>
+          <div class="display" style="font-size:1.4rem;">Verses <em>memorized.</em></div>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" id="recap-total">0</div><div class="stat-label">Total memorized</div></div>
+        <div class="stat-card"><div class="stat-num" id="recap-this-week">0</div><div class="stat-label">This week</div></div>
+      </div>
+
+      <div class="scroll-area" id="mem-recap-list">
+        <div class="empty-state">
+          <div class="empty-icon">✏️</div>
+          <p class="empty-text">No verses memorized yet.<br>Start the Memorize habit to build your treasury.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: WEEKLY QUIZ
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-weekly-quiz">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-mem-recap')">←</button>
+        <p class="eyebrow" id="quiz-eyebrow">Weekly Quiz · 1 of 3</p>
+        <div style="width:24px;"></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="quiz-progress" style="width:33%"></div></div>
+
+      <div class="scroll-area">
+        <div class="display fade-up" style="font-size:1.4rem;margin-bottom:0.5rem;">Can you recall<br>this <em>verse?</em></div>
+        <p class="body-text fade-up-2" style="margin-bottom:1.25rem;">Type the full verse from memory. Spelling must be close but doesn't need to be perfect.</p>
+
+        <div class="card-warm fade-up-2" style="margin-bottom:1rem;">
+          <p class="verse-ref" id="quiz-verse-ref">Psalm 119:105</p>
+          <p style="font-size:0.85rem;color:var(--muted);margin-top:0.25rem;" id="quiz-verse-hint">First word: <em>"Your…"</em></p>
+        </div>
+
+        <div class="card fade-up-3" style="margin-bottom:1rem;">
+          <textarea
+            id="quiz-input"
+            style="width:100%;min-height:100px;border:none;outline:none;font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--ink);background:transparent;resize:none;line-height:1.7;"
+            placeholder="Type the verse from memory…"
+            oninput="checkQuizInput()"
+          ></textarea>
+        </div>
+
+        <div id="quiz-feedback" style="display:none;padding:0.875rem;border-radius:var(--radius-sm);margin-bottom:1rem;">
+          <p id="quiz-feedback-text" style="font-size:0.85rem;line-height:1.6;"></p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+        <button class="btn-ghost" style="flex:1;" id="quiz-skip-btn" onclick="quizSkip()">Skip</button>
+        <button class="btn-primary" style="flex:2;" id="quiz-submit-btn" onclick="quizSubmit()" disabled>Check →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: QUIZ RESULTS
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-quiz-results">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;">
+      <div class="success-circle fade-up" style="margin-top:1rem;"><div class="success-check"></div></div>
+      <p class="eyebrow fade-up">Quiz complete</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;"><em id="quiz-score-display">3/3</em> correct.</div>
+      <p class="body-text fade-up-3" style="max-width:28ch;margin-bottom:1.5rem;" id="quiz-result-note">Excellent! God's Word is taking root.</p>
+
+      <div class="stat-row fade-up-4" style="width:100%;">
+        <div class="stat-card"><div class="stat-num" id="quiz-correct-count">3</div><div class="stat-label">Correct</div></div>
+        <div class="stat-card"><div class="stat-num" id="quiz-missed-count">0</div><div class="stat-label">To review</div></div>
+      </div>
+
+      <div id="quiz-missed-list" style="width:100%;margin-bottom:1rem;"></div>
+
+      <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;margin-top:auto;" class="fade-up-4">
+        <button class="btn-primary" onclick="goTo('screen-mem-recap')">Back to My Verses</button>
+        <button class="btn-ghost" onclick="goTo('screen-home')">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: STREAK & COMPLETION
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-complete">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:2rem;">
+
+      <div class="confetti-row fade-up" style="margin-top:0.5rem;">
+        <div class="confetti-dot" style="background:var(--gold);"></div>
+        <div class="confetti-dot" style="background:var(--stone);"></div>
+        <div class="confetti-dot" style="background:var(--gold);width:6px;height:6px;"></div>
+        <div class="confetti-dot" style="background:var(--warm);border:1px solid var(--stone);"></div>
+        <div class="confetti-dot" style="background:var(--gold);"></div>
+        <div class="confetti-dot" style="background:var(--stone);width:6px;height:6px;"></div>
+        <div class="confetti-dot" style="background:var(--gold);"></div>
+      </div>
+
+      <div class="success-circle fade-up-2"><div class="success-check"></div></div>
+
+      <div class="celebration-num fade-up-2" id="complete-streak-num">1</div>
+      <div class="celebration-unit fade-up-2" id="complete-streak-label">day streak</div>
+
+      <div class="display fade-up-3" style="font-size:1.6rem;margin-top:0.5rem;margin-bottom:0.5rem;" id="complete-title">Day 1 <em>complete.</em></div>
+      <p class="body-text fade-up-4" style="width:100%;margin-bottom:1rem;font-style:italic;text-align:center;" id="complete-verse-note">"But seek first the kingdom of God and his righteousness, and all these things will be added to you." — Matthew 6:33</p>
+
+      <!-- Stat row -->
+      <div class="stat-row fade-up-4" style="width:100%;margin-bottom:0.75rem;">
+        <div class="stat-card"><div class="stat-num" id="stat-streak">1</div><div class="stat-label">Day streak</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-verses">1</div><div class="stat-label">Verses read</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-days">1</div><div class="stat-label">Total days</div></div>
+      </div>
+
+      <!-- Do more section -->
+      <div class="card-warm fade-up-4" style="width:100%;margin-bottom:0.75rem;" id="do-more-section">
+        <p class="eyebrow" style="margin-bottom:0.5rem;">Want to do more?</p>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5;">Keep going before you scroll — read another verse, chapter, or practice memorization.</p>
+        <div style="display:flex;gap:0.5rem;">
+          <button onclick="doMore('verse')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;">📖<br>Verse</button>
+          <button onclick="doMore('chapter')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;">📜<br>Chapter</button>
+          <button onclick="doMore('memorize')" style="flex:1;padding:0.6rem 0.25rem;border-radius:10px;border:1px solid var(--stone);background:var(--white);font-size:0.68rem;color:var(--ink);cursor:pointer;">✏️<br>Memorize</button>
+        </div>
+      </div>
+
+      <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
+        <button class="btn-primary" id="share-milestone-btn" onclick="goTo('screen-milestone-celebrate')" style="display:none;">🎉 Share this milestone</button>
+        <button class="btn-primary" id="unlock-btn" onclick="goTo('screen-unlock')">Unlock My Feed →</button>
+        <button class="btn-ghost" onclick="goTo('screen-home')">Back to Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: MILESTONE CELEBRATION (OPT-IN)
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-milestone-celebrate">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;">
+      <div class="confetti-row" style="margin-top:0.5rem;">
+        <div class="confetti-dot" style="background:var(--gold);"></div>
+        <div class="confetti-dot" style="background:var(--stone);"></div>
+        <div class="confetti-dot" style="background:var(--gold);width:6px;height:6px;"></div>
+        <div class="confetti-dot" style="background:var(--warm);border:1px solid var(--stone);"></div>
+        <div class="confetti-dot" style="background:var(--gold);"></div>
+      </div>
+      <p class="eyebrow" style="margin-bottom:0.5rem;">Milestone reached</p>
+      <div class="celebration-num" id="milestone-num">10</div>
+      <div class="celebration-unit">days in the Word</div>
+
+      <div class="display" style="font-size:1.6rem;margin:0.5rem 0;">This is <em>yours.</em></div>
+      <p class="body-text" style="max-width:28ch;margin-bottom:1rem;">10 mornings choosing scripture before the scroll. That's real faithfulness — and God sees every one of them.</p>
+
+      <div class="card-warm" style="width:100%;margin-bottom:1.5rem;text-align:center;">
+        <p class="verse-ref" style="margin-bottom:0.5rem;">Matthew 25:23</p>
+        <p class="verse-text" style="font-size:1rem;">"Well done, good and faithful servant."</p>
+      </div>
+
+      <div style="width:100%;background:var(--white);border:1px solid var(--stone);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;text-align:left;">
+        <p style="font-size:0.85rem;font-weight:500;color:var(--ink);margin-bottom:0.25rem;">Want to share this moment?</p>
+        <p class="body-text" style="font-size:0.78rem;margin-bottom:1rem;">Your friends could see this milestone — but only if you want them to. They'll never see your misses, only the wins you choose to share.</p>
+        <button class="btn-primary" style="margin-bottom:0.5rem;" onclick="goTo('screen-share-milestone')">Yes, share this milestone 🙌</button>
+        <button class="btn-text" style="width:100%;text-align:center;color:var(--muted);" onclick="goTo('screen-unlock')">Keep it between me and God</button>
+      </div>
+
+      <div class="privacy-pill">
+        <div class="privacy-dot"></div>
+        Friends never see your misses — only what you share
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: SHARE MILESTONE
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-share-milestone">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-milestone-celebrate')">←</button>
+        <p class="eyebrow">Share your win</p>
+        <div style="width:24px;"></div>
+      </div>
+
+      <!-- Shareable card -->
+      <div class="share-card-dark" style="margin-bottom:1rem;">
+        <div class="share-cross"></div>
+        <p style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--stone);margin-bottom:0.75rem;">Scripture Before Scroll</p>
+        <div style="font-family:var(--serif);font-size:3.5rem;color:var(--gold-lt);line-height:1;" id="share-milestone-num">10</div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--cream);margin-bottom:1rem;">day streak</div>
+        <p style="font-size:0.78rem;color:var(--muted);font-style:italic;line-height:1.6;padding:0 0.5rem;">"But seek first the kingdom of God…"<br>— Matthew 6:33</p>
+        <p style="font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--stone);margin-top:1rem;opacity:0.6;">scripturebeforescroll.com</p>
+      </div>
+
+      <!-- Share options -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+        <button onclick="shareAction('Stories')" style="background:var(--white);border:1px solid var(--stone);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--ink);">
+          <span style="font-size:1.4rem;">📸</span>Stories
+        </button>
+        <button onclick="shareAction('Message')" style="background:var(--white);border:1px solid var(--stone);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--ink);">
+          <span style="font-size:1.4rem;">💬</span>Message
+        </button>
+        <button onclick="shareAction('Link')" style="background:var(--white);border:1px solid var(--stone);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--ink);">
+          <span style="font-size:1.4rem;">🔗</span>Copy Link
+        </button>
+        <button onclick="shareAction('More')" style="background:var(--white);border:1px solid var(--stone);border-radius:var(--radius);padding:1rem;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-size:0.78rem;color:var(--ink);">
+          <span style="font-size:1.4rem;">⬆️</span>More
+        </button>
+      </div>
+
+      <div class="grace-note">
+        <p>Sharing is always your choice. There's no public leaderboard and no way for friends to see when you don't show up — only the wins you choose to celebrate.</p>
+      </div>
+
+      <button class="btn-ghost" onclick="goTo('screen-unlock')">Continue to Unlock →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: UNLOCK SOCIAL MEDIA
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-unlock">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;">
+      <div class="success-circle fade-up" style="margin-top:1rem;"><div class="success-check"></div></div>
+      <p class="eyebrow fade-up" style="margin-bottom:0.25rem;">Scripture complete</p>
+      <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;">Ready to<br><em>scroll with purpose.</em></div>
+      <p class="body-text fade-up-3" style="max-width:28ch;margin-bottom:1.5rem;">You've earned it. Open your app of choice and scroll with intention.</p>
+
+      <div class="app-grid fade-up-4" style="width:100%;">
+        <a class="app-btn" href="instagram://app" onclick="openApp('Instagram')">
+          <div class="app-icon-wrap" style="background:#fce4ec;">📸</div>
+          Instagram
+        </a>
+        <a class="app-btn" href="tiktok://app" onclick="openApp('TikTok')">
+          <div class="app-icon-wrap" style="background:#e3f2fd;">🎵</div>
+          TikTok
+        </a>
+        <a class="app-btn" href="twitter://app" onclick="openApp('X / Twitter')">
+          <div class="app-icon-wrap" style="background:#e8f5e9;">🐦</div>
+          X / Twitter
+        </a>
+        <a class="app-btn" href="fb://feed" onclick="openApp('Facebook')">
+          <div class="app-icon-wrap" style="background:#e8eaf6;">👥</div>
+          Facebook
+        </a>
+        <a class="app-btn" href="youtube://app" onclick="openApp('YouTube')" style="grid-column:span 2;">
+          <div class="app-icon-wrap" style="background:#ffebee;">▶️</div>
+          YouTube
+        </a>
+      </div>
+
+      <p style="font-size:0.72rem;color:var(--stone);margin-top:auto;padding-top:0.5rem;" id="unlock-day-note">See you tomorrow for Day 2 🙏</p>
+      <button class="btn-text" style="margin-top:0.5rem;" onclick="goTo('screen-home')">Back to home</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: COMMUNITY TAB
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-community">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="padding-bottom:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <div class="display" style="font-size:1.5rem;"><em>Your</em> circle</div>
+        <button onclick="goTo('screen-invite')" style="background:var(--gold);color:var(--white);border:none;border-radius:20px;padding:6px 14px;font-size:0.7rem;font-weight:500;cursor:pointer;">+ Invite</button>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num">4</div><div class="stat-label">Friends joined</div></div>
+        <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">Milestones this week</div></div>
+      </div>
+
+      <p class="eyebrow" style="margin-bottom:0.75rem;">Milestone moments</p>
+
+      <div class="scroll-area">
+        <div class="milestone-item">
+          <div class="milestone-badge"><div class="milestone-badge-num">30</div><div class="milestone-badge-label">days</div></div>
+          <div class="milestone-body">
+            <div class="milestone-name">Sarah Reynolds</div>
+            <div class="milestone-desc">Hit a 30-day streak — a whole month in the Word every morning.</div>
+            <div class="milestone-time">2 hours ago</div>
+            <button class="encourage-btn" onclick="encourage(this)">🙌 Encourage</button>
+          </div>
+        </div>
+
+        <div class="milestone-item">
+          <div class="milestone-badge" style="background:#E8F5E9;border-color:#A5D6A7;"><div class="milestone-badge-num" style="color:#388E3C;">10</div><div class="milestone-badge-label" style="color:#A5D6A7;">verses</div></div>
+          <div class="milestone-body">
+            <div class="milestone-name">Tom Patterson</div>
+            <div class="milestone-desc">Memorized 10 verses — hiding God's Word in his heart.</div>
+            <div class="milestone-time">Yesterday</div>
+            <button class="encourage-btn sent">🙌 Encouraged</button>
+          </div>
+        </div>
+
+        <div class="milestone-item">
+          <div class="milestone-badge"><div class="milestone-badge-num">10</div><div class="milestone-badge-label">days</div></div>
+          <div class="milestone-body">
+            <div class="milestone-name">James Miller</div>
+            <div class="milestone-desc">Hit his first 10-day streak — a great start to a faithful habit.</div>
+            <div class="milestone-time">3 days ago</div>
+            <button class="encourage-btn" onclick="encourage(this)">🙌 Encourage</button>
+          </div>
+        </div>
+
+        <div class="grace-note" style="margin-top:0.5rem;">
+          <p>Only milestones people choose to share appear here — every 10, 30, 100 days and key memory moments. No daily check-ins. No way to see who missed a day. Just grace. 🙏</p>
+        </div>
+        <div style="height:1rem;"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-item" onclick="switchTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+      <button class="nav-item active" onclick="switchTab('community')"><span class="nav-icon">👥</span><span class="nav-label">Friends</span></button>
+      <button class="nav-item" onclick="switchTab('profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: INVITE FRIENDS
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-invite">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="switchTab('community')">←</button>
+        <p class="eyebrow">Invite friends</p>
+      </div>
+
+      <div class="display" style="font-size:1.6rem;margin-bottom:0.5rem;">Invite a <em>friend</em><br>to join you.</div>
+      <p class="body-text" style="margin-bottom:1.25rem;">Scripture is better shared. Invite someone you'd love to grow with.</p>
+
+      <div style="margin-bottom:1rem;">
+        <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.75rem;">
+          <input class="input-field" type="email" placeholder="friend@email.com" id="invite-email" style="flex:1;" />
+          <button onclick="sendInvite()" style="background:var(--gold);color:var(--white);border:none;border-radius:var(--radius-sm);padding:0.875rem 1rem;font-size:0.78rem;font-weight:500;cursor:pointer;white-space:nowrap;">Send</button>
+        </div>
+      </div>
+
+      <div class="divider"><span>or</span></div>
+
+      <button class="btn-primary" style="margin-bottom:0.75rem;" onclick="shareInvite()">📤 Share Invite Link</button>
+      <div class="card-warm">
+        <p style="font-size:0.78rem;color:var(--muted);text-align:center;font-style:italic;line-height:1.6;">"As iron sharpens iron, so one person sharpens another." — Proverbs 27:17</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: PROFILE TAB
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-profile">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="screen-inner" style="padding-bottom:0;">
+
+      <div class="scroll-area">
+        <div class="avatar" id="profile-avatar">JD</div>
+        <div style="text-align:center;margin-bottom:1.25rem;">
+          <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);" id="profile-name">John Doe</div>
+          <p style="font-size:0.78rem;color:var(--muted);" id="profile-email">john@email.com</p>
+          <p class="eyebrow" style="margin-top:0.25rem;">Member since today</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-num" id="profile-streak">1</div><div class="stat-label">Day streak</div></div>
+          <div class="stat-card"><div class="stat-num" id="profile-total">1</div><div class="stat-label">Total days</div></div>
+          <div class="stat-card"><div class="stat-num" id="profile-mem">0</div><div class="stat-label">Verses mem.</div></div>
+        </div>
+
+        <p class="eyebrow" style="margin-bottom:0.75rem;">Settings</p>
+
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+            <span style="font-size:0.85rem;">Default habit mode</span>
+            <span style="font-size:0.78rem;color:var(--gold);" id="profile-mode">Daily Verse</span>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+            <span style="font-size:0.85rem;">Morning reminder</span>
+            <span style="font-size:0.78rem;color:var(--gold);">7:00 AM</span>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+            <span style="font-size:0.85rem;">Bible translation</span>
+            <span style="font-size:0.78rem;color:var(--gold);">ESV</span>
+          </div>
+        </div>
+
+        <p class="eyebrow" style="margin-bottom:0.75rem;">Scripture memory</p>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="openRecap()">
+            <div>
+              <span style="font-size:0.85rem;">My verse treasury</span>
+              <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;">All verses you've memorized</p>
+            </div>
+            <span style="color:var(--gold);font-size:1rem;">→</span>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="startWeeklyQuiz()" id="quiz-card">
+            <div>
+              <span style="font-size:0.85rem;">Weekly quiz</span>
+              <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;" id="quiz-availability-note">Test this week's verses</p>
+            </div>
+            <span style="color:var(--gold);font-size:1rem;">→</span>
+          </div>
+        </div>
+
+        <button class="btn-ghost" onclick="handleLogout()" style="margin-bottom:1rem;">Sign Out</button>
+        <div style="height:1rem;"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-item" onclick="switchTab('home')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+      <button class="nav-item" onclick="switchTab('community')"><span class="nav-icon">👥</span><span class="nav-label">Friends</span></button>
+      <button class="nav-item active" onclick="switchTab('profile')"><span class="nav-icon">👤</span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+  // ── STATE ──
+  const STATE = {
+    user: null,
+    streak: 0,
+    totalDays: 0,
+    versesRead: 0,
+    versesMemorized: 0,
+    memorizedRefs: [],
+    weeklyMemRefs: [],
+    lastQuizDate: null,
+    chapterBook: 'John',
+    chapterNum: 1,
+    mode: 'verse',
+    todayComplete: false,
+    currentScreen: 'screen-splash'
+  };
+
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MILESTONES = [25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 365];
+
+  const VERSES = [
+    { ref: 'Matthew 6:33 · ESV', text: '"But seek first the kingdom of God and his righteousness, and all these things will be added to you."', reflection: 'Jesus invites us to reorder our priorities — when we put God\'s kingdom above our own anxieties and ambitions, He promises to take care of everything else. This isn\'t passive; it\'s an active daily choice to trust Him first.' },
+    { ref: 'Philippians 4:13 · ESV', text: '"I can do all things through him who strengthens me."', reflection: 'Paul wrote this from prison — not a declaration of superhuman ability, but a testimony to contentment and endurance found only in Christ. Whatever you face today, His strength is available to you.' },
+    { ref: 'Psalm 46:10 · ESV', text: '"Be still, and know that I am God. I will be exalted among the nations, I will be exalted in the earth!"', reflection: 'In a world of constant noise and scrolling, God\'s call to stillness is countercultural. This verse is an invitation to stop striving and trust that God is sovereign over everything you\'re anxious about.' },
+    { ref: 'Romans 8:28 · ESV', text: '"And we know that for those who love God all things work together for good, for those who are called according to his purpose."', reflection: 'This promise doesn\'t mean everything feels good — it means God is weaving even the hard things into a purpose greater than we can see. Trust His plan today.' },
+    { ref: 'Proverbs 3:5-6 · ESV', text: '"Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."', reflection: 'Leaning on our own understanding is the default. This verse calls us to something harder and better: full-hearted trust, even when the path isn\'t clear.' },
+    { ref: 'Isaiah 40:31 · ESV', text: '"But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint."', reflection: 'Waiting is not passive — it\'s active trust. God renews those who remain faithful through the slow seasons.' },
+    { ref: 'John 3:16 · ESV', text: '"For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life."', reflection: 'The most well-known verse in scripture — and still profound. The scope of God\'s love is the entire world. The depth of it cost Him everything.' }
+  ];
+
+  // ── INIT ──
+  window.addEventListener('DOMContentLoaded', () => {
+    updateAllTimes();
+    setInterval(updateAllTimes, 60000);
+    loadState();
+    buildStreakRow();
+  });
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem('sbs_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.assign(STATE, parsed);
+        if (STATE.user) {
+          updateHomeGreeting();
+          buildStreakRow();
+          updateStats();
+        }
+      }
+    } catch(e) {}
+  }
+
+  function saveState() {
+    try { localStorage.setItem('sbs_state', JSON.stringify(STATE)); } catch(e) {}
+  }
+
+  // ── NAVIGATION ──
+  function goTo(screenId) {
+    const current = document.querySelector('.screen.active');
+    if (current) {
+      current.classList.add('exit');
+      setTimeout(() => current.classList.remove('active', 'exit'), 300);
+    }
+    setTimeout(() => {
+      const next = document.getElementById(screenId);
+      if (next) next.classList.add('active');
+      STATE.currentScreen = screenId;
+
+      // Screen-specific init
+      if (screenId === 'screen-chapter') setTimeout(renderChapterScreen, 80);
+      if (screenId === 'screen-chapter-select') setTimeout(initChapterSelector, 80);
+      if (screenId === 'screen-memorize-main' || screenId === 'screen-memorize-test') setTimeout(renderMemorizeScreens, 80);
+    }, 50);
+  }
+
+  function switchTab(tab) {
+    const map = { home: 'screen-home', community: 'screen-community', profile: 'screen-profile' };
+    const current = document.querySelector('.screen.active');
+    if (current) { current.classList.remove('active'); }
+    const next = document.getElementById(map[tab]);
+    if (next) next.classList.add('active');
+    STATE.currentScreen = map[tab];
+  }
+
+  // ── TIME ──
+  function updateAllTimes() {
+    const now = new Date();
+    let h = now.getHours(); const m = now.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    const str = `${h}:${m.toString().padStart(2,'0')} ${ampm}`;
+    document.querySelectorAll('[id^="time-"]').forEach(el => el.textContent = str);
+  }
+
+  // ── AUTH ──
+  function handleSignup() {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const pass = document.getElementById('signup-password').value;
+    let valid = true;
+
+    if (!email.includes('@')) {
+      document.getElementById('signup-email-err').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('signup-email-err').classList.remove('show');
+    }
+    if (pass.length < 8) {
+      document.getElementById('signup-pass-err').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('signup-pass-err').classList.remove('show');
+    }
+    if (!valid) return;
+
+    STATE.user = { name: name || 'Friend', email, password: pass };
+    STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
+    saveState();
+
+    const firstName = (name || 'friend').split(' ')[0];
+    document.getElementById('user-first-name').textContent = firstName + '.';
+    goTo('screen-onboarding');
+  }
+
+  function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-err');
+
+    if (!email || !pass) {
+      errEl.textContent = 'Please enter your email and password.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    // Check saved user — must match both email AND password
+    try {
+      const saved = localStorage.getItem('sbs_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.user && parsed.user.email === email) {
+          if (parsed.user.password && parsed.user.password === pass) {
+            Object.assign(STATE, parsed);
+            errEl.classList.remove('show');
+            enterApp();
+            return;
+          } else {
+            errEl.textContent = 'Incorrect password. Please try again.';
+            errEl.classList.add('show');
+            return;
+          }
+        }
+      }
+    } catch(e) {}
+
+    // No account found
+    errEl.textContent = 'No account found with that email. Please sign up.';
+    errEl.classList.add('show');
+  }
+
+  function handleLogout() {
+    STATE.user = null;
+    saveState();
+    goTo('screen-splash');
+  }
+
+  function enterPreviewMode() {
+    // Load dummy data so all screens are explorable without localStorage
+    STATE.user = { name: 'Preview User', email: 'preview@test.com', password: 'preview123' };
+    STATE.streak = 7;
+    STATE.totalDays = 7;
+    STATE.versesRead = 7;
+    STATE.versesMemorized = 2;
+    STATE.memorizedRefs = ['Psalm 119:105', 'Philippians 4:13'];
+    STATE.weeklyMemRefs = ['Psalm 119:105'];
+    STATE.chapterBook = 'John';
+    STATE.chapterNum = 1;
+    STATE.mode = 'verse';
+    STATE.todayComplete = false;
+    // Don't save to localStorage — preview is session only
+    updateHomeGreeting();
+    buildStreakRow();
+    updateStats();
+    updateProfileUI();
+    loadTodayVerse();
+    syncModePills();
+    setTimeout(renderMemorizeScreens, 200);
+    switchTab('home');
+    showToast('Preview mode — changes won\'t be saved 👀');
+  }
+
+  // ── ONBOARDING ──
+  let selectedMode = 'verse';
+
+  function selectMode(mode) {
+    selectedMode = mode;
+    STATE.mode = mode;
+    ['verse','chapter','memorize'].forEach(m => {
+      document.getElementById('mode-' + m).classList.toggle('selected', m === mode);
+      document.getElementById('mode-' + m + '-check').style.visibility = m === mode ? 'visible' : 'hidden';
+    });
+  }
+
+  function enterApp() {
+    STATE.todayComplete = false;
+    updateHomeGreeting();
+    buildStreakRow();
+    updateStats();
+    updateProfileUI();
+    loadTodayVerse();
+    syncModePills();
+    saveState();
+    switchTab('home');
+    setTimeout(renderMemorizeScreens, 200);
+  }
+
+  // ── HOME ──
+  function updateHomeGreeting() {
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const eyebrow = document.getElementById('home-time-greeting');
+    if (eyebrow) eyebrow.textContent = timeGreeting;
+    const el = document.getElementById('home-greeting');
+    if (el && STATE.user) {
+      const firstName = STATE.user.name.split(' ')[0];
+      el.textContent = `${timeGreeting}, ${firstName}.`;
+    }
+    const sc = document.getElementById('home-streak-count');
+    if (sc) sc.textContent = STATE.streak;
+  }
+
+  function buildStreakRow() {
+    const row = document.getElementById('home-streak-row');
+    if (!row) return;
+    const today = new Date().getDay();
+    row.innerHTML = DAYS.map((d, i) => {
+      const diff = (i - today + 7) % 7;
+      const isPast = diff > 0 ? false : (diff === 0 ? false : true);
+      const isToday = i === today;
+      const isDone = isToday ? STATE.todayComplete : (diff > 0 ? false : STATE.streak > (today - i + 7) % 7);
+      const cls = isToday && STATE.todayComplete ? 'done' : isToday ? 'today' : isDone ? 'done' : '';
+      const icon = cls === 'done' ? '✓' : cls === 'today' ? '·' : '·';
+      return `<div class="streak-dot"><div class="streak-circle ${cls}">${icon}</div><span class="streak-day-label">${d}</span></div>`;
+    }).join('');
+  }
+
+  let currentVerse = VERSES[0];
+
+  function loadTodayVerse() {
+    const idx = STATE.totalDays % VERSES.length;
+    currentVerse = VERSES[idx];
+    const ref = document.getElementById('home-verse-ref');
+    const preview = document.getElementById('home-verse-preview');
+    const status = document.getElementById('today-status');
+    if (ref) ref.textContent = currentVerse.ref;
+    if (preview) preview.textContent = currentVerse.text;
+    if (status) {
+      if (STATE.todayComplete) {
+        status.textContent = '✓ Completed today';
+        status.style.color = 'var(--success)';
+      } else {
+        status.textContent = 'Tap to begin today\'s reading →';
+        status.style.color = 'var(--gold)';
+      }
+    }
+    // Populate verse screen
+    const vref = document.getElementById('verse-ref-display');
+    const vtext = document.getElementById('verse-text-display');
+    const vrefl = document.getElementById('verse-reflection');
+    if (vref) vref.textContent = currentVerse.ref;
+    if (vtext) vtext.textContent = currentVerse.text;
+    if (vrefl) vrefl.textContent = currentVerse.reflection;
+  }
+
+  function syncModePills() {
+    // Sync the home pill buttons to reflect STATE.mode (set during onboarding)
+    document.querySelectorAll('.mode-pill').forEach(p => {
+      p.style.background = 'transparent';
+      p.style.color = 'var(--muted)';
+      p.style.borderColor = 'var(--stone)';
+    });
+    const active = document.getElementById('pill-' + STATE.mode);
+    if (active) {
+      active.style.background = 'var(--gold)';
+      active.style.color = 'var(--white)';
+      active.style.borderColor = 'var(--gold)';
+    }
+  }
+
+  function setHomePill(mode) {
+    STATE.mode = mode;
+    saveState();
+    syncModePills();
+  }
+
+  function startTodayHabit() {
+    if (STATE.todayComplete) { goTo('screen-unlock'); return; }
+    const modeMap = { verse: 'screen-verse', chapter: 'screen-chapter', memorize: 'screen-memorize-main' };
+    goTo(modeMap[STATE.mode] || 'screen-verse');
+  }
+
+  // ── READING / COMPLETION ──
+  let readChecked = false;
+
+  function toggleReadCheck(type) {
+    const checkId = type === 'chapter' ? 'chapter-checkbox' : 'read-checkbox';
+    const btnId = type === 'chapter' ? 'chapter-continue-btn' : 'verse-continue-btn';
+    const chk = document.getElementById(checkId);
+    const btn = document.getElementById(btnId);
+    readChecked = !readChecked;
+    chk.classList.toggle('checked', readChecked);
+    btn.disabled = !readChecked;
+    btn.style.opacity = readChecked ? '1' : '0.4';
+  }
+
+  function checkBlanks() {
+    const blanks = document.querySelectorAll('.mem-blank');
+    let allCorrect = true;
+    blanks.forEach(b => {
+      if (b.value.trim() !== '') {
+        const correct = b.value.trim().toLowerCase() === b.dataset.answer.toLowerCase();
+        b.classList.toggle('correct', correct);
+        b.classList.toggle('incorrect', !correct && b.value.trim().length >= b.dataset.answer.length);
+        if (!correct) allCorrect = false;
+      } else { allCorrect = false; }
+    });
+    const btn = document.getElementById('mem-continue-btn');
+    btn.disabled = !allCorrect;
+    btn.style.opacity = allCorrect ? '1' : '0.4';
+  }
+
+  function completeHabit() {
+    // Extra session — don't re-increment streak, just go back to complete screen
+    if (window._extraSession) {
+      window._extraSession = false;
+      STATE.versesRead += 1;
+      if (STATE.mode === 'memorize') STATE.versesMemorized += 1;
+      if (STATE.mode === 'chapter') advanceChapter();
+      saveState();
+      updateStats();
+      updateProfileUI();
+      showToast('Well done — keep going! 🙏');
+      goTo('screen-complete');
+      return;
+    }
+    if (STATE.todayComplete) { goTo('screen-complete'); return; }
+    STATE.todayComplete = true;
+    STATE.streak += 1;
+    STATE.totalDays += 1;
+    STATE.versesRead += 1;
+    if (STATE.mode === 'memorize') STATE.versesMemorized += 1;
+
+    // Advance chapter position for next day
+    const completedChapterRef = `${STATE.chapterBook} ${STATE.chapterNum}`;
+    if (STATE.mode === 'chapter') advanceChapter();
+    saveState();
+
+    // Update complete screen
+    document.getElementById('complete-streak-num').textContent = STATE.streak;
+    document.getElementById('complete-streak-label').textContent = 'day streak';
+    document.getElementById('complete-title').innerHTML = `Day ${STATE.totalDays} <em>complete.</em>`;
+    // Show what was read
+    const note = STATE.mode === 'chapter'
+      ? `${completedChapterRef} · Tomorrow: ${STATE.chapterBook} ${STATE.chapterNum}`
+      : '"' + currentVerse.text + '" — ' + currentVerse.ref.split(' ·')[0];
+    document.getElementById('complete-verse-note').textContent = note;
+    document.getElementById('stat-streak').textContent = STATE.streak;
+    document.getElementById('stat-verses').textContent = STATE.versesRead;
+    document.getElementById('stat-days').textContent = STATE.totalDays;
+    document.getElementById('unlock-day-note').textContent = `See you tomorrow for Day ${STATE.totalDays + 1} 🙏`;
+
+    // Check milestone
+    const isMilestone = MILESTONES.includes(STATE.streak);
+    document.getElementById('share-milestone-btn').style.display = isMilestone ? 'block' : 'none';
+    if (isMilestone) {
+      document.getElementById('milestone-num').textContent = STATE.streak;
+      document.getElementById('share-milestone-num').textContent = STATE.streak;
+    }
+
+    buildStreakRow();
+    updateHomeGreeting();
+    loadTodayVerse();
+    updateStats();
+    updateProfileUI();
+    goTo('screen-complete');
+    readChecked = false;
+  }
+
+  function updateStats() {
+    const els = { 'profile-streak': STATE.streak, 'profile-total': STATE.totalDays, 'profile-mem': STATE.versesMemorized };
+    Object.entries(els).forEach(([id, val]) => { const el = document.getElementById(id); if(el) el.textContent = val; });
+  }
+
+  function updateProfileUI() {
+    if (!STATE.user) return;
+    const nameEl = document.getElementById('profile-name');
+    const emailEl = document.getElementById('profile-email');
+    const avatarEl = document.getElementById('profile-avatar');
+    const modeEl = document.getElementById('profile-mode');
+    if (nameEl) nameEl.textContent = STATE.user.name;
+    if (emailEl) emailEl.textContent = STATE.user.email;
+    if (avatarEl) {
+      const parts = STATE.user.name.trim().split(' ');
+      avatarEl.textContent = parts.map(p => p[0]).join('').substring(0,2).toUpperCase();
+    }
+    const modeLabels = { verse: 'Daily Verse', chapter: 'Daily Chapter', memorize: 'Memorize' };
+    if (modeEl) modeEl.textContent = modeLabels[STATE.mode] || 'Daily Verse';
+  }
+
+  // ── DO MORE ──
+  function doMore(mode) {
+    // Allow additional sessions — don't re-increment streak, just open the screen
+    STATE.mode = mode;
+    syncModePills();
+    saveState();
+    const modeMap = {
+      verse: 'screen-verse',
+      chapter: 'screen-chapter',
+      memorize: 'screen-memorize-main'
+    };
+    // Reset the read checkbox and continue button for the chosen screen
+    if (mode === 'verse') {
+      const chk = document.getElementById('read-checkbox');
+      const btn = document.getElementById('verse-continue-btn');
+      if (chk) chk.classList.remove('checked');
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+      readChecked = false;
+      // Load next verse in rotation
+      const idx = (STATE.totalDays + 1) % VERSES.length;
+      currentVerse = VERSES[idx];
+      const vref = document.getElementById('verse-ref-display');
+      const vtext = document.getElementById('verse-text-display');
+      const vrefl = document.getElementById('verse-reflection');
+      if (vref) vref.textContent = currentVerse.ref;
+      if (vtext) vtext.textContent = currentVerse.text;
+      if (vrefl) vrefl.textContent = currentVerse.reflection;
+    }
+    if (mode === 'chapter') {
+      const chk = document.getElementById('chapter-checkbox');
+      const btn = document.getElementById('chapter-continue-btn');
+      if (chk) chk.classList.remove('checked');
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+      readChecked = false;
+    }
+    // Override completeHabit for extra sessions — don't re-increment streak
+    window._extraSession = true;
+    goTo(modeMap[mode]);
+  }
+
+  // ── COMMUNITY ──
+  function encourage(btn) {
+    btn.textContent = '🙌 Encouraged';
+    btn.classList.add('sent');
+    btn.onclick = null;
+    showToast('Encouragement sent! 🙏');
+  }
+
+  // ── INVITE ──
+  function sendInvite() {
+    const email = document.getElementById('invite-email').value.trim();
+    if (!email.includes('@')) { showToast('Please enter a valid email.'); return; }
+    document.getElementById('invite-email').value = '';
+    showToast(`Invite sent to ${email}! 🙏`);
+  }
+
+  function shareInvite() {
+    if (navigator.share) {
+      navigator.share({ title: 'Scripture Before Scroll', text: 'I\'ve been using this app to read scripture every morning before opening social media. Join me!', url: 'https://scripturebeforescroll.com' });
+    } else {
+      navigator.clipboard.writeText('https://scripturebeforescroll.com').then(() => showToast('Link copied! 🔗'));
+    }
+  }
+
+  function shareAction(type) {
+    if (type === 'Link') {
+      navigator.clipboard.writeText('https://scripturebeforescroll.com').then(() => showToast('Link copied to clipboard! 🔗')).catch(() => showToast('Link: scripturebeforescroll.com'));
+    } else if (navigator.share) {
+      navigator.share({ title: `I hit a ${STATE.streak}-day streak on Scripture Before Scroll!`, url: 'https://scripturebeforescroll.com' });
+    } else {
+      showToast(`Opening ${type}…`);
+    }
+  }
+
+  function openApp(name) {
+    showToast(`Opening ${name}… scroll with purpose! 🙏`);
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── MEMORY VERSE LIBRARY ──
+  // Each verse has ref, full text, blanks (words to remove), hint, context
+  const MEM_VERSES = [
+    {
+      ref: 'Psalm 119:105',
+      full: 'Your word is a lamp to my feet and a light to my path.',
+      blanks: ['lamp','light','path'],
+      hint: 'Think of walking in darkness — God\'s Word gives you two things to guide your steps.',
+      context: 'Psalm 119 is the longest chapter in the Bible — a meditation on God\'s Word. This verse captures why scripture matters: it illuminates the way even when we can\'t see far ahead.'
+    },
+    {
+      ref: 'Philippians 4:13',
+      full: 'I can do all things through him who strengthens me.',
+      blanks: ['all','strengthens'],
+      hint: 'Paul wrote this from prison. It\'s not about superhuman ability — it\'s about where our strength comes from.',
+      context: 'Paul wrote Philippians from prison, yet it\'s his most joyful letter. This verse is a declaration of dependence on Christ, not a claim to personal power.'
+    },
+    {
+      ref: 'Proverbs 3:5-6',
+      full: 'Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths.',
+      blanks: ['heart','understanding','acknowledge','straight'],
+      hint: 'Two commands and one promise. What should you not lean on? What should you do instead?',
+      context: 'Solomon\'s most practical wisdom — the daily choice between self-reliance and God-reliance. "Lean" implies a posture of dependence; we naturally lean on ourselves.'
+    },
+    {
+      ref: 'Romans 8:28',
+      full: 'And we know that for those who love God all things work together for good, for those who are called according to his purpose.',
+      blanks: ['know','love','together','purpose'],
+      hint: 'This isn\'t a promise that everything feels good — it\'s a promise about who\'s in control of the outcome.',
+      context: 'Romans 8 is Paul\'s masterpiece on life in the Spirit. This promise doesn\'t remove suffering — it reframes it. Even hard things are being woven into something good by a sovereign God.'
+    },
+    {
+      ref: 'Isaiah 40:31',
+      full: 'But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.',
+      blanks: ['wait','renew','eagles','weary','faint'],
+      hint: 'Three images of endurance: soaring, running, walking. What do they all have in common?',
+      context: 'Isaiah 40 comforts Israel in exile. "Wait" in Hebrew means to bind together — like a rope being twisted stronger. Waiting on God isn\'t passive; it\'s active trust that makes us stronger.'
+    },
+    {
+      ref: 'Matthew 6:33',
+      full: 'But seek first the kingdom of God and his righteousness, and all these things will be added to you.',
+      blanks: ['first','kingdom','righteousness','added'],
+      hint: 'One command. One result. What comes first changes everything that follows.',
+      context: 'Jesus says this in the middle of his teaching on anxiety. The antidote to worry isn\'t trying harder — it\'s reordering priorities. When God is first, provision follows.'
+    },
+    {
+      ref: 'John 3:16',
+      full: 'For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.',
+      blanks: ['loved','gave','believes','perish','eternal'],
+      hint: 'The most well-known verse in scripture. Five key words carry the whole gospel.',
+      context: 'Jesus speaks this to Nicodemus at night. The scope of God\'s love is the entire world. The depth of it cost Him His only Son. The offer is to whoever — no exceptions.'
+    }
+  ];
+
+  // ── MEMORY STATE HELPERS ──
+  // STATE.memorizedRefs = array of refs completed
+  // STATE.weeklyMemRefs = array of refs memorized this week (reset Sunday)
+  // STATE.lastQuizDate = ISO date string of last quiz taken
+
+  function getNextMemVerse() {
+    if (!STATE.memorizedRefs) STATE.memorizedRefs = [];
+    // Find first verse not yet memorized
+    const next = MEM_VERSES.find(v => !STATE.memorizedRefs.includes(v.ref));
+    // If all done, start cycling review (oldest first)
+    return next || MEM_VERSES[STATE.memorizedRefs.length % MEM_VERSES.length];
+  }
+
+  function getThisWeekVerses() {
+    if (!STATE.weeklyMemRefs) return [];
+    return MEM_VERSES.filter(v => STATE.weeklyMemRefs.includes(v.ref));
+  }
+
+  // ── MEMORIZE SCREEN RENDERING ──
+  let currentMemVerse = null;
+
+  function renderMemorizeScreens() {
+    currentMemVerse = getNextMemVerse();
+    if (!currentMemVerse) return;
+
+    // Page 1 — study
+    const refEl = document.getElementById('mem-verse-ref');
+    const fullEl = document.getElementById('mem-verse-full');
+    const ctxEl = document.getElementById('mem-verse-context');
+    if (refEl) refEl.textContent = currentMemVerse.ref + ' · ESV';
+    if (fullEl) fullEl.textContent = '"' + currentMemVerse.full + '"';
+    if (ctxEl) ctxEl.textContent = currentMemVerse.context;
+
+    // Page 2 — test (verse hidden, blanks only)
+    const testRef = document.getElementById('mem-test-ref');
+    if (testRef) testRef.textContent = currentMemVerse.ref + ' · ESV';
+
+    renderMemBlanks();
+
+    const hintEl = document.getElementById('mem-hint-text');
+    if (hintEl) hintEl.textContent = currentMemVerse.hint;
+  }
+
+  function renderMemBlanks() {
+    if (!currentMemVerse) return;
+    const ex = document.getElementById('mem-test-exercise');
+    if (!ex) return;
+
+    // Build the verse with blanks replacing target words
+    let words = currentMemVerse.full.split(' ');
+    let blankCount = 0;
+    let html = '"';
+    words.forEach((word, i) => {
+      // Strip punctuation for comparison
+      const clean = word.replace(/[.,;:!?"]/g, '').toLowerCase();
+      const isBlank = currentMemVerse.blanks.includes(clean);
+      if (isBlank) {
+        blankCount++;
+        const id = `mem-blank-${blankCount}`;
+        const suffix = word.match(/[.,;:!?"]$/) ? word.slice(-1) : '';
+        html += `<input class="mem-blank" id="${id}" data-answer="${clean}" placeholder="______" oninput="checkMemBlanks()" style="min-width:${Math.max(60, clean.length * 10)}px;" />${suffix} `;
+      } else {
+        html += word + ' ';
+      }
+    });
+    html += '"';
+    ex.innerHTML = html;
+
+    // Reset submit button
+    const btn = document.getElementById('mem-submit-btn');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+  }
+
+  function checkMemBlanks() {
+    const blanks = document.querySelectorAll('#mem-test-exercise .mem-blank');
+    let allFilled = true;
+    blanks.forEach(b => { if (!b.value.trim()) allFilled = false; });
+    const btn = document.getElementById('mem-submit-btn');
+    if (btn) { btn.disabled = !allFilled; btn.style.opacity = allFilled ? '1' : '0.4'; }
+  }
+
+  function toggleMemHint() {
+    const hint = document.getElementById('mem-hint-reveal');
+    const btn = document.getElementById('mem-hint-btn');
+    if (!hint) return;
+    const showing = hint.style.display !== 'none';
+    hint.style.display = showing ? 'none' : 'block';
+    if (btn) btn.textContent = showing ? 'Need a hint?' : 'Hide hint';
+  }
+
+  function submitMemorization() {
+    if (!currentMemVerse) return;
+    const blanks = document.querySelectorAll('#mem-test-exercise .mem-blank');
+    let correct = 0;
+    blanks.forEach(b => {
+      const answer = b.value.trim().toLowerCase().replace(/[.,;:!?"]/g, '');
+      const expected = b.dataset.answer.toLowerCase();
+      const isCorrect = answer === expected || levenshtein(answer, expected) <= 1;
+      b.classList.toggle('correct', isCorrect);
+      b.classList.toggle('incorrect', !isCorrect);
+      if (isCorrect) correct++;
+    });
+
+    if (correct === blanks.length) {
+      // All correct — mark as memorized
+      if (!STATE.memorizedRefs) STATE.memorizedRefs = [];
+      if (!STATE.weeklyMemRefs) STATE.weeklyMemRefs = [];
+      if (!STATE.memorizedRefs.includes(currentMemVerse.ref)) {
+        STATE.memorizedRefs.push(currentMemVerse.ref);
+        STATE.versesMemorized = STATE.memorizedRefs.length;
+      }
+      if (!STATE.weeklyMemRefs.includes(currentMemVerse.ref)) {
+        STATE.weeklyMemRefs.push(currentMemVerse.ref);
+      }
+      saveState();
+      completeHabit();
+    } else {
+      showToast(`${correct} of ${blanks.length} correct — try the missed ones again`);
+      // Re-enable submit
+      const btn = document.getElementById('mem-submit-btn');
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    }
+  }
+
+  // Simple Levenshtein for fuzzy matching
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({length: m+1}, (_, i) => Array.from({length: n+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    return dp[m][n];
+  }
+
+  // ── RECAP SCREEN ──
+  function openRecap() {
+    if (!STATE.memorizedRefs) STATE.memorizedRefs = [];
+    const list = document.getElementById('mem-recap-list');
+    const total = document.getElementById('recap-total');
+    const thisWeek = document.getElementById('recap-this-week');
+    const weekCount = STATE.weeklyMemRefs ? STATE.weeklyMemRefs.length : 0;
+
+    if (total) total.textContent = STATE.memorizedRefs.length;
+    if (thisWeek) thisWeek.textContent = weekCount;
+
+    if (list) {
+      if (STATE.memorizedRefs.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">✏️</div><p class="empty-text">No verses memorized yet.<br>Start the Memorize habit to build your treasury.</p></div>`;
+      } else {
+        list.innerHTML = STATE.memorizedRefs.map(ref => {
+          const v = MEM_VERSES.find(mv => mv.ref === ref);
+          if (!v) return '';
+          return `
+            <div class="card" style="margin-bottom:0.75rem;">
+              <p class="verse-ref" style="margin-bottom:0.5rem;">${v.ref}</p>
+              <p style="font-family:var(--serif);font-style:italic;font-size:0.95rem;color:var(--ink);line-height:1.6;">"${v.full}"</p>
+              <div style="display:flex;align-items:center;gap:5px;margin-top:0.75rem;">
+                <div style="width:6px;height:6px;border-radius:50%;background:var(--success);"></div>
+                <span style="font-size:0.65rem;color:var(--success);letter-spacing:0.08em;text-transform:uppercase;">Memorized</span>
+              </div>
+            </div>`;
+        }).join('') + `
+          ${weekCount > 0 ? `<button class="btn-primary" style="margin-top:0.5rem;" onclick="startWeeklyQuiz()">Take this week's quiz →</button>` : ''}
+          <div style="height:1rem;"></div>`;
+      }
+    }
+    goTo('screen-mem-recap');
+  }
+
+  // ── WEEKLY QUIZ ──
+  let quizVerses = [];
+  let quizIndex = 0;
+  let quizResults = [];
+
+  function startWeeklyQuiz() {
+    const weekVerses = getThisWeekVerses();
+    if (weekVerses.length === 0) {
+      showToast('Memorize some verses this week first!');
+      return;
+    }
+    quizVerses = [...weekVerses];
+    quizIndex = 0;
+    quizResults = [];
+    renderQuizQuestion();
+    goTo('screen-weekly-quiz');
+  }
+
+  function renderQuizQuestion() {
+    const v = quizVerses[quizIndex];
+    if (!v) return;
+
+    document.getElementById('quiz-eyebrow').textContent = `Weekly Quiz · ${quizIndex + 1} of ${quizVerses.length}`;
+    document.getElementById('quiz-progress').style.width = `${((quizIndex + 1) / quizVerses.length) * 100}%`;
+    document.getElementById('quiz-verse-ref').textContent = v.ref;
+    // Give first word as hint
+    const firstWord = v.full.split(' ')[0];
+    document.getElementById('quiz-verse-hint').innerHTML = `First word: <em>"${firstWord}…"</em>`;
+
+    const input = document.getElementById('quiz-input');
+    if (input) { input.value = ''; }
+
+    const feedback = document.getElementById('quiz-feedback');
+    if (feedback) feedback.style.display = 'none';
+
+    const submitBtn = document.getElementById('quiz-submit-btn');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Check →'; }
+
+    const skipBtn = document.getElementById('quiz-skip-btn');
+    if (skipBtn) skipBtn.style.display = 'block';
+  }
+
+  function checkQuizInput() {
+    const input = document.getElementById('quiz-input');
+    const btn = document.getElementById('quiz-submit-btn');
+    if (btn) { btn.disabled = !input.value.trim(); }
+  }
+
+  function quizSubmit() {
+    const v = quizVerses[quizIndex];
+    const input = document.getElementById('quiz-input').value.trim().toLowerCase();
+    const expected = v.full.toLowerCase();
+
+    // Score by word similarity
+    const inputWords = input.split(/\s+/).map(w => w.replace(/[.,;:!?"]/g,''));
+    const expectedWords = expected.split(/\s+/).map(w => w.replace(/[.,;:!?"]/g,''));
+    let matchCount = 0;
+    expectedWords.forEach((w, i) => {
+      const inputWord = inputWords[i] || '';
+      if (inputWord === w || levenshtein(inputWord, w) <= 1) matchCount++;
+    });
+    const pct = matchCount / expectedWords.length;
+    const passed = pct >= 0.8;
+
+    quizResults.push({ verse: v, passed, pct });
+
+    const feedback = document.getElementById('quiz-feedback');
+    const feedbackText = document.getElementById('quiz-feedback-text');
+    feedback.style.display = 'block';
+    if (passed) {
+      feedback.style.background = '#E8F5E9';
+      feedback.style.border = '1px solid #A5D6A7';
+      feedbackText.style.color = '#2E7D32';
+      feedbackText.textContent = `Great recall! (${Math.round(pct*100)}% match) — "${v.full}"`;
+    } else {
+      feedback.style.background = '#FFF3E0';
+      feedback.style.border = '1px solid #FFCC80';
+      feedbackText.style.color = '#E65100';
+      feedbackText.textContent = `Keep practicing. The verse is: "${v.full}"`;
+    }
+
+    const submitBtn = document.getElementById('quiz-submit-btn');
+    submitBtn.textContent = quizIndex < quizVerses.length - 1 ? 'Next →' : 'See results →';
+    submitBtn.disabled = false;
+    submitBtn.onclick = quizNext;
+    document.getElementById('quiz-skip-btn').style.display = 'none';
+  }
+
+  function quizSkip() {
+    const v = quizVerses[quizIndex];
+    quizResults.push({ verse: v, passed: false, pct: 0 });
+    quizNext();
+  }
+
+  function quizNext() {
+    quizIndex++;
+    if (quizIndex >= quizVerses.length) {
+      showQuizResults();
+    } else {
+      renderQuizQuestion();
+      // Reset submit onclick
+      const submitBtn = document.getElementById('quiz-submit-btn');
+      if (submitBtn) submitBtn.onclick = quizSubmit;
+    }
+  }
+
+  function showQuizResults() {
+    const correct = quizResults.filter(r => r.passed).length;
+    const missed = quizResults.filter(r => !r.passed);
+    const total = quizResults.length;
+
+    document.getElementById('quiz-score-display').textContent = `${correct}/${total}`;
+    document.getElementById('quiz-correct-count').textContent = correct;
+    document.getElementById('quiz-missed-count').textContent = missed.length;
+
+    const notes = [
+      '', // 0
+      'Keep practicing — repetition builds retention.',
+      'Good effort! Review the ones you missed.',
+      total <= 3 ? 'Well done! Keep memorizing.' : 'Solid work — you\'re hiding His Word in your heart.',
+    ];
+    const noteEl = document.getElementById('quiz-result-note');
+    if (noteEl) noteEl.textContent = correct === total
+      ? 'Perfect score! God\'s Word is taking root. 🙏'
+      : notes[Math.min(correct, notes.length - 1)];
+
+    const missedList = document.getElementById('quiz-missed-list');
+    if (missedList && missed.length > 0) {
+      missedList.innerHTML = `<p class="eyebrow" style="margin-bottom:0.5rem;">Review these:</p>` +
+        missed.map(r => `
+          <div class="card-warm" style="margin-bottom:0.5rem;text-align:left;">
+            <p class="verse-ref" style="margin-bottom:0.25rem;">${r.verse.ref}</p>
+            <p style="font-family:var(--serif);font-style:italic;font-size:0.88rem;color:var(--ink);line-height:1.6;">"${r.verse.full}"</p>
+          </div>`).join('');
+    } else if (missedList) {
+      missedList.innerHTML = '';
+    }
+
+    goTo('screen-quiz-results');
+  }
+
+  // ── BIBLE BOOK DATA ──
+  // Chapter counts for every book of the Bible
+  const BIBLE_BOOKS = [
+    { name:'Genesis', chapters:50 }, { name:'Exodus', chapters:40 },
+    { name:'Leviticus', chapters:27 }, { name:'Numbers', chapters:36 },
+    { name:'Deuteronomy', chapters:34 }, { name:'Joshua', chapters:24 },
+    { name:'Judges', chapters:21 }, { name:'Ruth', chapters:4 },
+    { name:'1 Samuel', chapters:31 }, { name:'2 Samuel', chapters:24 },
+    { name:'1 Kings', chapters:22 }, { name:'2 Kings', chapters:25 },
+    { name:'1 Chronicles', chapters:29 }, { name:'2 Chronicles', chapters:36 },
+    { name:'Ezra', chapters:10 }, { name:'Nehemiah', chapters:13 },
+    { name:'Esther', chapters:10 }, { name:'Job', chapters:42 },
+    { name:'Psalms', chapters:150 }, { name:'Proverbs', chapters:31 },
+    { name:'Ecclesiastes', chapters:12 }, { name:'Song of Solomon', chapters:8 },
+    { name:'Isaiah', chapters:66 }, { name:'Jeremiah', chapters:52 },
+    { name:'Lamentations', chapters:5 }, { name:'Ezekiel', chapters:48 },
+    { name:'Daniel', chapters:12 }, { name:'Hosea', chapters:14 },
+    { name:'Joel', chapters:3 }, { name:'Amos', chapters:9 },
+    { name:'Obadiah', chapters:1 }, { name:'Jonah', chapters:4 },
+    { name:'Micah', chapters:7 }, { name:'Nahum', chapters:3 },
+    { name:'Habakkuk', chapters:3 }, { name:'Zephaniah', chapters:3 },
+    { name:'Haggai', chapters:2 }, { name:'Zechariah', chapters:14 },
+    { name:'Malachi', chapters:4 }, { name:'Matthew', chapters:28 },
+    { name:'Mark', chapters:16 }, { name:'Luke', chapters:24 },
+    { name:'John', chapters:21 }, { name:'Acts', chapters:28 },
+    { name:'Romans', chapters:16 }, { name:'1 Corinthians', chapters:16 },
+    { name:'2 Corinthians', chapters:13 }, { name:'Galatians', chapters:6 },
+    { name:'Ephesians', chapters:6 }, { name:'Philippians', chapters:4 },
+    { name:'Colossians', chapters:4 }, { name:'1 Thessalonians', chapters:5 },
+    { name:'2 Thessalonians', chapters:3 }, { name:'1 Timothy', chapters:6 },
+    { name:'2 Timothy', chapters:4 }, { name:'Titus', chapters:3 },
+    { name:'Philemon', chapters:1 }, { name:'Hebrews', chapters:13 },
+    { name:'James', chapters:5 }, { name:'1 Peter', chapters:5 },
+    { name:'2 Peter', chapters:3 }, { name:'1 John', chapters:5 },
+    { name:'2 John', chapters:1 }, { name:'3 John', chapters:1 },
+    { name:'Jude', chapters:1 }, { name:'Revelation', chapters:22 }
+  ];
+
+  // ── BSB API — book ID map ──
+  // Maps book names to their API codes for bible.helloao.org
+  const BOOK_API_IDS = {
+    'Genesis':'GEN','Exodus':'EXO','Leviticus':'LEV','Numbers':'NUM',
+    'Deuteronomy':'DEU','Joshua':'JOS','Judges':'JDG','Ruth':'RUT',
+    '1 Samuel':'1SA','2 Samuel':'2SA','1 Kings':'1KI','2 Kings':'2KI',
+    '1 Chronicles':'1CH','2 Chronicles':'2CH','Ezra':'EZR','Nehemiah':'NEH',
+    'Esther':'EST','Job':'JOB','Psalms':'PSA','Proverbs':'PRO',
+    'Ecclesiastes':'ECC','Song of Solomon':'SNG','Isaiah':'ISA','Jeremiah':'JER',
+    'Lamentations':'LAM','Ezekiel':'EZK','Daniel':'DAN','Hosea':'HOS',
+    'Joel':'JOL','Amos':'AMO','Obadiah':'OBA','Jonah':'JON','Micah':'MIC',
+    'Nahum':'NAM','Habakkuk':'HAB','Zephaniah':'ZEP','Haggai':'HAG',
+    'Zechariah':'ZEC','Malachi':'MAL','Matthew':'MAT','Mark':'MRK',
+    'Luke':'LUK','John':'JHN','Acts':'ACT','Romans':'ROM',
+    '1 Corinthians':'1CO','2 Corinthians':'2CO','Galatians':'GAL',
+    'Ephesians':'EPH','Philippians':'PHP','Colossians':'COL',
+    '1 Thessalonians':'1TH','2 Thessalonians':'2TH','1 Timothy':'1TI',
+    '2 Timothy':'2TI','Titus':'TIT','Philemon':'PHM','Hebrews':'HEB',
+    'James':'JAS','1 Peter':'1PE','2 Peter':'2PE','1 John':'1JN',
+    '2 John':'2JN','3 John':'3JN','Jude':'JUD','Revelation':'REV'
+  };
+
+  // Simple chapter cache so we don't re-fetch the same chapter twice
+  const chapterCache = {};
+
+  // ── OFFLINE FALLBACK CHAPTERS ──
+  // Used when API is unreachable (preview panel, no connection)
+  const FALLBACK_CHAPTERS = {
+    'John_1': [
+      {v:1,t:'In the beginning was the Word, and the Word was with God, and the Word was God.'},{v:2,t:'He was in the beginning with God.'},{v:3,t:'All things were made through him, and without him was not any thing made that was made.'},{v:4,t:'In him was life, and the life was the light of men.'},{v:5,t:'The light shines in the darkness, and the darkness has not overcome it.'},{v:6,t:'There was a man sent from God, whose name was John.'},{v:7,t:'He came as a witness, to bear witness about the light, that all might believe through him.'},{v:8,t:'He was not the light, but came to bear witness about the light.'},{v:9,t:'The true light, which gives light to everyone, was coming into the world.'},{v:10,t:'He was in the world, and the world was made through him, yet the world did not know him.'},{v:11,t:'He came to his own, and his own people did not receive him.'},{v:12,t:'But to all who did receive him, who believed in his name, he gave the right to become children of God,'},{v:13,t:'who were born, not of blood nor of the will of the flesh nor of the will of man, but of God.'},{v:14,t:'And the Word became flesh and dwelt among us, and we have seen his glory, glory as of the only Son from the Father, full of grace and truth.'},{v:15,t:'John bore witness about him, and cried out, "This was he of whom I said, He who comes after me ranks before me, because he was before me."'},{v:16,t:'For from his fullness we have all received, grace upon grace.'},{v:17,t:'For the law was given through Moses; grace and truth came through Jesus Christ.'},{v:18,t:'No one has ever seen God; the only God, who is at the Father\'s side, he has made him known.'},{v:29,t:'The next day he saw Jesus coming toward him, and said, "Behold, the Lamb of God, who takes away the sin of the world!"'},{v:42,t:'He brought him to Jesus. Jesus looked at him and said, "You are Simon the son of John. You shall be called Cephas" (which means Peter).'},{v:51,t:'And he said to him, "Truly, truly, I say to you, you will see heaven opened, and the angels of God ascending and descending on the Son of Man."'}
+    ],
+    'John_3': [
+      {v:1,t:'Now there was a man of the Pharisees named Nicodemus, a ruler of the Jews.'},{v:2,t:'This man came to Jesus by night and said to him, "Rabbi, we know that you are a teacher come from God, for no one can do these signs that you do unless God is with him."'},{v:3,t:'Jesus answered him, "Truly, truly, I say to you, unless one is born again he cannot see the kingdom of God."'},{v:4,t:'Nicodemus said to him, "How can a man be born when he is old? Can he enter a second time into his mother\'s womb and be born?"'},{v:5,t:'Jesus answered, "Truly, truly, I say to you, unless one is born of water and the Spirit, he cannot enter the kingdom of God."'},{v:6,t:'"That which is born of the flesh is flesh, and that which is born of the Spirit is spirit."'},{v:16,t:'"For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life."'},{v:17,t:'"For God did not send his Son into the world to condemn the world, but in order that the world might be saved through him."'},{v:36,t:'"Whoever believes in the Son has eternal life; whoever does not obey the Son shall not see life, but the wrath of God remains on him."'}
+    ],
+    'Psalms_23': [
+      {v:1,t:'The Lord is my shepherd; I shall not want.'},{v:2,t:'He makes me lie down in green pastures. He leads me beside still waters.'},{v:3,t:'He restores my soul. He leads me in paths of righteousness for his name\'s sake.'},{v:4,t:'Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.'},{v:5,t:'You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows.'},{v:6,t:'Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.'}
+    ],
+    'Psalms_119': [
+      {v:1,t:'Blessed are those whose way is blameless, who walk in the law of the Lord!'},{v:2,t:'Blessed are those who keep his testimonies, who seek him with their whole heart,'},{v:9,t:'How can a young man keep his way pure? By guarding it according to your word.'},{v:10,t:'With my whole heart I seek you; let me not wander from your commandments!'},{v:11,t:'I have stored up your word in my heart, that I might not sin against you.'},{v:105,t:'Your word is a lamp to my feet and a light to my path.'},{v:130,t:'The unfolding of your words gives light; it imparts understanding to the simple.'}
+    ],
+    'Romans_8': [
+      {v:1,t:'There is therefore now no condemnation for those who are in Christ Jesus.'},{v:2,t:'For the law of the Spirit of life has set you free in Christ Jesus from the law of sin and death.'},{v:28,t:'And we know that for those who love God all things work together for good, for those who are called according to his purpose.'},{v:31,t:'What then shall we say to these things? If God is for us, who can be against us?'},{v:32,t:'He who did not spare his own Son but gave him up for us all, how will he not also with him graciously give us all things?'},{v:38,t:'For I am sure that neither death nor life, nor angels nor rulers, nor things present nor things to come, nor powers,'},{v:39,t:'nor height nor depth, nor anything else in all creation, will be able to separate us from the love of God in Christ Jesus our Lord.'}
+    ],
+    'Matthew_5': [
+      {v:1,t:'Seeing the crowds, he went up on the mountain, and when he sat down, his disciples came to him.'},{v:2,t:'And he opened his mouth and taught them, saying:'},{v:3,t:'"Blessed are the poor in spirit, for theirs is the kingdom of heaven."'},{v:4,t:'"Blessed are those who mourn, for they shall be comforted."'},{v:5,t:'"Blessed are the meek, for they shall inherit the earth."'},{v:6,t:'"Blessed are those who hunger and thirst for righteousness, for they shall be satisfied."'},{v:7,t:'"Blessed are the merciful, for they shall receive mercy."'},{v:8,t:'"Blessed are the pure in heart, for they shall see God."'},{v:9,t:'"Blessed are the peacemakers, for they shall be called sons of God."'},{v:14,t:'"You are the light of the world. A city set on a hill cannot be hidden."'},{v:16,t:'"In the same way, let your light shine before others, so that they may see your good works and give glory to your Father who is in heaven."'}
+    ],
+    'Philippians_4': [
+      {v:4,t:'Rejoice in the Lord always; again I will say, rejoice.'},{v:5,t:'Let your reasonableness be known to everyone. The Lord is at hand.'},{v:6,t:'do not be anxious about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God.'},{v:7,t:'And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus.'},{v:8,t:'Finally, brothers, whatever is true, whatever is honorable, whatever is just, whatever is pure, whatever is lovely, whatever is commendable, if there is any excellence, if there is anything worthy of praise, think about these things.'},{v:11,t:'Not that I am speaking of being in need, for I have learned, in whatever situation I am, to be content.'},{v:13,t:'I can do all things through him who strengthens me.'}
+    ]
+  };
+
+  async function fetchChapter(book, chapter) {
+    const cacheKey = `${book}_${chapter}`;
+    if (chapterCache[cacheKey]) return chapterCache[cacheKey];
+
+    // Check offline fallback first if API likely to fail (preview/offline)
+    const fallback = FALLBACK_CHAPTERS[cacheKey];
+
+    const bookId = BOOK_API_IDS[book];
+    if (!bookId) return fallback || null;
+
+    try {
+      const url = `https://bible.helloao.org/api/BSB/${bookId}/${chapter}.json`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) return fallback || null;
+      const data = await res.json();
+
+      const verses = (data.chapter?.content || [])
+        .filter(item => item.type === 'verse')
+        .map(item => ({
+          v: item.number,
+          t: item.content
+            .filter(c => typeof c === 'string' || c.text)
+            .map(c => typeof c === 'string' ? c : c.text || '')
+            .join('').trim()
+        }))
+        .filter(v => v.t);
+
+      if (verses.length > 0) {
+        chapterCache[cacheKey] = verses;
+        return verses;
+      }
+      return fallback || null;
+    } catch(e) {
+      // Network error or timeout — use fallback if available
+      return fallback || null;
+    }
+  }
+    return BIBLE_BOOKS.find(b => b.name === bookName) || { name: bookName, chapters: 1 };
+  }
+
+  async function fetchChapter(book, chapter) {
+    const cacheKey = `${book}_${chapter}`;
+    if (chapterCache[cacheKey]) return chapterCache[cacheKey];
+
+    const bookId = BOOK_API_IDS[book];
+    if (!bookId) return null;
+
+    try {
+      const url = `https://bible.helloao.org/api/BSB/${bookId}/${chapter}.json`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+
+      // Extract verses from the API response
+      const verses = (data.chapter?.content || [])
+        .filter(item => item.type === 'verse')
+        .map(item => ({
+          v: item.number,
+          t: item.content
+            .filter(c => typeof c === 'string' || c.text)
+            .map(c => typeof c === 'string' ? c : c.text || '')
+            .join('')
+            .trim()
+        }))
+        .filter(v => v.t);
+
+      chapterCache[cacheKey] = verses;
+      return verses;
+    } catch(e) {
+      return null;
+    }
+  }
+
+  async function renderChapterScreen() {
+    const book = STATE.chapterBook || 'John';
+    const chapter = STATE.chapterNum || 1;
+    const bookInfo = getBookInfo(book);
+
+    // Update ref
+    const refEl = document.getElementById('chapter-ref-display');
+    if (refEl) refEl.textContent = `${book} ${chapter} · BSB`;
+
+    // Update progress bar
+    const pct = Math.round((chapter / bookInfo.chapters) * 100);
+    const fillEl = document.getElementById('chapter-progress-fill');
+    const labelEl = document.getElementById('chapter-progress-label');
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (labelEl) labelEl.textContent = `Ch. ${chapter} of ${bookInfo.chapters}`;
+
+    // Show loading state
+    const textEl = document.getElementById('chapter-text-display');
+    if (textEl) {
+      textEl.innerHTML = `
+        <div style="text-align:center;padding:3rem 0;">
+          <div style="font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--stone);margin-bottom:0.5rem;">Loading ${book} ${chapter}…</div>
+          <div style="width:32px;height:32px;border:2px solid var(--stone);border-top-color:var(--gold);border-radius:50%;margin:0 auto;animation:spin 0.8s linear infinite;"></div>
+        </div>`;
+    }
+
+    // Add spinner keyframe if not already present
+    if (!document.getElementById('spin-style')) {
+      const s = document.createElement('style');
+      s.id = 'spin-style';
+      s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+      document.head.appendChild(s);
+    }
+
+    // Reset checkbox and button
+    const chk = document.getElementById('chapter-checkbox');
+    const btn = document.getElementById('chapter-continue-btn');
+    if (chk) chk.classList.remove('checked');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+    readChecked = false;
+
+    // Fetch from BSB API
+    const verses = await fetchChapter(book, chapter);
+
+    if (textEl) {
+      if (verses && verses.length > 0) {
+        textEl.innerHTML = verses.map(v =>
+          `<p style="margin-bottom:0.85rem;line-height:1.85;"><sup style="color:var(--gold);font-size:0.68rem;margin-right:4px;font-weight:500;">${v.v}</sup>${v.t}</p>`
+        ).join('');
+      } else {
+        textEl.innerHTML = `
+          <div style="text-align:center;padding:2rem 0;">
+            <p style="font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--muted);margin-bottom:0.75rem;">${book} ${chapter}</p>
+            <p style="font-size:0.85rem;color:var(--stone);line-height:1.7;margin-bottom:1rem;">This chapter isn't available offline. Try a fallback chapter like John 1, John 3, Psalm 23, Romans 8, Matthew 5, or Philippians 4 — or visit the live app for full access.</p>
+            <button onclick="renderChapterScreen()" style="background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.5rem 1rem;font-size:0.78rem;color:var(--gold);cursor:pointer;">Try again</button>
+          </div>`;
+      }
+    }
+  }
+
+  function advanceChapter() {
+    const bookInfo = getBookInfo(STATE.chapterBook);
+    if (STATE.chapterNum < bookInfo.chapters) {
+      STATE.chapterNum += 1;
+    } else {
+      const idx = BIBLE_BOOKS.findIndex(b => b.name === STATE.chapterBook);
+      if (idx < BIBLE_BOOKS.length - 1) {
+        STATE.chapterBook = BIBLE_BOOKS[idx + 1].name;
+        STATE.chapterNum = 1;
+      } else {
+        STATE.chapterBook = 'Genesis';
+        STATE.chapterNum = 1;
+        showToast('You\'ve read the whole Bible! Starting over 🙏');
+      }
+    }
+    saveState();
+  }
+
+  // Chapter selector UI
+  function initChapterSelector() {
+    const bookSel = document.getElementById('book-select');
+    if (!bookSel) return;
+    bookSel.innerHTML = BIBLE_BOOKS.map(b =>
+      `<option value="${b.name}" ${b.name === STATE.chapterBook ? 'selected' : ''}>${b.name}</option>`
+    ).join('');
+    updateChapterOptions();
+  }
+
+  function updateChapterOptions() {
+    const bookSel = document.getElementById('book-select');
+    const chapSel = document.getElementById('chapter-select');
+    if (!bookSel || !chapSel) return;
+    const bookName = bookSel.value;
+    const bookInfo = getBookInfo(bookName);
+    chapSel.innerHTML = Array.from({length: bookInfo.chapters}, (_, i) => {
+      const c = i + 1;
+      const selected = bookName === STATE.chapterBook && c === STATE.chapterNum ? 'selected' : '';
+      return `<option value="${c}" ${selected}>Chapter ${c}</option>`;
+    }).join('');
+  }
+
+  function applyChapterSelection() {
+    const bookSel = document.getElementById('book-select');
+    const chapSel = document.getElementById('chapter-select');
+    if (!bookSel || !chapSel) return;
+    STATE.chapterBook = bookSel.value;
+    STATE.chapterNum = parseInt(chapSel.value);
+    saveState();
+    goTo('screen-chapter');
+    showToast(`Opening ${STATE.chapterBook} ${STATE.chapterNum} 📖`);
+  }
+
+  // ── FORGOT PASSWORD ──
+  let _resetCode = null;
+  let _resetEmail = null;
+  let _resetExpiry = null;
+  let _resetName = null;
+
+  function startForgotPassword() {
+    // Pre-fill email if already typed on login screen
+    const loginEmail = document.getElementById('login-email').value.trim();
+    const forgotEmail = document.getElementById('forgot-email');
+    if (forgotEmail && loginEmail) forgotEmail.value = loginEmail;
+    // Clear any previous errors
+    document.getElementById('forgot-email-err').classList.remove('show');
+    document.getElementById('forgot-notfound-err').classList.remove('show');
+    goTo('screen-forgot-pw');
+  }
+
+  function sendResetCode(isResend) {
+    const emailEl = document.getElementById('forgot-email');
+    const email = emailEl && !isResend ? emailEl.value.trim() : _resetEmail;
+
+    // Validate email format
+    if (!email || !email.includes('@')) {
+      const err = document.getElementById('forgot-email-err');
+      if (err) err.classList.add('show');
+      return;
+    }
+    document.getElementById('forgot-email-err').classList.remove('show');
+
+    // Check account exists in localStorage
+    try {
+      const saved = localStorage.getItem('sbs_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.user || parsed.user.email.toLowerCase() !== email.toLowerCase()) {
+          document.getElementById('forgot-notfound-err').classList.add('show');
+          return;
+        }
+        // Get the user's name for the email
+        _resetName = parsed.user.name || 'friend';
+      } else {
+        document.getElementById('forgot-notfound-err').classList.add('show');
+        return;
+      }
+    } catch(e) {
+      document.getElementById('forgot-notfound-err').classList.add('show');
+      return;
+    }
+
+    // Generate a fresh 6-digit code with 15-minute expiry
+    _resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    _resetEmail = email;
+    _resetExpiry = Date.now() + (15 * 60 * 1000);
+
+    // Show sending state on button
+    const sendBtn = document.querySelector('#screen-forgot-pw .btn-primary');
+    const originalText = sendBtn ? sendBtn.textContent : '';
+    if (sendBtn) { sendBtn.textContent = 'Sending…'; sendBtn.disabled = true; }
+
+    // Send via EmailJS
+    emailjs.send('service_hsj4lvu', 'template_06fuost', {
+      to_email: email,
+      to_name: _resetName || 'friend',
+      reset_code: _resetCode,
+      expiry_minutes: '15'
+    })
+    .then(() => {
+      // Success — update confirm screen and navigate
+      const display = document.getElementById('reset-email-display');
+      if (display) display.textContent = email;
+      document.getElementById('reset-code-err').classList.remove('show');
+      document.getElementById('reset-code-input').value = '';
+
+      if (sendBtn) { sendBtn.textContent = originalText; sendBtn.disabled = false; }
+
+      if (isResend) {
+        showToast('New code sent — check your inbox 📬');
+      } else {
+        goTo('screen-enter-code');
+      }
+    })
+    .catch((error) => {
+      console.error('EmailJS error:', error);
+      if (sendBtn) { sendBtn.textContent = originalText; sendBtn.disabled = false; }
+      showToast('Could not send email. Please try again.');
+    });
+  }
+
+  function verifyResetCode() {
+    const input = document.getElementById('reset-code-input').value.trim();
+    const errEl = document.getElementById('reset-code-err');
+
+    // Check expiry
+    if (!_resetCode || Date.now() > _resetExpiry) {
+      errEl.textContent = 'Code has expired. Please request a new one.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    if (input !== _resetCode) {
+      errEl.textContent = 'Incorrect code. Please try again.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    // Code correct — go to new password screen
+    errEl.classList.remove('show');
+    document.getElementById('new-pass-err').classList.remove('show');
+    document.getElementById('confirm-pass-err').classList.remove('show');
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-password').value = '';
+    goTo('screen-new-password');
+  }
+
+  function saveNewPassword() {
+    const newPass = document.getElementById('new-password').value;
+    const confirmPass = document.getElementById('confirm-password').value;
+    const newPassErr = document.getElementById('new-pass-err');
+    const confirmPassErr = document.getElementById('confirm-pass-err');
+    let valid = true;
+
+    if (newPass.length < 8) {
+      newPassErr.classList.add('show');
+      valid = false;
+    } else {
+      newPassErr.classList.remove('show');
+    }
+
+    if (newPass !== confirmPass) {
+      confirmPassErr.classList.add('show');
+      valid = false;
+    } else {
+      confirmPassErr.classList.remove('show');
+    }
+
+    if (!valid) return;
+
+    // Update password in localStorage
+    try {
+      const saved = localStorage.getItem('sbs_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.user) {
+          parsed.user.password = newPass;
+          localStorage.setItem('sbs_state', JSON.stringify(parsed));
+          // Also update current STATE if it matches
+          if (STATE.user && STATE.user.email === _resetEmail) {
+            STATE.user.password = newPass;
+          }
+        }
+      }
+    } catch(e) {}
+
+    // Clear reset state
+    _resetCode = null;
+    _resetEmail = null;
+    _resetExpiry = null;
+
+    goTo('screen-reset-success');
+  }
+</script>
+</body>
+</html>
