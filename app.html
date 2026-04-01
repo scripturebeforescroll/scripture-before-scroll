@@ -1550,20 +1550,65 @@
     chapterNum: 1,
     mode: 'verse',
     todayComplete: false,
-    currentScreen: 'screen-splash'
+    currentScreen: 'screen-splash',
+    verseIndex: 0,
+    extraVerseIndex: 0
   };
 
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const MILESTONES = [25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 365];
 
   const VERSES = [
-    { ref: 'Matthew 6:33 · ESV', text: '"But seek first the kingdom of God and his righteousness, and all these things will be added to you."', reflection: 'Jesus invites us to reorder our priorities — when we put God\'s kingdom above our own anxieties and ambitions, He promises to take care of everything else. This isn\'t passive; it\'s an active daily choice to trust Him first.' },
-    { ref: 'Philippians 4:13 · ESV', text: '"I can do all things through him who strengthens me."', reflection: 'Paul wrote this from prison — not a declaration of superhuman ability, but a testimony to contentment and endurance found only in Christ. Whatever you face today, His strength is available to you.' },
-    { ref: 'Psalm 46:10 · ESV', text: '"Be still, and know that I am God. I will be exalted among the nations, I will be exalted in the earth!"', reflection: 'In a world of constant noise and scrolling, God\'s call to stillness is countercultural. This verse is an invitation to stop striving and trust that God is sovereign over everything you\'re anxious about.' },
-    { ref: 'Romans 8:28 · ESV', text: '"And we know that for those who love God all things work together for good, for those who are called according to his purpose."', reflection: 'This promise doesn\'t mean everything feels good — it means God is weaving even the hard things into a purpose greater than we can see. Trust His plan today.' },
-    { ref: 'Proverbs 3:5-6 · ESV', text: '"Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."', reflection: 'Leaning on our own understanding is the default. This verse calls us to something harder and better: full-hearted trust, even when the path isn\'t clear.' },
-    { ref: 'Isaiah 40:31 · ESV', text: '"But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint."', reflection: 'Waiting is not passive — it\'s active trust. God renews those who remain faithful through the slow seasons.' },
-    { ref: 'John 3:16 · ESV', text: '"For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life."', reflection: 'The most well-known verse in scripture — and still profound. The scope of God\'s love is the entire world. The depth of it cost Him everything.' }
+    { ref:'Matthew 6:33', text:'"But seek first the kingdom of God and his righteousness, and all these things will be added to you."', reflection:'Jesus invites us to reorder our priorities — when we put God\'s kingdom first, He promises to take care of everything else.' },
+    { ref:'Jeremiah 29:11', text:'"For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope."', reflection:'Written to exiles in Babylon, this promise reminds us that even in our hardest seasons, God has a purposeful plan.' },
+    { ref:'Psalm 23:1', text:'"The Lord is my shepherd; I shall not want."', reflection:'The most comforting opening of any psalm. Under God\'s care, nothing essential is ever lacking.' },
+    { ref:'Isaiah 41:10', text:'"Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand."', reflection:'Three promises in one verse — strength, help, and support. God\'s presence is the antidote to fear.' },
+    { ref:'Romans 8:28', text:'"And we know that for those who love God all things work together for good, for those who are called according to his purpose."', reflection:'Not a promise that everything feels good — a promise that God weaves all things into something purposeful.' },
+    { ref:'Psalm 46:1', text:'"God is our refuge and strength, a very present help in trouble."', reflection:'Written after a military crisis, this psalm declares that God\'s nearness is our greatest security.' },
+    { ref:'John 16:33', text:'"I have said these things to you, that in me you may have peace. In the world you will have tribulation. But take heart; I have overcome the world."', reflection:'Jesus doesn\'t promise a trouble-free life — he promises his peace in the middle of trouble.' },
+    { ref:'Lamentations 3:22-23', text:'"The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness."', reflection:'Written in the middle of grief and destruction, these words are all the more powerful for their context.' },
+    { ref:'Psalm 119:105', text:'"Your word is a lamp to my feet and a light to my path."', reflection:'Scripture doesn\'t always reveal the whole road — just enough light for the next step. Trust it daily.' },
+    { ref:'2 Timothy 1:7', text:'"For God gave us a spirit not of fear but of power and love and self-control."', reflection:'Fear is not from God. Whatever anxiety you carry today is not your inheritance in Christ.' },
+    { ref:'Joshua 1:9', text:'"Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the Lord your God is with you wherever you go."', reflection:'God\'s command to courage isn\'t based on our strength — it\'s based on his constant presence.' },
+    { ref:'Psalm 34:18', text:'"The Lord is near to the brokenhearted and saves the crushed in spirit."', reflection:'God doesn\'t require us to have it together before drawing near. He comes closest to those who are broken.' },
+    { ref:'Isaiah 43:2', text:'"When you pass through the waters, I will be with you; and through the rivers, they shall not overwhelm you; when you walk through fire you shall not be burned."', reflection:'The promise is not that we avoid hard things — it\'s that God walks through them with us.' },
+    { ref:'Matthew 11:28', text:'"Come to me, all who labor and are heavy laden, and I will give you rest."', reflection:'An open invitation to the exhausted. Jesus doesn\'t require readiness — just willingness to come.' },
+    { ref:'Philippians 4:6-7', text:'"Do not be anxious about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God."', reflection:'The antidote to anxiety isn\'t willpower — it\'s prayer. Trade your worries for thanksgiving.' },
+    { ref:'Romans 5:8', text:'"But God shows his love for us in that while we were still sinners, Christ died for us."', reflection:'The gospel in one sentence. God didn\'t wait for us to be good — he loved us at our worst.' },
+    { ref:'Psalm 27:1', text:'"The Lord is my light and my salvation; whom shall I fear? The Lord is the stronghold of my life; of whom shall I be afraid?"', reflection:'Two rhetorical questions that answer themselves. With God as our refuge, fear loses its power.' },
+    { ref:'Galatians 2:20', text:'"I have been crucified with Christ. It is no longer I who live, but Christ who lives in me."', reflection:'The Christian life isn\'t self-improvement — it\'s death and resurrection. Christ in us is everything.' },
+    { ref:'Proverbs 16:3', text:'"Commit your work to the Lord, and your plans will be established."', reflection:'Not a promise that every plan succeeds — a promise that God-submitted plans find their proper footing.' },
+    { ref:'Psalm 37:4', text:'"Delight yourself in the Lord, and he will give you the desires of your heart."', reflection:'The key is delight in God himself — when He is our joy, our desires align with his.' },
+    { ref:'2 Corinthians 5:17', text:'"Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come."', reflection:'Your past does not define you. In Christ, you are genuinely new — not reformed, but recreated.' },
+    { ref:'Ephesians 2:8-9', text:'"For by grace you have been saved through faith. And this is not your own doing; it is the gift of God, not a result of works, so that no one may boast."', reflection:'Salvation is entirely God\'s gift. Nothing we do earns it — which means nothing we do can lose it.' },
+    { ref:'Hebrews 11:1', text:'"Now faith is the assurance of things hoped for, the conviction of things not seen."', reflection:'Faith isn\'t blind — it\'s seeing the unseen through the lens of God\'s proven faithfulness.' },
+    { ref:'1 John 4:19', text:'"We love because he first loved us."', reflection:'Our capacity to love others flows from experiencing God\'s love first. Receive it so you can give it.' },
+    { ref:'Romans 12:2', text:'"Do not be conformed to this world, but be transformed by the renewal of your mind."', reflection:'Scrolling shapes our thinking. Scripture renews it. This is why this app exists.' },
+    { ref:'James 1:5', text:'"If any of you lacks wisdom, let him ask God, who gives generously to all without reproach, and it will be given him."', reflection:'God is not stingy with wisdom. Ask boldly, without shame, and expect generously.' },
+    { ref:'Colossians 3:2', text:'"Set your minds on things that are above, not on things that are on earth."', reflection:'What we dwell on shapes who we become. Morning scripture sets the mind on what truly matters.' },
+    { ref:'1 Peter 5:7', text:'"Cast all your anxieties on him, because he cares for you."', reflection:'The word "cast" is active and deliberate. Your worries are not too small or too big for God to carry.' },
+    { ref:'Psalm 16:8', text:'"I have set the Lord always before me; because he is at my right hand, I shall not be shaken."', reflection:'Stability comes from intentional focus on God — not circumstances, but his constant presence.' },
+    { ref:'Micah 6:8', text:'"He has told you, O man, what is good; and what does the Lord require of you but to do justice, and to love kindness, and to walk humbly with your God?"', reflection:'A simple summary of the whole law — justice, mercy, and humility. Hard to do; worth pursuing daily.' },
+    { ref:'Proverbs 3:5-6', text:'"Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths."', reflection:'Leaning on our own understanding is the default mode. This verse calls us to something better.' },
+    { ref:'Isaiah 26:3', text:'"You keep him in perfect peace whose mind is stayed on you, because he trusts in you."', reflection:'Perfect peace isn\'t a feeling to chase — it\'s a byproduct of a mind fixed on God.' },
+    { ref:'John 14:6', text:'"Jesus said to him, \'I am the way, and the truth, and the life. No one comes to the Father except through me.\'"', reflection:'The most exclusive and inclusive claim in history. The door is narrow but open to all.' },
+    { ref:'Romans 15:13', text:'"May the God of hope fill you with all joy and peace in believing, so that by the power of the Holy Spirit you may abound in hope."', reflection:'Hope is not wishful thinking — it\'s Spirit-powered confidence in God\'s promises.' },
+    { ref:'Psalm 103:12', text:'"As far as the east is from the west, so far does he remove our transgressions from us."', reflection:'East and west never meet. Your forgiven sin is that far gone. Don\'t keep retrieving what God has removed.' },
+    { ref:'Zephaniah 3:17', text:'"The Lord your God is in your midst, a mighty one who will save; he will rejoice over you with gladness; he will quiet you by his love; he will exult over you with loud singing."', reflection:'God doesn\'t just tolerate you — he sings over you with joy. Let that settle in.' },
+    { ref:'Hebrews 4:16', text:'"Let us then with confidence draw near to the throne of grace, that we may receive mercy and find grace to help in time of need."', reflection:'We are invited — not tolerated — at God\'s throne. Come boldly, especially when you\'ve failed.' },
+    { ref:'John 10:10', text:'"The thief comes only to steal and kill and destroy. I came that they may have life and have it abundantly."', reflection:'Jesus came for abundance, not scarcity. Examine what you\'re allowing to steal your life today.' },
+    { ref:'2 Chronicles 7:14', text:'"If my people who are called by my name humble themselves, and pray and seek my face and turn from their wicked ways, then I will hear from heaven and will forgive their sin and heal their land."', reflection:'Revival begins not with culture but with the church — with humility, prayer, and repentance.' },
+    { ref:'Psalm 121:1-2', text:'"I lift up my eyes to the hills. From where does my help come? My help comes from the Lord, who made heaven and earth."', reflection:'The question and answer together are the whole point — stop looking around and look up.' },
+    { ref:'Genesis 1:1', text:'"In the beginning, God created the heavens and the earth."', reflection:'Everything starts here. Before time, before matter — God. Start your day anchored to this foundation.' },
+    { ref:'Deuteronomy 31:8', text:'"It is the Lord who goes before you. He will be with you; he will not leave you or forsake you. Do not fear or be dismayed."', reflection:'Whatever you\'re walking into today, God has already gone ahead of you.' },
+    { ref:'Acts 1:8', text:'"But you will receive power when the Holy Spirit has come upon you, and you will be my witnesses in Jerusalem and in all Judea and Samaria, and to the end of the earth."', reflection:'The same Spirit that filled the disciples is in you. You have everything you need to be a witness.' },
+    { ref:'1 Corinthians 13:4-5', text:'"Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful."', reflection:'This is the daily scorecard for love. Patient in traffic. Kind in conflict. Not resentful. Hard and holy work.' },
+    { ref:'Revelation 21:4', text:'"He will wipe away every tear from their eyes, and death shall be no more, neither shall there be mourning, nor crying, nor pain anymore, for the former things have passed away."', reflection:'Every present pain is temporary. This is where history is headed. Let it reframe your today.' },
+    { ref:'Psalm 139:14', text:'"I praise you, for I am fearfully and wonderfully made. Wonderful are your works; my soul knows it very well."', reflection:'You are not an accident or an afterthought. You were crafted with intention and care by the Creator.' },
+    { ref:'Matthew 22:37-38', text:'"You shall love the Lord your God with all your heart and with all your soul and with all your mind. This is the great and first commandment."', reflection:'Everything hangs on this. Not religious duty — wholehearted love for God as the foundation of life.' },
+    { ref:'Nehemiah 8:10', text:'"The joy of the Lord is your strength."', reflection:'Joy isn\'t a feeling to manufacture — it\'s a resource to draw from. God\'s joy sustains what happiness cannot.' },
+    { ref:'Mark 12:30-31', text:'"Love the Lord your God with all your heart and with all your soul and with all your mind and with all your strength. The second is this: Love your neighbor as yourself."', reflection:'The entire law summarized in two commands. How you treat others reveals how you love God.' },
+    { ref:'Psalm 51:10', text:'"Create in me a clean heart, O God, and renew a right spirit within me."', reflection:'David\'s prayer after his greatest failure. Restoration is always available to those who ask.' }
   ];
 
   // ── INIT ──
@@ -1585,7 +1630,7 @@
       // Merge saved state into STATE carefully
       const safeKeys = ['user','streak','totalDays','versesRead','versesMemorized',
         'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
-        'chapterNum','mode','todayComplete','lastCompletedDate'];
+        'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex'];
       safeKeys.forEach(key => {
         if (parsed[key] !== undefined) STATE[key] = parsed[key];
       });
@@ -1832,8 +1877,11 @@
   let currentVerse = VERSES[0];
 
   function loadTodayVerse() {
-    const idx = STATE.totalDays % VERSES.length;
-    currentVerse = VERSES[idx];
+    // Use verseIndex for consistent daily verse — advances only on new day completion
+    if (!STATE.verseIndex) STATE.verseIndex = 0;
+    // Reset extraVerseIndex when loading fresh
+    STATE.extraVerseIndex = STATE.verseIndex;
+    currentVerse = VERSES[STATE.verseIndex % VERSES.length];
     const ref = document.getElementById('home-verse-ref');
     const preview = document.getElementById('home-verse-preview');
     const status = document.getElementById('today-status');
@@ -1964,6 +2012,11 @@
     STATE.versesRead += 1;
     if (STATE.mode === 'memorize') STATE.versesMemorized += 1;
 
+    // Advance verse index for next day's reading
+    if (!STATE.verseIndex) STATE.verseIndex = 0;
+    STATE.verseIndex = (STATE.verseIndex + 1) % VERSES.length;
+    STATE.extraVerseIndex = STATE.verseIndex;
+
     // Advance chapter position for next day
     if (STATE.mode === 'chapter') advanceChapter();
     saveState();
@@ -2027,25 +2080,22 @@
 
   // ── DO MORE ──
   function doMore(mode) {
-    // Allow additional sessions — don't re-increment streak, just open the screen
     STATE.mode = mode;
     syncModePills();
-    saveState();
-    const modeMap = {
-      verse: 'screen-verse',
-      chapter: 'screen-chapter',
-      memorize: 'screen-memorize-main'
-    };
-    // Reset the read checkbox and continue button for the chosen screen
+    const modeMap = { verse: 'screen-verse', chapter: 'screen-chapter', memorize: 'screen-memorize-main' };
+
     if (mode === 'verse') {
+      // Advance extraVerseIndex each time so we never show the same verse twice in a session
+      if (!STATE.extraVerseIndex) STATE.extraVerseIndex = STATE.verseIndex || 0;
+      STATE.extraVerseIndex = (STATE.extraVerseIndex + 1) % VERSES.length;
+      currentVerse = VERSES[STATE.extraVerseIndex];
+
       const chk = document.getElementById('read-checkbox');
       const btn = document.getElementById('verse-continue-btn');
       if (chk) chk.classList.remove('checked');
       if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
       readChecked = false;
-      // Load next verse in rotation
-      const idx = (STATE.totalDays + 1) % VERSES.length;
-      currentVerse = VERSES[idx];
+
       const vref = document.getElementById('verse-ref-display');
       const vtext = document.getElementById('verse-text-display');
       const vrefl = document.getElementById('verse-reflection');
@@ -2053,6 +2103,7 @@
       if (vtext) vtext.textContent = currentVerse.text;
       if (vrefl) vrefl.textContent = currentVerse.reflection;
     }
+
     if (mode === 'chapter') {
       const chk = document.getElementById('chapter-checkbox');
       const btn = document.getElementById('chapter-continue-btn');
@@ -2060,7 +2111,8 @@
       if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
       readChecked = false;
     }
-    // Override completeHabit for extra sessions — don't re-increment streak
+
+    saveState();
     window._extraSession = true;
     goTo(modeMap[mode]);
   }
@@ -2114,55 +2166,26 @@
   // ── MEMORY VERSE LIBRARY ──
   // Each verse has ref, full text, blanks (words to remove), hint, context
   const MEM_VERSES = [
-    {
-      ref: 'Psalm 119:105',
-      full: 'Your word is a lamp to my feet and a light to my path.',
-      blanks: ['lamp','light','path'],
-      hint: 'Think of walking in darkness — God\'s Word gives you two things to guide your steps.',
-      context: 'Psalm 119 is the longest chapter in the Bible — a meditation on God\'s Word. This verse captures why scripture matters: it illuminates the way even when we can\'t see far ahead.'
-    },
-    {
-      ref: 'Philippians 4:13',
-      full: 'I can do all things through him who strengthens me.',
-      blanks: ['all','strengthens'],
-      hint: 'Paul wrote this from prison. It\'s not about superhuman ability — it\'s about where our strength comes from.',
-      context: 'Paul wrote Philippians from prison, yet it\'s his most joyful letter. This verse is a declaration of dependence on Christ, not a claim to personal power.'
-    },
-    {
-      ref: 'Proverbs 3:5-6',
-      full: 'Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths.',
-      blanks: ['heart','understanding','acknowledge','straight'],
-      hint: 'Two commands and one promise. What should you not lean on? What should you do instead?',
-      context: 'Solomon\'s most practical wisdom — the daily choice between self-reliance and God-reliance. "Lean" implies a posture of dependence; we naturally lean on ourselves.'
-    },
-    {
-      ref: 'Romans 8:28',
-      full: 'And we know that for those who love God all things work together for good, for those who are called according to his purpose.',
-      blanks: ['know','love','together','purpose'],
-      hint: 'This isn\'t a promise that everything feels good — it\'s a promise about who\'s in control of the outcome.',
-      context: 'Romans 8 is Paul\'s masterpiece on life in the Spirit. This promise doesn\'t remove suffering — it reframes it. Even hard things are being woven into something good by a sovereign God.'
-    },
-    {
-      ref: 'Isaiah 40:31',
-      full: 'But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.',
-      blanks: ['wait','renew','eagles','weary','faint'],
-      hint: 'Three images of endurance: soaring, running, walking. What do they all have in common?',
-      context: 'Isaiah 40 comforts Israel in exile. "Wait" in Hebrew means to bind together — like a rope being twisted stronger. Waiting on God isn\'t passive; it\'s active trust that makes us stronger.'
-    },
-    {
-      ref: 'Matthew 6:33',
-      full: 'But seek first the kingdom of God and his righteousness, and all these things will be added to you.',
-      blanks: ['first','kingdom','righteousness','added'],
-      hint: 'One command. One result. What comes first changes everything that follows.',
-      context: 'Jesus says this in the middle of his teaching on anxiety. The antidote to worry isn\'t trying harder — it\'s reordering priorities. When God is first, provision follows.'
-    },
-    {
-      ref: 'John 3:16',
-      full: 'For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.',
-      blanks: ['loved','gave','believes','perish','eternal'],
-      hint: 'The most well-known verse in scripture. Five key words carry the whole gospel.',
-      context: 'Jesus speaks this to Nicodemus at night. The scope of God\'s love is the entire world. The depth of it cost Him His only Son. The offer is to whoever — no exceptions.'
-    }
+    { ref:'John 14:27', full:'Peace I leave with you; my peace I give to you. Not as the world gives do I give to you. Let not your hearts be troubled, neither let them be afraid.', blanks:['peace','troubled','afraid'], hint:'Jesus offers something the world cannot — what is it, and what should we not let our hearts do?', context:'Spoken at the Last Supper, Jesus prepares his disciples for his departure. His peace is not circumstantial — it transcends what the world can offer or take away.' },
+    { ref:'Isaiah 40:31', full:'But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.', blanks:['wait','renew','eagles','weary','faint'], hint:'Three images of endurance — soaring, running, walking. What is required before strength is renewed?', context:'Isaiah 40 comforts Israel in exile. "Wait" in Hebrew means to bind together like a rope — it\'s active trust, not passive resignation.' },
+    { ref:'John 3:16', full:'For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.', blanks:['loved','gave','believes','perish','eternal'], hint:'The gospel in one sentence. What did God give, and who receives eternal life?', context:'Spoken to Nicodemus at night. The scope is the whole world. The depth cost God everything. The offer is to whoever — no exceptions.' },
+    { ref:'Philippians 4:13', full:'I can do all things through him who strengthens me.', blanks:['all','strengthens'], hint:'Paul wrote this from prison. Where does the ability to do all things come from?', context:'Written from prison, Philippians is Paul\'s most joyful letter. This is a declaration of dependence, not personal superpower.' },
+    { ref:'Psalm 46:10', full:'Be still, and know that I am God. I will be exalted among the nations, I will be exalted in the earth!', blanks:['still','know','exalted'], hint:'Two commands and one promise. What are we told to do — and what will God do?', context:'Written after a military crisis. The call to stillness isn\'t passivity — it\'s choosing to trust God\'s sovereignty over our anxious striving.' },
+    { ref:'Matthew 5:16', full:'In the same way, let your light shine before others, so that they may see your good works and give glory to your Father who is in heaven.', blanks:['light','shine','works','glory'], hint:'What should your life cause others to do? Where should the credit go?', context:'Part of the Sermon on the Mount. Our visible lives are not for our own honor — they point beyond us to the Father.' },
+    { ref:'Ephesians 3:20', full:'Now to him who is able to do far more abundantly than all that we ask or think, according to the power at work within us.', blanks:['abundantly','ask','think','power'], hint:'God exceeds what two things? Where does this power reside?', context:'Paul\'s doxology in the middle of his prayer — a declaration that God\'s capacity is beyond our imagination.' },
+    { ref:'Romans 8:1', full:'There is therefore now no condemnation for those who are in Christ Jesus.', blanks:['condemnation','Christ'], hint:'What is there none of, and where must we be for this to be true?', context:'The hinge verse of Romans 8 — after Paul\'s anguished confession in chapter 7, this is the triumphant answer. No condemnation. None.' },
+    { ref:'2 Corinthians 12:9', full:'But he said to me, My grace is sufficient for you, for my power is made perfect in weakness.', blanks:['sufficient','power','perfect','weakness'], hint:'God\'s response to Paul\'s weakness. What is sufficient, and where is God\'s power perfected?', context:'Paul asked three times for his "thorn" to be removed. God\'s answer wasn\'t removal — it was grace. Our weakness becomes the stage for divine strength.' },
+    { ref:'Psalm 23:4', full:'Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me.', blanks:['valley','fear','evil','rod','staff','comfort'], hint:'What keeps the psalmist from fear in the darkest valley?', context:'The most famous psalm reaches its most profound moment — not on the mountain, but in the valley. Presence, not protection from danger, is the promise.' },
+    { ref:'1 Corinthians 10:13', full:'No temptation has overtaken you that is not common to man. God is faithful, and he will not let you be tempted beyond your ability, but with the temptation he will also provide the way of escape.', blanks:['common','faithful','ability','escape'], hint:'What guarantee does God give about every temptation we face?', context:'A bracing promise — you are never uniquely overwhelmed. God\'s faithfulness includes a limit on what he allows and always includes a way through.' },
+    { ref:'Hebrews 12:1', full:'Therefore, since we are surrounded by so great a cloud of witnesses, let us also lay aside every weight, and sin which clings so closely, and let us run with endurance the race that is set before us.', blanks:['witnesses','weight','sin','endurance','race'], hint:'What surrounds us, what should we lay aside, and how should we run?', context:'The great "hall of faith" in Hebrews 11 leads here — we are watched by those who ran before us. Their testimony is our encouragement.' },
+    { ref:'James 1:2-3', full:'Count it all joy, my brothers, when you meet trials of various kinds, for you know that the testing of your faith produces steadfastness.', blanks:['joy','trials','testing','faith','steadfastness'], hint:'What surprising response does James call us to have in trials, and why?', context:'James opens with the most counterintuitive command in the New Testament. Trials are not interruptions to growth — they are the mechanism of it.' },
+    { ref:'Colossians 3:23', full:'Whatever you do, work heartily, as for the Lord and not for men.', blanks:['heartily','Lord','men'], hint:'Who is the true audience for all your work?', context:'Paul\'s instruction to servants becomes a universal principle — every task, no matter how small, can be an act of worship.' },
+    { ref:'1 John 1:9', full:'If we confess our sins, he is faithful and just to forgive us our sins and to cleanse us from all unrighteousness.', blanks:['confess','faithful','just','forgive','cleanse'], hint:'What must we do, and what two things will God do in response?', context:'The simplest, clearest promise in scripture about forgiveness. Confession isn\'t earning forgiveness — it\'s receiving what\'s already been provided.' },
+    { ref:'Galatians 5:22-23', full:'But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, self-control; against such things there is no law.', blanks:['love','joy','peace','patience','kindness','goodness','faithfulness','gentleness','self-control'], hint:'Name all nine fruits of the Spirit — they are the character of Christ formed in us.', context:'These are not behaviors to manufacture but fruit to cultivate — the natural result of the Spirit\'s work in a surrendered life.' },
+    { ref:'Psalm 19:14', full:'Let the words of my mouth and the meditation of my heart be acceptable in your sight, O Lord, my rock and my redeemer.', blanks:['words','meditation','acceptable','rock','redeemer'], hint:'What does the psalmist ask God to examine? What two names does he use for God?', context:'A perfect morning prayer — asking God to guard not just our words but the inner life from which words flow.' },
+    { ref:'Matthew 28:19-20', full:'Go therefore and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, teaching them to observe all that I have commanded you.', blanks:['disciples','nations','baptizing','Father','Son','Holy Spirit','teaching'], hint:'The Great Commission — what are we commanded to do, and to whom?', context:'The final command of Jesus before his ascension. Not a suggestion for the spiritually gifted — a commission for every follower.' },
+    { ref:'Micah 7:18', full:'Who is a God like you, pardoning iniquity and passing over transgression for the remnant of his inheritance? He does not retain his anger forever, because he delights in steadfast love.', blanks:['pardoning','iniquity','transgression','anger','delights','steadfast'], hint:'What makes God incomparable? What does God delight in?', context:'A rhetorical question that contains its own answer — no other god forgives like this. Mercy is not God\'s concession; it is his delight.' },
+    { ref:'Romans 12:1', full:'I appeal to you therefore, brothers, by the mercies of God, to present your bodies as a living sacrifice, holy and acceptable to God, which is your spiritual worship.', blanks:['appeal','mercies','bodies','sacrifice','holy','worship'], hint:'What are we asked to offer God, and what does Paul call this act?', context:'The transition point of Romans — from theology to practice. True worship is not Sunday service but the daily offering of our whole lives.' }
   ];
 
   // ── MEMORY STATE HELPERS ──
