@@ -53,6 +53,25 @@
       background: var(--cream);
     }
 
+    /* On desktop show a phone-like frame so it looks intentional */
+    @media (min-width: 500px) {
+      body {
+        background: #E8E0D5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: auto;
+      }
+      #app {
+        height: 90vh;
+        max-height: 860px;
+        border-radius: 40px;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+        overflow: hidden;
+      }
+    }
+
     /* ── SCREENS ── */
     .screen {
       position: absolute;
@@ -615,7 +634,7 @@
        SCREEN: SIGN UP
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-signup">
-    <div class="status-bar"><span class="status-time" id="time-signup"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time" id="time-signup"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-splash')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Create account</p>
@@ -648,7 +667,7 @@
        SCREEN: LOGIN
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-login">
-    <div class="status-bar"><span class="status-time" id="time-login"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time" id="time-login"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-splash')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Welcome back</p>
@@ -678,7 +697,7 @@
        SCREEN: FORGOT PASSWORD — ENTER EMAIL
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-forgot-pw">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-login')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Reset password</p>
@@ -707,7 +726,7 @@
        SCREEN: FORGOT PASSWORD — ENTER CODE
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-enter-code">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-forgot-pw')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Check your email</p>
@@ -734,7 +753,7 @@
        SCREEN: FORGOT PASSWORD — NEW PASSWORD
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-new-password">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Almost done</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Create your<br><em>new password.</em></div>
@@ -760,7 +779,7 @@
        SCREEN: PASSWORD RESET SUCCESS
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-reset-success">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
       <div class="success-circle fade-up" style="margin-bottom:1rem;"><div class="success-check"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">All set</p>
@@ -774,7 +793,7 @@
        SCREEN: ONBOARDING — CHOOSE MODE
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-onboarding">
-    <div class="status-bar"><span class="status-time" id="time-onboard"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time" id="time-onboard"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div class="progress-wrap"><div class="progress-fill" style="width:33%"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Step 1 of 3</p>
@@ -819,7 +838,7 @@
        SCREEN: ONBOARDING 2 — NOTIFICATIONS
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-onboard2">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;">
       <div class="progress-wrap" style="width:100%;"><div class="progress-fill" style="width:66%"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Step 2 of 3</p>
@@ -837,7 +856,7 @@
        SCREEN: ONBOARDING 3 — ALL SET
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-onboard3">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
       <div class="progress-wrap" style="width:100%;"><div class="progress-fill" style="width:100%"></div></div>
       <div class="cross fade-up" style="margin-bottom:1.5rem;"></div>
@@ -851,7 +870,7 @@
        SCREEN: MAIN APP — HOME (DAILY HABIT)
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-home">
-    <div class="status-bar"><span class="status-time" id="time-home"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time" id="time-home"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="padding-bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;">
 
       <!-- Header -->
@@ -905,7 +924,7 @@
        SCREEN: DAILY VERSE READING
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-verse">
-    <div class="status-bar"><span class="status-time" id="time-verse"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time" id="time-verse"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
@@ -941,7 +960,7 @@
        SCREEN: DAILY CHAPTER READING
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-chapter">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
@@ -972,7 +991,7 @@
        SCREEN: CHAPTER SELECTOR
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-chapter-select">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-chapter')">←</button>
@@ -1000,7 +1019,7 @@
        SCREEN: MEMORIZE — PAGE 1 (READ & STUDY)
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-memorize-main">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
@@ -1036,7 +1055,7 @@
        SCREEN: MEMORIZE — PAGE 2 (FILL IN BLANKS, NO VERSE VISIBLE)
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-memorize-test">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-memorize-main')">←</button>
@@ -1073,7 +1092,7 @@
        SCREEN: MEMORIZED VERSES RECAP
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-mem-recap">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="padding-bottom:0;">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="switchTab('profile')">←</button>
@@ -1101,7 +1120,7 @@
        SCREEN: WEEKLY QUIZ
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-weekly-quiz">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-mem-recap')">←</button>
@@ -1117,6 +1136,8 @@
         <div class="card-warm fade-up-2" style="margin-bottom:1rem;">
           <p class="verse-ref" id="quiz-verse-ref">Psalm 119:105</p>
           <p style="font-size:0.85rem;color:var(--muted);margin-top:0.25rem;" id="quiz-verse-hint">First word: <em>"Your…"</em></p>
+          <button id="quiz-hint-btn" onclick="showQuizHint()" style="margin-top:0.5rem;background:none;border:1px solid var(--stone);border-radius:20px;padding:4px 12px;font-size:0.72rem;color:var(--muted);cursor:pointer;">Need a hint?</button>
+          <p id="quiz-full-hint" style="display:none;font-family:var(--serif);font-style:italic;font-size:0.88rem;color:var(--gold);margin-top:0.5rem;line-height:1.6;"></p>
         </div>
 
         <div class="card fade-up-3" style="margin-bottom:1rem;">
@@ -1144,7 +1165,7 @@
        SCREEN: QUIZ RESULTS
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-quiz-results">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;">
       <div class="success-circle fade-up" style="margin-top:1rem;"><div class="success-check"></div></div>
       <p class="eyebrow fade-up">Quiz complete</p>
@@ -1169,7 +1190,7 @@
        SCREEN: STREAK & COMPLETION
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-complete">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:2rem;">
 
       <div class="confetti-row fade-up" style="margin-top:0.5rem;">
@@ -1220,7 +1241,7 @@
        SCREEN: MILESTONE CELEBRATION (OPT-IN)
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-milestone-celebrate">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;">
       <div class="confetti-row" style="margin-top:0.5rem;">
         <div class="confetti-dot" style="background:var(--gold);"></div>
@@ -1259,7 +1280,7 @@
        SCREEN: SHARE MILESTONE
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-share-milestone">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-milestone-celebrate')">←</button>
@@ -1305,7 +1326,7 @@
        SCREEN: UNLOCK SOCIAL MEDIA
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-unlock">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;">
       <div class="success-circle fade-up" style="margin-top:1rem;"><div class="success-check"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.25rem;">Scripture complete</p>
@@ -1344,7 +1365,7 @@
        SCREEN: COMMUNITY TAB
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-community">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="padding-bottom:0;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
         <div class="display" style="font-size:1.5rem;"><em>Your</em> circle</div>
@@ -1406,7 +1427,7 @@
        SCREEN: INVITE FRIENDS
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-invite">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="switchTab('community')">←</button>
@@ -1436,7 +1457,7 @@
        SCREEN: PROFILE TAB
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-profile">
-    <div class="status-bar"><span class="status-time"></span><span class="status-icons">●●●</span></div>
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="padding-bottom:0;">
 
       <div class="scroll-area">
@@ -1547,26 +1568,45 @@
   function loadState() {
     try {
       const saved = localStorage.getItem('sbs_state');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        Object.assign(STATE, parsed);
+      if (!saved) return;
 
-        // Reset todayComplete if it's a new calendar day
-        const today = new Date().toDateString();
-        if (STATE.lastCompletedDate !== today) {
-          STATE.todayComplete = false;
-        }
+      const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed !== 'object') return;
 
-        // Auto-login if user session exists — no need to re-enter credentials
-        if (STATE.user) {
-          enterApp();
-        }
+      // Merge saved state into STATE carefully
+      const safeKeys = ['user','streak','totalDays','versesRead','versesMemorized',
+        'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
+        'chapterNum','mode','todayComplete','lastCompletedDate'];
+      safeKeys.forEach(key => {
+        if (parsed[key] !== undefined) STATE[key] = parsed[key];
+      });
+
+      // Reset todayComplete if it's a new calendar day
+      const today = new Date().toDateString();
+      if (STATE.lastCompletedDate !== today) {
+        STATE.todayComplete = false;
       }
-    } catch(e) {}
+
+      // Auto-login if valid user session exists
+      if (STATE.user && STATE.user.email && STATE.user.password) {
+        enterApp();
+      }
+    } catch(e) {
+      // Don't silently swallow — clear bad state so user can sign up fresh
+      console.warn('loadState error, clearing saved state:', e);
+      try { localStorage.removeItem('sbs_state'); } catch(e2) {}
+    }
   }
 
   function saveState() {
-    try { localStorage.setItem('sbs_state', JSON.stringify(STATE)); } catch(e) {}
+    try {
+      // Only save if we have a real user — don't persist preview mode
+      if (STATE.user && STATE.user.email !== 'preview@test.com') {
+        localStorage.setItem('sbs_state', JSON.stringify(STATE));
+      }
+    } catch(e) {
+      console.warn('saveState error:', e);
+    }
   }
 
   // ── NAVIGATION ──
@@ -2333,9 +2373,16 @@
     document.getElementById('quiz-eyebrow').textContent = `Weekly Quiz · ${quizIndex + 1} of ${quizVerses.length}`;
     document.getElementById('quiz-progress').style.width = `${((quizIndex + 1) / quizVerses.length) * 100}%`;
     document.getElementById('quiz-verse-ref').textContent = v.ref;
-    // Give first word as hint
+
+    // Show first word as starting hint
     const firstWord = v.full.split(' ')[0];
     document.getElementById('quiz-verse-hint').innerHTML = `First word: <em>"${firstWord}…"</em>`;
+
+    // Reset hint button state
+    const hintBtn = document.getElementById('quiz-hint-btn');
+    const fullHint = document.getElementById('quiz-full-hint');
+    if (hintBtn) { hintBtn.style.display = 'inline-block'; hintBtn.textContent = 'Need a hint?'; }
+    if (fullHint) { fullHint.style.display = 'none'; fullHint.textContent = ''; }
 
     const input = document.getElementById('quiz-input');
     if (input) { input.value = ''; }
@@ -2348,6 +2395,22 @@
 
     const skipBtn = document.getElementById('quiz-skip-btn');
     if (skipBtn) skipBtn.style.display = 'block';
+  }
+
+  function showQuizHint() {
+    const v = quizVerses[quizIndex];
+    if (!v) return;
+    const hintBtn = document.getElementById('quiz-hint-btn');
+    const fullHint = document.getElementById('quiz-full-hint');
+    // Show first half of the verse as a hint
+    const words = v.full.split(' ');
+    const halfLen = Math.ceil(words.length / 2);
+    const hintText = words.slice(0, halfLen).join(' ') + '…';
+    if (fullHint) {
+      fullHint.textContent = `"${hintText}"`;
+      fullHint.style.display = 'block';
+    }
+    if (hintBtn) hintBtn.style.display = 'none';
   }
 
   function checkQuizInput() {
