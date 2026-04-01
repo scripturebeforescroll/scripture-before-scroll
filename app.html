@@ -34,7 +34,11 @@
       --radius-sm: 8px;
     }
 
-    html, body {
+    html {
+      height: 100%;
+    }
+
+    body {
       height: 100%;
       background: var(--cream);
       color: var(--ink);
@@ -42,10 +46,12 @@
       font-weight: 300;
       line-height: 1.6;
       overflow: hidden;
+      margin: 0;
     }
 
     #app {
       height: 100%;
+      width: 100%;
       max-width: 430px;
       margin: 0 auto;
       position: relative;
@@ -53,21 +59,24 @@
       background: var(--cream);
     }
 
-    /* On desktop show a phone-like frame so it looks intentional */
+    /* Desktop — center as phone frame */
     @media (min-width: 500px) {
+      html, body {
+        height: 100%;
+        overflow: hidden;
+        background: #E0D8CE;
+      }
       body {
-        background: #E8E0D5;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
-        overflow: auto;
       }
       #app {
-        height: 90vh;
-        max-height: 860px;
+        height: min(90vh, 860px);
+        width: 430px;
+        flex-shrink: 0;
         border-radius: 40px;
-        box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+        box-shadow: 0 24px 80px rgba(0,0,0,0.2);
         overflow: hidden;
       }
     }
@@ -1672,9 +1681,30 @@
     STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
     saveState();
 
+    // Add to HubSpot waitlist automatically
+    addToWaitlist(name, email);
+
     const firstName = (name || 'friend').split(' ')[0];
     document.getElementById('user-first-name').textContent = firstName + '.';
     goTo('screen-onboarding');
+  }
+
+  function addToWaitlist(name, email) {
+    // Silently submit to HubSpot form so every app signup joins the waitlist
+    try {
+      const data = {
+        fields: [
+          { name: 'firstname', value: name ? name.split(' ')[0] : '' },
+          { name: 'email', value: email }
+        ],
+        context: { pageUri: 'https://scripturebeforescroll.github.io/scripture-before-scroll/app.html', pageName: 'Scripture Before Scroll App' }
+      };
+      fetch('https://api.hsforms.com/submissions/v3/integration/submit/245498054/9fc40256-7026-4ab7-9e17-fde4eb441cb5', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).catch(() => {}); // Silent fail — don't block signup if this fails
+    } catch(e) {}
   }
 
   function handleLogin() {
