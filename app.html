@@ -1627,6 +1627,9 @@
       const parsed = JSON.parse(saved);
       if (!parsed || typeof parsed !== 'object') return;
 
+      // If user explicitly signed out, show splash — don't auto-login
+      if (parsed.loggedOut === true || !parsed.user) return;
+
       // Merge saved state into STATE carefully
       const safeKeys = ['user','streak','totalDays','versesRead','versesMemorized',
         'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
@@ -1641,12 +1644,11 @@
         STATE.todayComplete = false;
       }
 
-      // Auto-login if valid user session exists
+      // Auto-login only if user has valid credentials and hasn't signed out
       if (STATE.user && STATE.user.email && STATE.user.password) {
         enterApp();
       }
     } catch(e) {
-      // Don't silently swallow — clear bad state so user can sign up fresh
       console.warn('loadState error, clearing saved state:', e);
       try { localStorage.removeItem('sbs_state'); } catch(e2) {}
     }
@@ -1654,9 +1656,10 @@
 
   function saveState() {
     try {
-      // Only save if we have a real user — don't persist preview mode
       if (STATE.user && STATE.user.email !== 'preview@test.com') {
-        localStorage.setItem('sbs_state', JSON.stringify(STATE));
+        // Clear loggedOut flag whenever we save with an active user
+        const stateToSave = Object.assign({}, STATE, { loggedOut: false });
+        localStorage.setItem('sbs_state', JSON.stringify(stateToSave));
       }
     } catch(e) {
       console.warn('saveState error:', e);
@@ -1763,15 +1766,28 @@
       return;
     }
 
-    // Check saved user — must match both email AND password
+    // Check saved state — may be logged out but data still exists
     try {
       const saved = localStorage.getItem('sbs_state');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.user && parsed.user.email === email) {
-          if (parsed.user.password && parsed.user.password === pass) {
-            Object.assign(STATE, parsed);
+        // Find matching account — check both active user and logged-out saved user
+        const savedUser = parsed.user || parsed.loggedOutUser;
+        if (savedUser && savedUser.email && savedUser.email.toLowerCase() === email.toLowerCase()) {
+          if (savedUser.password && savedUser.password === pass) {
+            // Restore all saved progress and log back in
+            const safeKeys = ['streak','totalDays','versesRead','versesMemorized',
+              'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
+              'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex'];
+            safeKeys.forEach(key => {
+              if (parsed[key] !== undefined) STATE[key] = parsed[key];
+            });
+            STATE.user = savedUser;
+            // Reset todayComplete if new day
+            const today = new Date().toDateString();
+            if (STATE.lastCompletedDate !== today) STATE.todayComplete = false;
             errEl.classList.remove('show');
+            saveState(); // Clears loggedOut flag
             enterApp();
             return;
           } else {
@@ -1783,14 +1799,24 @@
       }
     } catch(e) {}
 
-    // No account found
+    // No account found with that email
     errEl.textContent = 'No account found with that email. Please sign up.';
     errEl.classList.add('show');
   }
 
   function handleLogout() {
+    try {
+      const saved = localStorage.getItem('sbs_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Preserve user credentials as loggedOutUser so login can restore data
+        parsed.loggedOutUser = parsed.user;
+        parsed.user = null;
+        parsed.loggedOut = true;
+        localStorage.setItem('sbs_state', JSON.stringify(parsed));
+      }
+    } catch(e) {}
     STATE.user = null;
-    saveState();
     goTo('screen-splash');
   }
 
