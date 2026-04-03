@@ -784,7 +784,7 @@
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Check your email</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Enter your<br><em>reset code.</em></div>
       <p class="body-text fade-up-3" style="margin-bottom:0.5rem;">We sent a 6-digit code to:</p>
-      <p style="font-weight:500;color:var(--gold);font-size:0.9rem;margin-bottom:1.5rem;" id="reset-email-display">you@email.com</p>
+      <p style="font-weight:500;color:var(--gold);font-size:0.9rem;margin-bottom:1.5rem;" id="reset-email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e1988e94a1848c80888dcf828e8c">[email&#160;protected]</a></p>
 
       <div class="fade-up-3">
         <div class="input-group">
@@ -1022,6 +1022,9 @@
           <div class="check-box" id="read-checkbox"></div>
           <span class="check-label">I've read and reflected on this verse</span>
         </div>
+        <div style="margin-top:0.75rem;text-align:center;">
+          <button onclick="openPrayerJournal()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:var(--sans);">🙏 Write a morning prayer →</button>
+        </div>
       </div>
 
       <button class="btn-primary" id="verse-continue-btn" onclick="completeHabit()" style="margin-top:1rem;opacity:0.4;" disabled>Continue →</button>
@@ -1219,6 +1222,20 @@
         <div class="display fade-up" style="font-size:1.8rem;margin-bottom:0.5rem;">How well do you<br>know your <em>Bible?</em></div>
         <p class="body-text fade-up-2" style="max-width:30ch;margin-bottom:2rem;">Choose your level and answer 5 questions. Every answer shows you exactly where to find it in scripture.</p>
         <div style="display:flex;flex-direction:column;gap:0.75rem;width:100%;" class="fade-up-3">
+
+          <!-- Family & Friends Night — featured above solo modes -->
+          <button onclick="goTo('screen-family-setup')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:2px solid var(--gold);background:linear-gradient(135deg,#FDF6EC,#FAF7F2);cursor:pointer;text-align:left;transition:all 0.2s;box-sizing:border-box;position:relative;overflow:hidden;" onmousedown="this.style.opacity='0.85'" onmouseup="this.style.opacity='1'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-weight:600;font-size:0.9rem;color:var(--gold);">👨‍👩‍👧‍👦 Family &amp; Friends Night</div>
+                <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">2–4 teams race to 10 correct answers</div>
+              </div>
+              <span style="color:var(--gold);font-size:1rem;flex-shrink:0;margin-left:0.5rem;">→</span>
+            </div>
+          </button>
+
+          <div class="divider" style="margin:0.25rem 0;"><span>or play solo</span></div>
+
           <button onclick="startTrivia('beginner')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;box-sizing:border-box;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div><div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🌱 Beginner</div><div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">People, places & basic stories</div></div>
@@ -1310,6 +1327,139 @@
         <button class="btn-primary" onclick="startTrivia(window._triviaLevel)">Play Again →</button>
         <button class="btn-ghost" onclick="goTo('screen-trivia-level')">Change Level</button>
         <button class="btn-text" style="color:var(--muted);" onclick="goTo('screen-home')">Back to Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: FAMILY TRIVIA — TEAM SETUP
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-family-setup">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-trivia-level')">←</button>
+        <p class="eyebrow">Family &amp; Friends Night</p>
+      </div>
+
+      <div class="scroll-area" style="padding-bottom:1rem;">
+        <div class="display fade-up" style="font-size:1.6rem;margin-bottom:0.4rem;">Set up your <em>teams.</em></div>
+        <p class="body-text fade-up-2" style="margin-bottom:1.25rem;">Name your teams, choose their difficulty, then race to 10 correct answers.</p>
+
+        <!-- How many teams -->
+        <p class="eyebrow" style="margin-bottom:0.6rem;">Number of teams</p>
+        <div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;">
+          <button class="family-team-count-btn active" id="tcb-2" onclick="setTeamCount(2)" style="flex:1;padding:0.65rem;border-radius:var(--radius-sm);border:1px solid var(--gold);background:var(--gold);color:var(--white);font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s;">2</button>
+          <button class="family-team-count-btn" id="tcb-3" onclick="setTeamCount(3)" style="flex:1;padding:0.65rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;color:var(--muted);font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s;">3</button>
+          <button class="family-team-count-btn" id="tcb-4" onclick="setTeamCount(4)" style="flex:1;padding:0.65rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;color:var(--muted);font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s;">4</button>
+        </div>
+
+        <!-- Team name + level rows — generated by JS -->
+        <div id="family-team-rows"></div>
+
+        <div class="card-warm" style="margin-bottom:1.25rem;">
+          <p style="font-size:0.78rem;color:var(--muted);line-height:1.6;text-align:center;">🏆 First team to answer <strong>10 questions correctly</strong> wins. Teams take turns question by question.</p>
+        </div>
+
+        <button class="btn-primary" onclick="startFamilyGame()">Start Game →</button>
+        <div style="height:0.5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: FAMILY TRIVIA — GAME PLAY
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-family-game">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner">
+
+      <!-- Team scoreboard header -->
+      <div id="family-scoreboard" style="margin-bottom:0.75rem;display:flex;gap:0.4rem;overflow-x:auto;padding-bottom:2px;"></div>
+
+      <!-- Current team banner -->
+      <div id="family-team-banner" style="background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.6rem 1rem;margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <p class="eyebrow" style="margin-bottom:1px;" id="family-turn-label">Team 1's turn</p>
+          <p style="font-size:0.72rem;color:var(--muted);" id="family-turn-level">🌱 Beginner</p>
+        </div>
+        <div style="font-family:var(--serif);font-size:1.5rem;color:var(--gold);" id="family-turn-score">0</div>
+      </div>
+
+      <div class="progress-wrap" style="margin-bottom:0.75rem;"><div class="progress-fill" id="family-progress" style="width:0%;"></div></div>
+
+      <div class="scroll-area">
+        <p style="font-family:var(--serif);font-size:1.2rem;font-weight:400;line-height:1.45;color:var(--ink);margin-bottom:1.1rem;word-wrap:break-word;overflow-wrap:break-word;width:100%;" id="family-question">Loading…</p>
+
+        <div style="display:flex;flex-direction:column;gap:0.55rem;margin-bottom:1rem;width:100%;box-sizing:border-box;" id="family-options"></div>
+
+        <!-- Answer reveal -->
+        <div id="family-reveal" style="display:none;">
+          <div id="family-result-banner" style="padding:0.875rem;border-radius:var(--radius-sm);margin-bottom:0.75rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+              <span id="family-result-icon" style="font-size:1.1rem;"></span>
+              <span id="family-result-label" style="font-weight:600;font-size:0.9rem;"></span>
+            </div>
+            <p id="family-correct-answer" style="font-size:0.8rem;color:var(--muted);"></p>
+          </div>
+          <div class="card" style="margin-bottom:0.75rem;">
+            <p class="eyebrow" style="margin-bottom:0.35rem;">📍 Find it in scripture</p>
+            <div style="background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.45rem 0.75rem;">
+              <span style="font-family:var(--serif);font-size:0.92rem;color:var(--gold);font-weight:500;" id="family-ref"></span>
+            </div>
+            <p style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-top:0.5rem;" id="family-context"></p>
+          </div>
+        </div>
+
+        <div style="height:0.5rem;"></div>
+      </div>
+
+      <button class="btn-primary" id="family-next-btn" style="margin-top:0.5rem;display:none;" onclick="familyNextTurn()">Next Team's Turn →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: FAMILY TRIVIA — GAME COMPLETE
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-family-win">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
+
+        <div class="confetti-row fade-up" style="margin-top:0.5rem;">
+          <div class="confetti-dot" style="background:var(--gold);"></div>
+          <div class="confetti-dot" style="background:var(--stone);"></div>
+          <div class="confetti-dot" style="background:var(--gold);width:10px;height:10px;"></div>
+          <div class="confetti-dot" style="background:var(--warm);border:1px solid var(--stone);"></div>
+          <div class="confetti-dot" style="background:var(--gold);"></div>
+          <div class="confetti-dot" style="background:var(--stone);width:10px;height:10px;"></div>
+          <div class="confetti-dot" style="background:var(--gold);"></div>
+        </div>
+
+        <div style="font-size:3.5rem;margin:0.5rem 0;">🏆</div>
+        <p class="eyebrow fade-up" style="margin-bottom:0.25rem;">Game over</p>
+        <div class="display fade-up-2" style="font-size:2rem;margin-bottom:0.5rem;"><em id="family-winner-name">Team 1</em> wins!</div>
+
+        <!-- Funny quip -->
+        <div class="card-warm fade-up-3" style="margin-bottom:1.25rem;">
+          <p style="font-size:0.88rem;color:var(--muted);font-style:italic;line-height:1.7;" id="family-winner-quip">"They'll be praying for the other teams' Bible knowledge next time. 🙏"</p>
+        </div>
+
+        <!-- Final scoreboard -->
+        <p class="eyebrow" style="margin-bottom:0.75rem;">Final scores</p>
+        <div id="family-final-scores" style="width:100%;margin-bottom:1.5rem;"></div>
+
+        <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
+          <button class="btn-primary" onclick="restartFamilyGame()">Play Again 🔄</button>
+          <button class="btn-ghost" onclick="goTo('screen-family-setup')">Change Teams</button>
+          <button class="btn-text" style="color:var(--muted);" onclick="goTo('screen-home')">Back to Home</button>
+        </div>
+
+        <div class="grace-note" style="margin-top:1rem;">
+          <p>"As iron sharpens iron, so one person sharpens another." — Proverbs 27:17</p>
+        </div>
+
+        <div style="height:0.5rem;"></div>
       </div>
     </div>
   </div>
@@ -1418,6 +1568,17 @@
         <div class="stat-card"><div class="stat-num" id="stat-streak">1</div><div class="stat-label">Day streak</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-verses">1</div><div class="stat-label">Verses read</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-days">1</div><div class="stat-label">Total days</div></div>
+      </div>
+
+      <!-- Grace day token -->
+      <div id="grace-day-card" class="card fade-up-4" style="width:100%;margin-bottom:0.75rem;display:none;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--warm);border:1px solid var(--stone);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🛡️</div>
+          <div style="flex:1;">
+            <div style="font-size:0.85rem;font-weight:500;color:var(--ink);">Grace Day available</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:1px;">Miss a day? Your streak is protected once. Recharges at 30 days.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Do more section -->
@@ -1667,6 +1828,56 @@
   </div>
 
   <!-- ══════════════════════════════════════════
+       SCREEN: PRAYER JOURNAL
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-prayer-journal">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner" style="padding-bottom:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="switchTab('profile')">←</button>
+        <p class="eyebrow">Prayer Journal</p>
+        <div style="width:24px;"></div>
+      </div>
+
+      <!-- Today's prompt -->
+      <div class="card-warm" style="margin-bottom:1rem;" id="prayer-verse-card">
+        <p class="eyebrow" style="margin-bottom:0.4rem;">Today's anchor</p>
+        <p style="font-family:var(--serif);font-style:italic;font-size:0.95rem;color:var(--ink);line-height:1.6;" id="prayer-anchor-verse">"But seek first the kingdom of God and his righteousness." — Matthew 6:33</p>
+      </div>
+
+      <!-- Write today's prayer -->
+      <div id="prayer-write-section" style="margin-bottom:1rem;">
+        <p class="eyebrow" style="margin-bottom:0.5rem;" id="prayer-today-label">Today's prayer</p>
+        <div class="card" style="position:relative;">
+          <textarea
+            id="prayer-input"
+            style="width:100%;min-height:90px;border:none;outline:none;font-family:var(--sans);font-size:0.9rem;color:var(--ink);background:transparent;resize:none;line-height:1.7;font-weight:300;"
+            placeholder="Lord, today I'm thinking about…"
+            oninput="prayerInputChange()"
+          ></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.25rem;">
+            <span style="font-size:0.65rem;color:var(--stone);" id="prayer-char-count">0 / 280</span>
+            <button id="prayer-save-btn" onclick="savePrayer()" style="background:var(--gold);color:var(--white);border:none;border-radius:var(--radius-sm);padding:0.4rem 1rem;font-size:0.75rem;font-weight:500;cursor:pointer;opacity:0.4;pointer-events:none;transition:opacity 0.2s;">Save 🙏</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-area" style="padding-top:0.25rem;">
+        <!-- Past prayers -->
+        <p class="eyebrow" style="margin-bottom:0.75rem;">Recent prayers</p>
+        <div id="prayer-history-list">
+          <!-- filled by JS -->
+        </div>
+        <div id="prayer-empty-state" style="display:none;padding:1.5rem 0;text-align:center;">
+          <p style="font-size:1.5rem;margin-bottom:0.5rem;">🙏</p>
+          <p style="font-size:0.82rem;color:var(--stone);line-height:1.6;">Your prayers will appear here.<br>Write your first one above.</p>
+        </div>
+        <div style="height:1rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
        SCREEN: PROFILE TAB
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-profile">
@@ -1677,7 +1888,7 @@
         <div class="avatar" id="profile-avatar">JD</div>
         <div style="text-align:center;margin-bottom:1.25rem;">
           <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);" id="profile-name">John Doe</div>
-          <p style="font-size:0.78rem;color:var(--muted);" id="profile-email">john@email.com</p>
+          <p style="font-size:0.78rem;color:var(--muted);" id="profile-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa90959294ba9f979b9396d4999597">[email&#160;protected]</a></p>
           <p class="eyebrow" style="margin-top:0.25rem;">Member since today</p>
         </div>
 
@@ -1685,6 +1896,13 @@
           <div class="stat-card"><div class="stat-num" id="profile-streak">1</div><div class="stat-label">Day streak</div></div>
           <div class="stat-card"><div class="stat-num" id="profile-total">1</div><div class="stat-label">Total days</div></div>
           <div class="stat-card"><div class="stat-num" id="profile-mem">0</div><div class="stat-label">Verses mem.</div></div>
+        </div>
+        <div class="card-warm" style="margin-bottom:1rem;display:flex;align-items:center;gap:0.875rem;">
+          <div style="font-size:1.4rem;">⏱</div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--muted);">Time in the Word this week</div>
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold);" id="profile-read-time">0 min</div>
+          </div>
         </div>
 
         <p class="eyebrow" style="margin-bottom:0.75rem;">Settings</p>
@@ -1714,6 +1932,14 @@
             <p style="font-size:0.68rem;color:var(--stone);margin-top:0.5rem;text-align:center;">Large is optimized for accessibility</p>
           </div>
         </div>
+
+        <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:0.5rem;" onclick="openPrayerJournal()">
+            <div>
+              <span style="font-size:0.85rem;">🙏 Prayer journal</span>
+              <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;">Your morning prayers, day by day</p>
+            </div>
+            <span style="color:var(--gold);font-size:1rem;">→</span>
+          </div>
 
         <p class="eyebrow" style="margin-bottom:0.75rem;">Scripture memory</p>
         <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
@@ -1755,7 +1981,7 @@
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ── STATE ──
   const STATE = {
     user: null,
@@ -1922,9 +2148,6 @@
       console.warn('saveState error:', e);
     }
   }
-
-  // ── TRIVIA RETURN STATE — declared early so goTo() can reference it ──
-  let _triviaReturnState = null;
 
   // ── NAVIGATION ──
   function goTo(screenId) {
@@ -3058,28 +3281,21 @@
     triviaState.answered = false;
     triviaState.missed = [];
 
-    // Pull next 5 from the no-repeat queue, tracking indices used this game
+    // Pull next 5 from the no-repeat queue
     let queue = getTriviaQueue(level);
     const bank = TRIVIA_BANK[level];
     const picks = [];
-    const usedThisGame = new Set();
-
     while (picks.length < 5) {
       if (queue.length === 0) {
-        // All questions used — reshuffle, but exclude any already picked this game
-        const indices = bank.map((_, i) => i).filter(i => !usedThisGame.has(i));
+        // All questions used — reshuffle the whole bank for the next cycle
+        const indices = bank.map((_, i) => i);
         for (let i = indices.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [indices[i], indices[j]] = [indices[j], indices[i]];
         }
         queue = indices;
       }
-      // Skip any index already used this game (prevents duplicates within one round)
-      const idx = queue.shift();
-      if (!usedThisGame.has(idx)) {
-        usedThisGame.add(idx);
-        picks.push(bank[idx]);
-      }
+      picks.push(bank[queue.shift()]);
     }
     saveTriviaQueue(level, queue);
     triviaState.questions = picks;
@@ -3332,6 +3548,7 @@
   }
 
   // ── TRIVIA → BIBLE NAVIGATION ──
+  let _triviaReturnState = null; // stores trivia position when user goes to read a verse
 
   function openTriviaRef() {
     const refEl = document.getElementById('trivia-ref');
@@ -3339,53 +3556,13 @@
     const ref = refEl.textContent.trim();
     if (!ref) return;
 
-    // Try to parse a book + chapter from the ref string
-    // Handles: "Genesis 6:9", "1 Corinthians 13", "Matthew 4:1–2", "Romans 3:28 / Galatians 2:16"
+    // Parse ref to extract book and chapter
+    // Handles: "Genesis 6:9", "Matthew 4:1–2", "John 3", "Genesis 6–9", "1 Kings 6:1–38"
     const match = ref.match(/^((?:\d\s)?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+    if (!match) { showToast('Reference: ' + ref); return; }
 
-    // For refs that don't map to a specific chapter (e.g. "Book of Psalms", "Biblical Canon")
-    // extract the first recognisable Bible book name and open chapter 1
-    const bookFallbacks = {
-      'Psalms': ['Psalm', 'Psalms', 'Book of Psalms'],
-      'Romans': ['Romans'],
-      'Matthew': ['Matthew', 'Sermon on the Mount', 'Olivet Discourse'],
-      'John': ['John', 'Johannine'],
-      'Genesis': ['Genesis', 'Creation'],
-      'Revelation': ['Revelation', 'Apocalypse'],
-      'Acts': ['Acts', 'Pentecost'],
-      'Hebrews': ['Hebrews'],
-      'Galatians': ['Galatians'],
-      'Ephesians': ['Ephesians'],
-      'Corinthians': ['Corinthians', 'New Testament'],
-      'Isaiah': ['Isaiah'],
-      'Daniel': ['Daniel'],
-      'Exodus': ['Exodus'],
-      'Deuteronomy': ['Deuteronomy'],
-      'James': ['James'],
-    };
-
-    let book, chapter;
-
-    if (match) {
-      book = match[1].trim();
-      chapter = parseInt(match[2]);
-    } else {
-      // Search for a recognisable book name in the ref text
-      let found = false;
-      for (const [bookName, patterns] of Object.entries(bookFallbacks)) {
-        if (patterns.some(p => ref.includes(p))) {
-          book = bookName === 'Corinthians' ? '1 Corinthians' : bookName;
-          chapter = 1;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        // Can't navigate — show a toast with the reference text instead
-        showToast('📍 ' + ref);
-        return;
-      }
-    }
+    const book = match[1].trim();
+    const chapter = parseInt(match[2]);
 
     // Save trivia state so we can return exactly where they left off
     _triviaReturnState = {
@@ -3777,18 +3954,9 @@
     // Reset checkbox and button
     const chk = document.getElementById('chapter-checkbox');
     const btn = document.getElementById('chapter-continue-btn');
-    const checkRow = document.getElementById('chapter-check-row');
     if (chk) chk.classList.remove('checked');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
     readChecked = false;
-
-    // If opened from trivia, hide the daily habit completion elements
-    if (_triviaReturnState) {
-      if (checkRow) checkRow.style.display = 'none';
-      if (btn) btn.style.display = 'none';
-    } else {
-      if (checkRow) checkRow.style.display = '';
-      if (btn) { btn.style.display = ''; btn.disabled = true; btn.style.opacity = '0.4'; }
-    }
 
     // Fetch from BSB API
     const verses = await fetchChapter(book, chapter);
@@ -3866,7 +4034,660 @@
     showToast(`Opening ${STATE.chapterBook} ${STATE.chapterNum} 📖`);
   }
 
-  // ── FORGOT PASSWORD ──
+  // ── FAMILY & FRIENDS TRIVIA NIGHT ──
+
+  const FAMILY_TEAM_EMOJIS = ['🔵','🔴','🟢','🟡'];
+  const FAMILY_DEFAULT_NAMES = ['Team 1','Team 2','Team 3','Team 4'];
+  const FAMILY_WIN_TARGET = 10;
+
+  const FAMILY_QUIPS = [
+    (w, losers) => `${w} proved they've been reading more than just memes. The other teams might want to crack open a Bible before the rematch. 📖`,
+    (w, losers) => `${w} wins! ${losers.length > 0 ? losers[0] + ' will be praying for better trivia knowledge next time. 🙏' : 'A dominant performance in the name of the Lord. 🙏'}`,
+    (w, losers) => `${w} takes the crown! Legend has it ${losers.length > 0 ? losers[0] : 'the other teams'} thought Goliath was a brand of cheese. 🐑`,
+    (w, losers) => `${w} wins with the grace of David and the speed of a Red Sea crossing. ${losers.length > 0 ? losers[0] + ', maybe start with Genesis?' : 'The others never stood a chance.'}`,
+    (w, losers) => `${w} is victorious! The losing teams were wandering in the wilderness while ${w} walked straight into the Promised Land. 🏜️`,
+    (w, losers) => `${w} cleaned up like the temple money changers getting overturned — swiftly and completely. Congrats! 🕊️`,
+    (w, losers) => `${w} wins! The other teams' Bible knowledge is currently parting no seas and raising no dead. Better luck next time! ⚡`,
+    (w, losers) => `${w} triumphs! ${losers.length > 0 ? losers[0] + ' answered those questions about as confidently as Jonah volunteered for whale duty.' : 'The others were no match!'} 🐋`,
+    (w, losers) => `${w} wins the night! It's okay, ${losers.length > 0 ? losers[0] : 'everyone else'} — even Peter denied Jesus three times. There's always grace for a rematch. 🙏`,
+    (w, losers) => `${w} reigns supreme! Somewhere, Moses is watching and nodding approvingly. ${losers.length > 0 ? losers[0] + ', thou shalt study harder.' : ''} 📜`,
+  ];
+
+  // Family game state
+  let familyGame = {
+    teamCount: 2,
+    teams: [], // [{ name, level, score, queue }]
+    currentTeam: 0,
+    currentQuestion: null,
+    answered: false,
+  };
+
+  // ── Setup screen ──
+  function setTeamCount(n) {
+    familyGame.teamCount = n;
+    // Update button styles
+    [2,3,4].forEach(i => {
+      const btn = document.getElementById('tcb-' + i);
+      if (!btn) return;
+      if (i === n) {
+        btn.style.border = '1px solid var(--gold)';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--white)';
+      } else {
+        btn.style.border = '1px solid var(--stone)';
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--muted)';
+      }
+    });
+    renderTeamRows();
+  }
+
+  function renderTeamRows() {
+    const container = document.getElementById('family-team-rows');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < familyGame.teamCount; i++) {
+      const saved = familyGame.teams[i] || {};
+      const name = saved.name || FAMILY_DEFAULT_NAMES[i];
+      const level = saved.level || 'beginner';
+      const emoji = FAMILY_TEAM_EMOJIS[i];
+      container.innerHTML += `
+        <div style="background:var(--white);border:1px solid var(--stone);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+            <span style="font-size:1.2rem;">${emoji}</span>
+            <input
+              id="team-name-${i}"
+              class="input-field"
+              type="text"
+              value="${name}"
+              placeholder="Team name"
+              style="flex:1;padding:0.5rem 0.75rem;font-size:0.88rem;"
+              maxlength="20"
+            />
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem;letter-spacing:0.05em;">DIFFICULTY</p>
+          <div style="display:flex;gap:0.4rem;">
+            <button onclick="setTeamLevel(${i},'beginner')" id="tlb-${i}-beginner" style="flex:1;padding:0.45rem 0.25rem;border-radius:var(--radius-sm);border:1px solid var(--gold);background:var(--gold);color:var(--white);font-size:0.7rem;font-weight:500;cursor:pointer;transition:all 0.15s;">🌱 Beginner</button>
+            <button onclick="setTeamLevel(${i},'intermediate')" id="tlb-${i}-intermediate" style="flex:1;padding:0.45rem 0.25rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;cursor:pointer;transition:all 0.15s;">📖 Mid</button>
+            <button onclick="setTeamLevel(${i},'expert')" id="tlb-${i}-expert" style="flex:1;padding:0.45rem 0.25rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;cursor:pointer;transition:all 0.15s;">🏆 Expert</button>
+          </div>
+        </div>`;
+    }
+    // Restore level button states after render
+    for (let i = 0; i < familyGame.teamCount; i++) {
+      const level = (familyGame.teams[i] && familyGame.teams[i].level) || 'beginner';
+      updateTeamLevelBtns(i, level);
+    }
+  }
+
+  function setTeamLevel(teamIdx, level) {
+    if (!familyGame.teams[teamIdx]) familyGame.teams[teamIdx] = {};
+    familyGame.teams[teamIdx].level = level;
+    updateTeamLevelBtns(teamIdx, level);
+  }
+
+  function updateTeamLevelBtns(teamIdx, activeLevel) {
+    ['beginner','intermediate','expert'].forEach(lv => {
+      const btn = document.getElementById(`tlb-${teamIdx}-${lv}`);
+      if (!btn) return;
+      if (lv === activeLevel) {
+        btn.style.border = '1px solid var(--gold)';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--white)';
+      } else {
+        btn.style.border = '1px solid var(--stone)';
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--muted)';
+      }
+    });
+  }
+
+  // Called when screen-family-setup becomes active — init defaults
+  function initFamilySetup() {
+    familyGame.teamCount = 2;
+    familyGame.teams = [];
+    familyGame.currentTeam = 0;
+    // Reset count button UI directly (don't call setTeamCount to avoid re-init loop)
+    [2,3,4].forEach(i => {
+      const btn = document.getElementById('tcb-' + i);
+      if (!btn) return;
+      if (i === 2) {
+        btn.style.border = '1px solid var(--gold)';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--white)';
+      } else {
+        btn.style.border = '1px solid var(--stone)';
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--muted)';
+      }
+    });
+    renderTeamRows();
+  }
+
+  function startFamilyGame() {
+    // Collect team names + levels from inputs
+    const builtTeams = [];
+    for (let i = 0; i < familyGame.teamCount; i++) {
+      const nameEl = document.getElementById('team-name-' + i);
+      const name = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : FAMILY_DEFAULT_NAMES[i];
+      // level is tracked in familyGame.teams[i].level by setTeamLevel()
+      const level = (familyGame.teams[i] && familyGame.teams[i].level) ? familyGame.teams[i].level : 'beginner';
+      builtTeams.push({
+        name,
+        level,
+        score: 0,
+        queue: buildFamilyQueue(level),
+        emoji: FAMILY_TEAM_EMOJIS[i],
+      });
+    }
+    familyGame.teams = builtTeams;
+    familyGame.currentTeam = 0;
+    familyGame.answered = false;
+
+    goTo('screen-family-game');
+    renderFamilyQuestion();
+  }
+
+  function buildFamilyQueue(level) {
+    // Pull from the same no-repeat trivia queue as solo mode
+    const bank = TRIVIA_BANK[level];
+    const indices = bank.map((_, i) => i);
+    // Shuffle
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    return indices;
+  }
+
+  function getFamilyQuestion(teamIdx) {
+    const team = familyGame.teams[teamIdx];
+    const bank = TRIVIA_BANK[team.level];
+    if (team.queue.length === 0) {
+      // Reshuffle
+      team.queue = buildFamilyQueue(team.level);
+    }
+    return bank[team.queue.shift()];
+  }
+
+  // ── Scoreboard ──
+  function renderFamilyScoreboard() {
+    const el = document.getElementById('family-scoreboard');
+    if (!el) return;
+    el.innerHTML = familyGame.teams.map((t, i) => {
+      const isActive = i === familyGame.currentTeam;
+      const pct = Math.min(100, (t.score / FAMILY_WIN_TARGET) * 100);
+      return `
+        <div style="flex:1;min-width:0;background:${isActive ? 'var(--gold)' : 'var(--white)'};border:1px solid ${isActive ? 'var(--gold)' : 'var(--stone)'};border-radius:var(--radius-sm);padding:0.5rem 0.4rem;text-align:center;transition:all 0.25s;">
+          <div style="font-size:0.6rem;font-weight:600;color:${isActive ? 'rgba(255,255,255,0.8)' : 'var(--muted)'};letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.emoji} ${t.name}</div>
+          <div style="font-family:var(--serif);font-size:1.3rem;color:${isActive ? 'var(--white)' : 'var(--gold)'};line-height:1.1;">${t.score}</div>
+          <div style="font-size:0.55rem;color:${isActive ? 'rgba(255,255,255,0.7)' : 'var(--stone)'};">of ${FAMILY_WIN_TARGET}</div>
+          <div style="height:3px;background:${isActive ? 'rgba(255,255,255,0.3)' : 'var(--warm)'};border-radius:2px;margin-top:4px;">
+            <div style="height:100%;width:${pct}%;background:${isActive ? 'var(--white)' : 'var(--gold)'};border-radius:2px;transition:width 0.4s;"></div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Render question ──
+  function renderFamilyQuestion() {
+    const team = familyGame.teams[familyGame.currentTeam];
+    familyGame.currentQuestion = getFamilyQuestion(familyGame.currentTeam);
+    familyGame.answered = false;
+
+    const q = familyGame.currentQuestion;
+    const levelLabels = { beginner: '🌱 Beginner', intermediate: '📖 Intermediate', expert: '🏆 Expert' };
+
+    // Header
+    document.getElementById('family-turn-label').textContent = `${team.emoji} ${team.name}'s turn`;
+    document.getElementById('family-turn-level').textContent = levelLabels[team.level];
+    document.getElementById('family-turn-score').textContent = team.score;
+
+    // Progress bar: team's score toward win target
+    document.getElementById('family-progress').style.width = `${Math.min(100,(team.score/FAMILY_WIN_TARGET)*100)}%`;
+
+    // Question
+    document.getElementById('family-question').textContent = q.q;
+    document.getElementById('family-reveal').style.display = 'none';
+    document.getElementById('family-next-btn').style.display = 'none';
+
+    // Answer buttons
+    const container = document.getElementById('family-options');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.style.cssText = 'width:100%;padding:0.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.86rem;color:var(--ink);line-height:1.4;transition:all 0.2s;font-family:var(--sans);box-sizing:border-box;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;display:block;';
+      btn.onclick = () => selectFamilyAnswer(i);
+      container.appendChild(btn);
+    });
+
+    renderFamilyScoreboard();
+  }
+
+  function selectFamilyAnswer(chosenIdx) {
+    if (familyGame.answered) return;
+    familyGame.answered = true;
+
+    const q = familyGame.currentQuestion;
+    const team = familyGame.teams[familyGame.currentTeam];
+    const correct = chosenIdx === q.answer;
+
+    if (correct) {
+      team.score++;
+      // Update turn score display live
+      document.getElementById('family-turn-score').textContent = team.score;
+      document.getElementById('family-progress').style.width = `${Math.min(100,(team.score/FAMILY_WIN_TARGET)*100)}%`;
+      renderFamilyScoreboard();
+    }
+
+    // Style buttons
+    const btns = document.querySelectorAll('#family-options button');
+    btns.forEach((btn, i) => {
+      btn.style.cursor = 'default';
+      if (i === q.answer) {
+        btn.style.background = '#EAF6EE';
+        btn.style.border = '1px solid var(--success)';
+        btn.style.color = 'var(--success)';
+      } else if (i === chosenIdx && !correct) {
+        btn.style.background = '#FDECEA';
+        btn.style.border = '1px solid #C0392B';
+        btn.style.color = '#C0392B';
+      } else {
+        btn.style.opacity = '0.45';
+      }
+      btn.onclick = null;
+    });
+
+    // Show reveal
+    const revealEl = document.getElementById('family-reveal');
+    revealEl.style.display = 'block';
+    const bannerEl = document.getElementById('family-result-banner');
+    const iconEl = document.getElementById('family-result-icon');
+    const labelEl = document.getElementById('family-result-label');
+    const answerEl = document.getElementById('family-correct-answer');
+    const refEl = document.getElementById('family-ref');
+    const ctxEl = document.getElementById('family-context');
+
+    if (correct) {
+      bannerEl.style.background = '#EAF6EE';
+      iconEl.textContent = '✅';
+      labelEl.textContent = 'Correct!';
+      labelEl.style.color = 'var(--success)';
+      answerEl.textContent = '';
+    } else {
+      bannerEl.style.background = '#FDECEA';
+      iconEl.textContent = '❌';
+      labelEl.textContent = 'Not quite!';
+      labelEl.style.color = '#C0392B';
+      answerEl.textContent = `Correct answer: ${q.options[q.answer]}`;
+    }
+    refEl.textContent = q.ref;
+    ctxEl.textContent = q.context;
+
+    // Check for win
+    if (team.score >= FAMILY_WIN_TARGET) {
+      document.getElementById('family-next-btn').textContent = '🏆 See Results →';
+      document.getElementById('family-next-btn').style.display = 'block';
+      document.getElementById('family-next-btn').onclick = showFamilyWin;
+    } else {
+      // Label the next button based on who's next
+      const nextTeamIdx = (familyGame.currentTeam + 1) % familyGame.teams.length;
+      const nextTeam = familyGame.teams[nextTeamIdx];
+      document.getElementById('family-next-btn').textContent = `${nextTeam.emoji} ${nextTeam.name}'s Turn →`;
+      document.getElementById('family-next-btn').style.display = 'block';
+      document.getElementById('family-next-btn').onclick = familyNextTurn;
+    }
+  }
+
+  function familyNextTurn() {
+    familyGame.currentTeam = (familyGame.currentTeam + 1) % familyGame.teams.length;
+    renderFamilyQuestion();
+    // Scroll to top of scroll-area
+    const sa = document.querySelector('#screen-family-game .scroll-area');
+    if (sa) sa.scrollTop = 0;
+  }
+
+  function showFamilyWin() {
+    const winner = familyGame.teams[familyGame.currentTeam];
+    const losers = familyGame.teams.filter((_, i) => i !== familyGame.currentTeam);
+
+    document.getElementById('family-winner-name').textContent = `${winner.emoji} ${winner.name}`;
+
+    // Pick a random quip
+    const quipFn = FAMILY_QUIPS[Math.floor(Math.random() * FAMILY_QUIPS.length)];
+    const loserNames = losers.map(t => t.name);
+    document.getElementById('family-winner-quip').textContent = quipFn(winner.name, loserNames);
+
+    // Final scores sorted descending
+    const sorted = [...familyGame.teams].sort((a,b) => b.score - a.score);
+    document.getElementById('family-final-scores').innerHTML = sorted.map((t, rank) => {
+      const isWinner = rank === 0;
+      return `
+        <div style="display:flex;align-items:center;gap:0.875rem;padding:0.875rem;background:${isWinner ? 'var(--warm)' : 'var(--white)'};border:1px solid ${isWinner ? 'var(--gold)' : 'var(--stone)'};border-radius:var(--radius);margin-bottom:0.5rem;">
+          <div style="font-size:1.2rem;width:28px;text-align:center;">${isWinner ? '🏆' : FAMILY_TEAM_EMOJIS[familyGame.teams.indexOf(t)]}</div>
+          <div style="flex:1;text-align:left;">
+            <div style="font-weight:500;font-size:0.88rem;color:var(--ink);">${t.emoji} ${t.name}</div>
+            <div style="font-size:0.68rem;color:var(--muted);margin-top:1px;">${{ beginner:'🌱 Beginner', intermediate:'📖 Intermediate', expert:'🏆 Expert' }[t.level]}</div>
+          </div>
+          <div style="font-family:var(--serif);font-size:1.5rem;color:${isWinner ? 'var(--gold)' : 'var(--muted)'};">${t.score}</div>
+        </div>`;
+    }).join('');
+
+    goTo('screen-family-win');
+  }
+
+  function restartFamilyGame() {
+    // Same teams, reset scores and queues
+    familyGame.teams.forEach(t => {
+      t.score = 0;
+      t.queue = buildFamilyQueue(t.level);
+    });
+    familyGame.currentTeam = 0;
+    familyGame.answered = false;
+    goTo('screen-family-game');
+    renderFamilyQuestion();
+  }
+
+  // Patch goTo to init family setup when navigating there
+  const _origGoTo = goTo;
+  goTo = function(screenId) {
+    _origGoTo.apply(this, arguments);
+    if (screenId === 'screen-family-setup') {
+      // Small delay so screen is visible before we render rows
+      setTimeout(initFamilySetup, 60);
+    }
+  };
+
+
+  const MAX_PRAYER_LEN = 280;
+  const MAX_PRAYERS_STORED = 30;
+
+  function openPrayerJournal() {
+    loadPrayerJournal();
+    goTo('screen-prayer-journal');
+  }
+
+  function loadPrayerJournal() {
+    // Set anchor verse to today's verse
+    const anchorEl = document.getElementById('prayer-anchor-verse');
+    if (anchorEl && currentVerse) {
+      const shortText = currentVerse.text.length > 120
+        ? currentVerse.text.substring(0, 117) + '…'
+        : currentVerse.text;
+      anchorEl.textContent = shortText + ' — ' + (currentVerse.ref || '');
+    }
+
+    // Check if already prayed today
+    const prayers = getPrayers();
+    const todayStr = new Date().toDateString();
+    const todayPrayer = prayers.find(p => p.date === todayStr);
+
+    const writeSection = document.getElementById('prayer-write-section');
+    const labelEl = document.getElementById('prayer-today-label');
+    const inputEl = document.getElementById('prayer-input');
+    const charEl = document.getElementById('prayer-char-count');
+    const saveBtn = document.getElementById('prayer-save-btn');
+
+    if (todayPrayer) {
+      // Already prayed — show what they wrote, locked
+      if (inputEl) { inputEl.value = todayPrayer.text; inputEl.disabled = true; inputEl.style.color = 'var(--muted)'; }
+      if (labelEl) labelEl.textContent = 'Today\'s prayer ✓';
+      if (charEl) charEl.textContent = '';
+      if (saveBtn) { saveBtn.style.display = 'none'; }
+    } else {
+      // Fresh — ready to write
+      if (inputEl) { inputEl.value = ''; inputEl.disabled = false; inputEl.style.color = 'var(--ink)'; }
+      if (labelEl) labelEl.textContent = 'Today\'s prayer';
+      if (charEl) charEl.textContent = `0 / ${MAX_PRAYER_LEN}`;
+      if (saveBtn) { saveBtn.style.display = 'block'; saveBtn.style.opacity = '0.4'; saveBtn.style.pointerEvents = 'none'; }
+    }
+
+    renderPrayerHistory(prayers, todayStr);
+  }
+
+  function prayerInputChange() {
+    const inputEl = document.getElementById('prayer-input');
+    const charEl = document.getElementById('prayer-char-count');
+    const saveBtn = document.getElementById('prayer-save-btn');
+    if (!inputEl) return;
+    const len = inputEl.value.length;
+    if (charEl) charEl.textContent = `${len} / ${MAX_PRAYER_LEN}`;
+    // Cap at max
+    if (len > MAX_PRAYER_LEN) {
+      inputEl.value = inputEl.value.substring(0, MAX_PRAYER_LEN);
+    }
+    const hasText = inputEl.value.trim().length > 0;
+    if (saveBtn) {
+      saveBtn.style.opacity = hasText ? '1' : '0.4';
+      saveBtn.style.pointerEvents = hasText ? 'auto' : 'none';
+    }
+  }
+
+  function savePrayer() {
+    const inputEl = document.getElementById('prayer-input');
+    if (!inputEl) return;
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    const prayers = getPrayers();
+    const todayStr = new Date().toDateString();
+
+    // Don't duplicate today's prayer
+    if (prayers.find(p => p.date === todayStr)) {
+      showToast('You\'ve already written today\'s prayer 🙏');
+      return;
+    }
+
+    const newPrayer = {
+      date: todayStr,
+      text: text,
+      verseRef: currentVerse ? currentVerse.ref : '',
+      ts: Date.now()
+    };
+
+    prayers.unshift(newPrayer);
+    // Keep only last N prayers
+    if (prayers.length > MAX_PRAYERS_STORED) prayers.length = MAX_PRAYERS_STORED;
+    savePrayers(prayers);
+
+    // Track reading time: prayer = +1 min equivalent
+    addReadingMinutes(1);
+
+    // Update UI to "saved" state
+    inputEl.disabled = true;
+    inputEl.style.color = 'var(--muted)';
+    const labelEl = document.getElementById('prayer-today-label');
+    if (labelEl) labelEl.textContent = 'Today\'s prayer ✓';
+    const charEl = document.getElementById('prayer-char-count');
+    if (charEl) charEl.textContent = '';
+    const saveBtn = document.getElementById('prayer-save-btn');
+    if (saveBtn) saveBtn.style.display = 'none';
+
+    renderPrayerHistory(prayers, todayStr);
+    showToast('Prayer saved 🙏');
+  }
+
+  function renderPrayerHistory(prayers, todayStr) {
+    const listEl = document.getElementById('prayer-history-list');
+    const emptyEl = document.getElementById('prayer-empty-state');
+    if (!listEl) return;
+
+    // Show all past prayers (not today's in history section, show separately)
+    const past = prayers.filter(p => p.date !== todayStr);
+
+    if (past.length === 0) {
+      listEl.innerHTML = '';
+      if (emptyEl) emptyEl.style.display = 'block';
+      return;
+    }
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    listEl.innerHTML = past.map(p => {
+      const d = new Date(p.ts);
+      const label = formatPrayerDate(d);
+      return `
+        <div class="card" style="margin-bottom:0.75rem;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
+            <span style="font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);">${label}</span>
+            ${p.verseRef ? `<span style="font-size:0.65rem;color:var(--stone);">${p.verseRef}</span>` : ''}
+          </div>
+          <p style="font-size:0.88rem;color:var(--ink);line-height:1.7;font-style:italic;">"${escapeHtml(p.text)}"</p>
+        </div>`;
+    }).join('');
+  }
+
+  function formatPrayerDate(d) {
+    const today = new Date();
+    const diff = Math.floor((today - d) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Yesterday';
+    if (diff < 7) return d.toLocaleDateString('en-US', { weekday: 'long' });
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getPrayers() {
+    try {
+      const raw = localStorage.getItem('sbs_prayers');
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
+  function savePrayers(prayers) {
+    try { localStorage.setItem('sbs_prayers', JSON.stringify(prayers)); } catch(e) {}
+  }
+
+  // ── READING TIME TRACKER ──
+  // Stored as sbs_read_minutes: { weekStart: 'Sun Apr 06 2026', minutes: 12 }
+  function addReadingMinutes(mins) {
+    try {
+      const weekStart = getWeekStart();
+      const raw = localStorage.getItem('sbs_read_minutes');
+      let data = raw ? JSON.parse(raw) : { weekStart, minutes: 0 };
+      // Reset on new week
+      if (data.weekStart !== weekStart) data = { weekStart, minutes: 0 };
+      data.minutes += mins;
+      localStorage.setItem('sbs_read_minutes', JSON.stringify(data));
+    } catch(e) {}
+  }
+
+  function getWeekReadMinutes() {
+    try {
+      const weekStart = getWeekStart();
+      const raw = localStorage.getItem('sbs_read_minutes');
+      if (!raw) return 0;
+      const data = JSON.parse(raw);
+      if (data.weekStart !== weekStart) return 0;
+      return data.minutes || 0;
+    } catch(e) { return 0; }
+  }
+
+  function getWeekStart() {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay()); // Sunday
+    return d.toDateString();
+  }
+
+  function updateReadingTimeUI() {
+    const mins = getWeekReadMinutes();
+    const el = document.getElementById('profile-read-time');
+    if (!el) return;
+    if (mins < 60) {
+      el.textContent = `${mins} min`;
+    } else {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      el.textContent = m > 0 ? `${h}h ${m}m` : `${h}h`;
+    }
+  }
+
+  // Patch completeHabit to track reading time
+  const _origCompleteHabit = completeHabit;
+  completeHabit = function() {
+    // Add reading time estimate
+    const minsMap = { verse: 1, chapter: 7, memorize: 3, trivia: 4 };
+    addReadingMinutes(minsMap[STATE.mode] || 2);
+    _origCompleteHabit.apply(this, arguments);
+  };
+
+  // ── GRACE DAY SYSTEM ──
+  // Token: sbs_grace_token: { available: true, lastEarned: '...' }
+  function initGraceDay() {
+    // Check if streak is at milestone for recharge
+    if (STATE.streak > 0 && STATE.streak % 30 === 0) {
+      grantGraceToken();
+    }
+    // Show grace day card on complete screen if token available
+    const card = document.getElementById('grace-day-card');
+    if (card) card.style.display = hasGraceToken() ? 'block' : 'none';
+  }
+
+  function hasGraceToken() {
+    try {
+      const raw = localStorage.getItem('sbs_grace_token');
+      if (!raw) return false;
+      return JSON.parse(raw).available === true;
+    } catch(e) { return false; }
+  }
+
+  function grantGraceToken() {
+    try {
+      const existing = localStorage.getItem('sbs_grace_token');
+      if (existing && JSON.parse(existing).available) return; // already have one
+      localStorage.setItem('sbs_grace_token', JSON.stringify({ available: true, lastEarned: new Date().toDateString() }));
+    } catch(e) {}
+  }
+
+  function useGraceToken() {
+    try {
+      localStorage.setItem('sbs_grace_token', JSON.stringify({ available: false, lastEarned: '' }));
+    } catch(e) {}
+  }
+
+  // Check grace day on app load — if user missed yesterday and has a token, protect streak
+  function checkGraceDayProtection() {
+    if (!STATE.user || !STATE.lastCompletedDate) return;
+    const lastDate = new Date(STATE.lastCompletedDate);
+    const today = new Date();
+    const diffDays = Math.floor((today - lastDate) / 86400000);
+
+    if (diffDays === 2 && hasGraceToken()) {
+      // Missed exactly 1 day — apply grace
+      useGraceToken();
+      showToast('🛡️ Grace Day used — your streak is protected!');
+      STATE.streak = Math.max(STATE.streak, 1); // Preserve
+      saveState();
+    }
+  }
+
+  // Patch enterApp to include new features
+  const _origEnterApp = enterApp;
+  enterApp = function() {
+    _origEnterApp.apply(this, arguments);
+    checkGraceDayProtection();
+    updateReadingTimeUI();
+  };
+
+  // Patch updateCompleteScreen to show grace day card
+  const _origUpdateCompleteScreen = updateCompleteScreen;
+  updateCompleteScreen = function() {
+    _origUpdateCompleteScreen.apply(this, arguments);
+    initGraceDay();
+    updateReadingTimeUI();
+  };
+
+  // Patch updateStats to include reading time
+  const _origUpdateStats = updateStats;
+  updateStats = function() {
+    _origUpdateStats.apply(this, arguments);
+    updateReadingTimeUI();
+  };
+
+
   let _resetCode = null;
   let _resetEmail = null;
   let _resetExpiry = null;
