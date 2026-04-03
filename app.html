@@ -32,7 +32,7 @@
       --sans: 'DM Sans', sans-serif;
       --radius: 14px;
       --radius-sm: 8px;
-      --reading-scale: 1; /* 0.85 = Small, 1 = Medium, 1.2 = Large */
+      --reading-scale: 1; /* 1 = Regular, 1.45 = Large accessibility */
     }
 
     html {
@@ -58,6 +58,7 @@
       position: relative;
       overflow: hidden;
       background: var(--cream);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
     }
 
     /* Desktop — center as phone frame */
@@ -79,6 +80,8 @@
         border-radius: 40px;
         box-shadow: 0 24px 80px rgba(0,0,0,0.2);
         overflow: hidden;
+        clip-path: inset(0 round 40px);
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
       }
     }
 
@@ -93,7 +96,9 @@
       pointer-events: none;
       transition: opacity 0.3s ease, transform 0.3s ease;
       transform: translateX(30px);
-      overflow-y: auto;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
     }
     .screen.active {
       opacity: 1;
@@ -110,6 +115,9 @@
       display: flex;
       flex-direction: column;
       padding: 1.5rem 1.5rem 2rem;
+      overflow: hidden;
+      min-width: 0;
+      min-height: 0;
     }
 
     /* ── TYPOGRAPHY ── */
@@ -127,12 +135,17 @@
       font-weight: 300;
       line-height: 1.1;
       color: var(--ink);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
     .display em { font-style: italic; color: var(--gold); }
     .body-text {
       font-size: 0.9rem;
       color: var(--muted);
       line-height: 1.7;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     /* ── BUTTONS ── */
@@ -150,6 +163,7 @@
       text-transform: uppercase;
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
+          box-sizing: border-box;
     }
     .btn-primary:active { transform: scale(0.98); background: var(--gold-lt); }
     .btn-primary:disabled { opacity: 0.4; pointer-events: none; }
@@ -168,6 +182,7 @@
       text-transform: uppercase;
       cursor: pointer;
       transition: background 0.2s;
+          box-sizing: border-box;
     }
     .btn-ghost:active { background: var(--warm); }
 
@@ -181,6 +196,7 @@
       padding: 0.5rem;
       text-decoration: underline;
       text-underline-offset: 3px;
+          box-sizing: border-box;
     }
 
     /* ── INPUTS ── */
@@ -210,12 +226,18 @@
       border: 1px solid var(--stone);
       border-radius: var(--radius);
       padding: 1.25rem;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
     .card-warm {
       background: var(--warm);
       border: 1px solid rgba(200,185,154,0.5);
       border-radius: var(--radius);
       padding: 1.25rem;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* ── DIVIDER ── */
@@ -360,7 +382,7 @@
     }
 
     /* ── STAT CARDS ── */
-    .stat-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+    .stat-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; min-width: 0; width: 100%; }
     .stat-card { flex: 1; background: var(--white); border: 1px solid var(--stone); border-radius: var(--radius-sm); padding: 0.875rem; text-align: center; }
     .stat-num { font-family: var(--serif); font-size: 1.6rem; color: var(--gold); line-height: 1; }
     .stat-label { font-size: 0.65rem; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
@@ -561,7 +583,7 @@
 
     /* ── TOAST ── */
     .toast {
-      position: fixed;
+      position: absolute;
       bottom: 100px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
@@ -622,7 +644,7 @@
     .privacy-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
 
     /* scrollable content area */
-    .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; min-height: 0; min-width: 0; }
     .scroll-area::-webkit-scrollbar { display: none; }
   </style>
 </head>
@@ -635,6 +657,7 @@
   ══════════════════════════════════════════ -->
   <div class="screen active" id="screen-splash">
     <div class="screen-inner" style="justify-content:center;align-items:center;text-align:center;gap:0;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="cross fade-up" style="margin-bottom:1.5rem;"></div>
       <div class="display fade-up-2" style="font-size:2rem;margin-bottom:0.25rem;">Scripture</div>
       <div class="display fade-up-2" style="font-size:2rem;margin-bottom:1.5rem;"><em>Before Scroll</em></div>
@@ -643,6 +666,8 @@
         <button class="btn-primary" onclick="goTo('screen-signup')">Get Started</button>
         <button class="btn-ghost" onclick="goTo('screen-login')">Sign In</button>
         <button onclick="enterPreviewMode()" style="background:none;border:none;color:var(--stone);font-size:0.75rem;cursor:pointer;padding:0.25rem;text-decoration:underline;text-underline-offset:3px;letter-spacing:0.03em;">Preview app without account</button>
+      </div>
+    
       </div>
     </div>
   </div>
@@ -653,6 +678,7 @@
   <div class="screen" id="screen-signup">
     <div class="status-bar"><span class="status-time" id="time-signup"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-splash')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Create account</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;">Welcome to<br><em>the community.</em></div>
@@ -677,6 +703,8 @@
         <div class="divider"><span>or</span></div>
         <p style="text-align:center;font-size:0.8rem;color:var(--muted);">Already have an account? <button class="btn-text" style="display:inline;padding:0;" onclick="goTo('screen-login')">Sign in</button></p>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -686,6 +714,7 @@
   <div class="screen" id="screen-login">
     <div class="status-bar"><span class="status-time" id="time-login"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-splash')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Welcome back</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:1.5rem;">Good to see<br>you <em>again.</em></div>
@@ -707,6 +736,8 @@
         <div class="divider"><span>or</span></div>
         <p style="text-align:center;font-size:0.8rem;color:var(--muted);">New here? <button class="btn-text" style="display:inline;padding:0;" onclick="goTo('screen-signup')">Create an account</button></p>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -716,6 +747,7 @@
   <div class="screen" id="screen-forgot-pw">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-login')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Reset password</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">No worries —<br>we've got <em>you.</em></div>
@@ -736,6 +768,8 @@
           </p>
         </div>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -745,6 +779,7 @@
   <div class="screen" id="screen-enter-code">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <button class="btn-text" style="align-self:flex-start;padding:0;margin-bottom:1.5rem;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-forgot-pw')">←</button>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Check your email</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Enter your<br><em>reset code.</em></div>
@@ -763,6 +798,8 @@
           <button class="btn-text" style="font-size:0.78rem;color:var(--muted);" onclick="sendResetCode(true)">Resend code</button>
         </div>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -772,6 +809,7 @@
   <div class="screen" id="screen-new-password">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Almost done</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Create your<br><em>new password.</em></div>
       <p class="body-text fade-up-3" style="margin-bottom:1.5rem;">Choose something memorable. At least 8 characters.</p>
@@ -789,6 +827,8 @@
         </div>
         <button class="btn-primary" style="margin-top:0.5rem;" onclick="saveNewPassword()">Save New Password</button>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -797,12 +837,15 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-reset-success">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="success-circle fade-up" style="margin-bottom:1rem;"><div class="success-check"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">All set</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Password<br><em>reset successfully.</em></div>
       <p class="body-text fade-up-3" style="max-width:28ch;margin-bottom:2rem;">You can now sign in with your new password. Welcome back.</p>
       <button class="btn-primary fade-up-4" style="width:100%;" onclick="goTo('screen-login')">Sign In →</button>
+    
+      </div>
     </div>
   </div>
 
@@ -812,6 +855,7 @@
   <div class="screen" id="screen-onboarding">
     <div class="status-bar"><span class="status-time" id="time-onboard"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="progress-wrap"><div class="progress-fill" style="width:33%"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Step 1 of 3</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;">What fits your<br><em>schedule?</em></div>
@@ -848,6 +892,8 @@
       </div>
 
       <button class="btn-primary" onclick="goTo('screen-onboard2')">Continue →</button>
+    
+      </div>
     </div>
   </div>
 
@@ -856,7 +902,8 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-onboard2">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="progress-wrap" style="width:100%;"><div class="progress-fill" style="width:66%"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Step 2 of 3</p>
       <div style="font-size:3rem;margin:1rem 0;">🔔</div>
@@ -866,6 +913,8 @@
         <button class="btn-primary" onclick="goTo('screen-onboard3')">Allow Notifications</button>
         <button class="btn-ghost" onclick="goTo('screen-onboard3')">Maybe Later</button>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -874,12 +923,15 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-onboard3">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="progress-wrap" style="width:100%;"><div class="progress-fill" style="width:100%"></div></div>
       <div class="cross fade-up" style="margin-bottom:1.5rem;"></div>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">You're all set,<br><em id="user-first-name">friend.</em></div>
       <p class="body-text fade-up-3" style="max-width:30ch;margin-bottom:3rem;">Your streak starts today. Open the app each morning, read your scripture, then scroll with purpose.</p>
       <button class="btn-primary fade-up-4" onclick="enterApp()" style="width:100%;">Begin Day 1 →</button>
+    
+      </div>
     </div>
   </div>
 
@@ -888,7 +940,7 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-home">
     <div class="status-bar"><span class="status-time" id="time-home"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="padding-bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;">
+    <div class="screen-inner" style="padding-bottom:0;">
 
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
@@ -914,19 +966,21 @@
         </div>
       </div>
 
-      <!-- This week streak -->
-      <div class="card" style="margin-bottom:1rem;">
-        <p class="eyebrow" style="margin-bottom:0.75rem;">This week</p>
-        <div class="streak-row" id="home-streak-row"></div>
-      </div>
+      <div class="scroll-area">
+        <!-- This week streak -->
+        <div class="card" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.75rem;">This week</p>
+          <div class="streak-row" id="home-streak-row"></div>
+        </div>
 
-      <!-- Today's verse preview -->
-      <div class="card-warm" style="margin-bottom:1rem;cursor:pointer;" onclick="startTodayHabit()" id="today-card">
-        <p class="verse-ref" id="home-verse-ref">Matthew 6:33 · ESV</p>
-        <p class="verse-text" style="font-size:calc(1.05rem * var(--reading-scale));line-height:1.7;overflow:visible;display:block;white-space:normal;" id="home-verse-preview">"But seek first the kingdom of God and his righteousness, and all these things will be added to you."</p>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:0.75rem;">
-          <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;"></div>
-          <span style="font-size:0.75rem;color:var(--gold);font-weight:500;" id="today-status">Tap to begin today's reading →</span>
+        <!-- Today's verse preview -->
+        <div class="card-warm" style="margin-bottom:1rem;cursor:pointer;" onclick="startTodayHabit()" id="today-card">
+          <p class="verse-ref" id="home-verse-ref">Matthew 6:33 · ESV</p>
+          <p class="verse-text" style="font-size:calc(1.2rem * var(--reading-scale));line-height:1.7;display:block;white-space:normal;word-wrap:break-word;" id="home-verse-preview">"But seek first the kingdom of God and his righteousness, and all these things will be added to you."</p>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:0.75rem;">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;"></div>
+            <span style="font-size:0.75rem;color:var(--gold);font-weight:500;" id="today-status">Tap to begin today's reading →</span>
+          </div>
         </div>
       </div>
 
@@ -981,19 +1035,35 @@
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="chapterBackNav()">←</button>
         <p class="eyebrow">Daily Chapter</p>
         <button onclick="goTo('screen-chapter-select')" style="font-size:0.72rem;color:var(--gold);background:transparent;border:1px solid var(--stone);border-radius:20px;padding:4px 10px;cursor:pointer;">Change ↓</button>
       </div>
 
       <!-- Progress within book -->
-      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
         <div class="progress-wrap" style="flex:1;margin-bottom:0;"><div class="progress-fill" id="chapter-progress-fill" style="width:10%;"></div></div>
         <span style="font-size:0.7rem;color:var(--stone);white-space:nowrap;" id="chapter-progress-label">Ch. 1 of 28</span>
       </div>
 
+      <!-- Audio player bar -->
+      <div id="chapter-audio-bar" style="display:flex;align-items:center;gap:0.6rem;background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.6rem 0.875rem;margin-bottom:0.875rem;">
+        <button id="audio-play-btn" onclick="toggleChapterAudio()" style="background:var(--gold);border:none;border-radius:50%;width:34px;height:34px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;">▶</button>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:0.7rem;font-weight:500;color:var(--ink);margin-bottom:1px;" id="audio-status-text">Listen to this chapter</p>
+          <p style="font-size:0.62rem;color:var(--muted);" id="audio-word-count"></p>
+        </div>
+        <button onclick="stopChapterAudio()" id="audio-stop-btn" style="background:none;border:1px solid var(--stone);border-radius:var(--radius-sm);padding:3px 8px;font-size:0.65rem;color:var(--muted);cursor:pointer;display:none;">Stop</button>
+        <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" style="background:none;border:1px solid var(--stone);border-radius:var(--radius-sm);padding:3px 6px;font-size:0.65rem;color:var(--muted);cursor:pointer;">
+          <option value="0.8">0.8×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.2">1.2×</option>
+          <option value="1.5">1.5×</option>
+        </select>
+      </div>
+
       <div class="scroll-area">
-        <p class="verse-ref fade-up" id="chapter-ref-display">John 15 · ESV</p>
+        <p class="verse-ref fade-up" id="chapter-ref-display">John 15 · BSB</p>
         <div class="reading-text fade-up-2" id="chapter-text-display"></div>
         <div style="height:1rem;"></div>
         <div class="check-row" onclick="toggleReadCheck('chapter')" id="chapter-check-row" style="margin-top:1rem;">
@@ -1134,47 +1204,40 @@
     </div>
   </div>
 
-  </div>
 
   <!-- ══════════════════════════════════════════
        SCREEN: TRIVIA — LEVEL SELECT
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-trivia-level">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
-      <button class="btn-text" style="align-self:flex-start;padding:0;text-decoration:none;font-size:1.2rem;margin-bottom:1rem;" onclick="goTo('screen-home')">←</button>
-      <div style="font-size:2.5rem;margin-bottom:0.75rem;">✝️</div>
-      <div class="display fade-up" style="font-size:1.8rem;margin-bottom:0.5rem;">How well do you<br>know your <em>Bible?</em></div>
-      <p class="body-text fade-up-2" style="max-width:30ch;margin-bottom:2rem;">Choose your level and answer 5 questions. Every answer shows you exactly where to find it in scripture.</p>
-
-      <div style="display:flex;flex-direction:column;gap:0.75rem;width:100%;" class="fade-up-3">
-        <button onclick="startTrivia('beginner')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🌱 Beginner</div>
-              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">People, places & basic stories</div>
+    <div class="screen-inner" style="padding-bottom:0;">
+      <div style="display:flex;align-items:center;margin-bottom:0.5rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-home')">←</button>
+      </div>
+      <div class="scroll-area" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:1rem;">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;margin-top:0.5rem;">✝️</div>
+        <div class="display fade-up" style="font-size:1.8rem;margin-bottom:0.5rem;">How well do you<br>know your <em>Bible?</em></div>
+        <p class="body-text fade-up-2" style="max-width:30ch;margin-bottom:2rem;">Choose your level and answer 5 questions. Every answer shows you exactly where to find it in scripture.</p>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;width:100%;" class="fade-up-3">
+          <button onclick="startTrivia('beginner')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;box-sizing:border-box;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🌱 Beginner</div><div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">People, places & basic stories</div></div>
+              <span style="color:var(--gold);font-size:1rem;flex-shrink:0;margin-left:0.5rem;">→</span>
             </div>
-            <span style="color:var(--gold);font-size:1rem;">→</span>
-          </div>
-        </button>
-        <button onclick="startTrivia('intermediate')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);">📖 Intermediate</div>
-              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Deeper teachings & theology</div>
+          </button>
+          <button onclick="startTrivia('intermediate')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;box-sizing:border-box;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-weight:600;font-size:0.9rem;color:var(--ink);">📖 Intermediate</div><div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Deeper teachings & theology</div></div>
+              <span style="color:var(--gold);font-size:1rem;flex-shrink:0;margin-left:0.5rem;">→</span>
             </div>
-            <span style="color:var(--gold);font-size:1rem;">→</span>
-          </div>
-        </button>
-        <button onclick="startTrivia('expert')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🏆 Expert</div>
-              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Prophecy, genealogy & obscure facts</div>
+          </button>
+          <button onclick="startTrivia('expert')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;box-sizing:border-box;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🏆 Expert</div><div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Prophecy, genealogy & obscure facts</div></div>
+              <span style="color:var(--gold);font-size:1rem;flex-shrink:0;margin-left:0.5rem;">→</span>
             </div>
-            <span style="color:var(--gold);font-size:1rem;">→</span>
-          </div>
-        </button>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1193,9 +1256,9 @@
       <div class="progress-wrap"><div class="progress-fill" id="trivia-progress" style="width:20%;"></div></div>
 
       <div class="scroll-area">
-        <div class="display fade-up" style="font-size:1.3rem;margin-bottom:1.25rem;line-height:1.4;" id="trivia-question">Who built the ark?</div>
+        <p style="font-family:var(--serif);font-size:1.25rem;font-weight:400;line-height:1.45;color:var(--ink);margin-bottom:1.25rem;word-wrap:break-word;overflow-wrap:break-word;width:100%;" id="trivia-question">Who built the ark?</p>
 
-        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem;" id="trivia-options">
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem;width:100%;box-sizing:border-box;" id="trivia-options">
           <!-- options injected by JS -->
         </div>
 
@@ -1210,7 +1273,10 @@
           </div>
           <div class="card" style="margin-bottom:1rem;">
             <p class="eyebrow" style="margin-bottom:0.4rem;">📍 Find it in scripture</p>
-            <p style="font-family:var(--serif);font-size:0.95rem;color:var(--gold);font-weight:500;margin-bottom:0.3rem;" id="trivia-ref"></p>
+            <button id="trivia-ref-btn" onclick="openTriviaRef()" style="display:block;width:100%;max-width:100%;text-align:left;background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.5rem 0.75rem;margin-bottom:0.5rem;cursor:pointer;transition:all 0.2s;box-sizing:border-box;">
+              <span style="font-family:var(--serif);font-size:0.95rem;color:var(--gold);font-weight:500;" id="trivia-ref"></span>
+              <span style="font-size:0.68rem;color:var(--muted);margin-left:0.4rem;">Tap to read →</span>
+            </button>
             <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;" id="trivia-context"></p>
           </div>
         </div>
@@ -1225,7 +1291,7 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-trivia-results">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
       <div style="font-size:3.5rem;margin-top:1rem;margin-bottom:0.5rem;" id="trivia-result-emoji">🎉</div>
       <p class="eyebrow fade-up">Round complete</p>
       <div class="display fade-up-2" style="font-size:2rem;margin-bottom:0.5rem;"><em id="trivia-score-display">4/5</em></div>
@@ -1298,7 +1364,8 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-quiz-results">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="success-circle fade-up" style="margin-top:1rem;"><div class="success-check"></div></div>
       <p class="eyebrow fade-up">Quiz complete</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;"><em id="quiz-score-display">3/3</em> correct.</div>
@@ -1315,6 +1382,8 @@
         <button class="btn-primary" onclick="goTo('screen-mem-recap')">Back to My Verses</button>
         <button class="btn-ghost" onclick="goTo('screen-home')">Home</button>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -1323,7 +1392,8 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-complete">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:2rem;">
+    <div class="screen-inner" style="align-items:center;text-align:center;padding-bottom:2rem;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
 
       <div class="confetti-row fade-up" style="margin-top:0.5rem;">
         <div class="confetti-dot" style="background:var(--gold);"></div>
@@ -1366,6 +1436,8 @@
         <button class="btn-primary" id="unlock-btn" onclick="goTo('screen-unlock')">Unlock My Feed →</button>
         <button class="btn-ghost" onclick="backToHome()">Back to Home</button>
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -1374,7 +1446,8 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-milestone-celebrate">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="confetti-row" style="margin-top:0.5rem;">
         <div class="confetti-dot" style="background:var(--gold);"></div>
         <div class="confetti-dot" style="background:var(--stone);"></div>
@@ -1405,6 +1478,8 @@
         <div class="privacy-dot"></div>
         Friends never see your misses — only what you share
       </div>
+    
+      </div>
     </div>
   </div>
 
@@ -1414,6 +1489,7 @@
   <div class="screen" id="screen-share-milestone">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
         <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-milestone-celebrate')">←</button>
         <p class="eyebrow">Share your win</p>
@@ -1451,6 +1527,8 @@
       </div>
 
       <button class="btn-ghost" onclick="goTo('screen-unlock')">Continue to Unlock →</button>
+    
+      </div>
     </div>
   </div>
 
@@ -1459,7 +1537,8 @@
   ══════════════════════════════════════════ -->
   <div class="screen" id="screen-unlock">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
-    <div class="screen-inner" style="align-items:center;text-align:center;">
+    <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div class="success-circle fade-up" style="margin-top:1rem;"><div class="success-check"></div></div>
       <p class="eyebrow fade-up" style="margin-bottom:0.25rem;">Scripture complete</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.5rem;">Ready to<br><em>scroll with purpose.</em></div>
@@ -1490,6 +1569,8 @@
 
       <p style="font-size:0.72rem;color:var(--stone);margin-top:auto;padding-top:0.5rem;" id="unlock-day-note">See you tomorrow for Day 2 🙏</p>
       <button class="btn-text" style="margin-top:0.5rem;" onclick="goTo('screen-home')">Back to home</button>
+    
+      </div>
     </div>
   </div>
 
@@ -1624,13 +1705,13 @@
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
               <span style="font-size:0.85rem;">Reading text size</span>
-              <span style="font-size:0.78rem;color:var(--gold);" id="font-size-label">Medium</span>
+              <span style="font-size:0.78rem;color:var(--gold);" id="font-size-label">Regular</span>
             </div>
             <div style="display:flex;gap:0.5rem;">
-              <button onclick="setFontSize('small')" id="font-btn-small" style="flex:1;padding:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;cursor:pointer;font-family:var(--serif);font-size:0.85rem;color:var(--muted);transition:all 0.2s;">A</button>
-              <button onclick="setFontSize('medium')" id="font-btn-medium" style="flex:1;padding:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--gold);background:var(--gold);cursor:pointer;font-family:var(--serif);font-size:1rem;color:var(--white);transition:all 0.2s;">A</button>
-              <button onclick="setFontSize('large')" id="font-btn-large" style="flex:1;padding:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;cursor:pointer;font-family:var(--serif);font-size:1.2rem;color:var(--muted);transition:all 0.2s;">A</button>
+              <button onclick="setFontSize('regular')" id="font-btn-regular" style="flex:1;padding:0.6rem;border-radius:var(--radius-sm);border:1px solid var(--gold);background:var(--gold);cursor:pointer;font-family:var(--serif);font-size:1.05rem;color:var(--white);font-weight:500;transition:all 0.2s;">Aa</button>
+              <button onclick="setFontSize('large')" id="font-btn-large" style="flex:1;padding:0.6rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;cursor:pointer;font-family:var(--serif);font-size:1.35rem;color:var(--muted);font-weight:700;transition:all 0.2s;">Aa</button>
             </div>
+            <p style="font-size:0.68rem;color:var(--stone);margin-top:0.5rem;text-align:center;">Large is optimized for accessibility</p>
           </div>
         </div>
 
@@ -1665,6 +1746,12 @@
 
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
+
+  <!-- Trivia back banner — shown when reading Bible from trivia -->
+  <div id="trivia-back-banner" style="display:none;position:absolute;bottom:0;left:0;right:0;width:100%;background:var(--ink);padding:0.75rem 1.25rem;z-index:200;display:none;align-items:center;justify-content:space-between;gap:1rem;">
+    <span style="font-size:0.78rem;color:var(--white);opacity:0.85;">Reading from Trivia</span>
+    <button onclick="returnToTrivia()" style="background:var(--gold);border:none;border-radius:var(--radius-sm);padding:0.4rem 0.875rem;font-size:0.78rem;color:var(--white);font-weight:500;cursor:pointer;white-space:nowrap;">← Back to Trivia</button>
+  </div>
 
 </div>
 
@@ -1751,14 +1838,15 @@
     setInterval(updateAllTimes, 60000);
     loadState();
     buildStreakRow();
-    applyFontSize(localStorage.getItem('sbs_font_size') || 'medium');
+    applyFontSize(localStorage.getItem('sbs_font_size') || 'regular');
   });
 
   // ── FONT SIZE ──
   function applyFontSize(size) {
-    const scales  = { small: 0.85, medium: 1, large: 1.2 };
-    const weights = { small: 300, medium: 300, large: 600 };
-    const readingWeights = { small: 400, medium: 400, large: 600 };
+    // Regular: clean comfortable reading. Large: accessibility — bigger + bold.
+    const scales  = { regular: 1, large: 1.45 };
+    const weights = { regular: 300, large: 600 };
+    const readWeights = { regular: 400, large: 600 };
     document.documentElement.style.setProperty('--reading-scale', scales[size] || 1);
     document.documentElement.style.setProperty('--reading-weight', weights[size] || 300);
     localStorage.setItem('sbs_font_size', size);
@@ -1770,10 +1858,10 @@
   }
 
   function updateFontSizeUI(size) {
-    const labels = { small: 'Small', medium: 'Medium', large: 'Large' };
+    const labels = { regular: 'Regular', large: 'Large' };
     const labelEl = document.getElementById('font-size-label');
-    if (labelEl) labelEl.textContent = labels[size] || 'Medium';
-    ['small', 'medium', 'large'].forEach(s => {
+    if (labelEl) labelEl.textContent = labels[size] || 'Regular';
+    ['regular', 'large'].forEach(s => {
       const btn = document.getElementById('font-btn-' + s);
       if (!btn) return;
       if (s === size) {
@@ -1835,11 +1923,18 @@
     }
   }
 
+  // ── TRIVIA RETURN STATE — declared early so goTo() can reference it ──
+  let _triviaReturnState = null;
+
   // ── NAVIGATION ──
   function goTo(screenId) {
     const current = document.querySelector('.screen.active');
     if (current) {
       current.classList.add('exit');
+      // Stop audio if leaving chapter screen (not when trivia is routing through it)
+      if (current.id === 'screen-chapter' && screenId !== 'screen-chapter') {
+        stopChapterAudio();
+      }
       setTimeout(() => current.classList.remove('active', 'exit'), 300);
     }
     setTimeout(() => {
@@ -1847,8 +1942,14 @@
       if (next) next.classList.add('active');
       STATE.currentScreen = screenId;
 
+      // Hide trivia back banner whenever we land somewhere that isn't chapter (from normal nav)
+      if (screenId !== 'screen-chapter' && !_triviaReturnState) {
+        const banner = document.getElementById('trivia-back-banner');
+        if (banner) banner.style.display = 'none';
+      }
+
       // Screen-specific init
-      if (screenId === 'screen-chapter') setTimeout(renderChapterScreen, 80);
+      if (screenId === 'screen-chapter') setTimeout(() => { renderChapterScreen(); }, 80);
       if (screenId === 'screen-chapter-select') setTimeout(initChapterSelector, 80);
       if (screenId === 'screen-memorize-main' || screenId === 'screen-memorize-test') setTimeout(renderMemorizeScreens, 80);
       if (screenId === 'screen-trivia-question') setTimeout(renderTriviaQuestion, 80);
@@ -1862,7 +1963,7 @@
     const next = document.getElementById(map[tab]);
     if (next) next.classList.add('active');
     STATE.currentScreen = map[tab];
-    if (tab === 'profile') updateFontSizeUI(localStorage.getItem('sbs_font_size') || 'medium');
+    if (tab === 'profile') updateFontSizeUI(localStorage.getItem('sbs_font_size') || 'regular');
   }
 
   // ── TIME ──
@@ -2957,21 +3058,28 @@
     triviaState.answered = false;
     triviaState.missed = [];
 
-    // Pull next 5 from the no-repeat queue
+    // Pull next 5 from the no-repeat queue, tracking indices used this game
     let queue = getTriviaQueue(level);
     const bank = TRIVIA_BANK[level];
     const picks = [];
+    const usedThisGame = new Set();
+
     while (picks.length < 5) {
       if (queue.length === 0) {
-        // All questions used — reshuffle the whole bank for the next cycle
-        const indices = bank.map((_, i) => i);
+        // All questions used — reshuffle, but exclude any already picked this game
+        const indices = bank.map((_, i) => i).filter(i => !usedThisGame.has(i));
         for (let i = indices.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [indices[i], indices[j]] = [indices[j], indices[i]];
         }
         queue = indices;
       }
-      picks.push(bank[queue.shift()]);
+      // Skip any index already used this game (prevents duplicates within one round)
+      const idx = queue.shift();
+      if (!usedThisGame.has(idx)) {
+        usedThisGame.add(idx);
+        picks.push(bank[idx]);
+      }
     }
     saveTriviaQueue(level, queue);
     triviaState.questions = picks;
@@ -2999,7 +3107,7 @@
     q.options.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.textContent = opt;
-      btn.style.cssText = 'width:100%;padding:0.9rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.9rem;color:var(--ink);transition:all 0.2s;font-family:var(--sans);';
+      btn.style.cssText = 'width:100%;padding:0.75rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.88rem;color:var(--ink);line-height:1.4;transition:all 0.2s;font-family:var(--sans);box-sizing:border-box;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;display:block;';
       btn.onclick = () => selectTriviaAnswer(i);
       container.appendChild(btn);
     });
@@ -3094,6 +3202,244 @@
     }
 
     goTo('screen-trivia-results');
+  }
+
+  // ── CHAPTER AUDIO ──
+  let _audioUtterance = null;
+  let _audioPlaying = false;
+  let _audioPaused = false;
+  let _audioRate = 1;
+
+  function initChapterAudio() {
+    // Reset audio state when chapter screen loads
+    _audioPlaying = false;
+    _audioPaused = false;
+    if (_audioUtterance) {
+      window.speechSynthesis.cancel();
+      _audioUtterance = null;
+    }
+    const playBtn = document.getElementById('audio-play-btn');
+    const stopBtn = document.getElementById('audio-stop-btn');
+    const statusTxt = document.getElementById('audio-status-text');
+    if (playBtn) { playBtn.textContent = '▶'; playBtn.style.background = 'var(--gold)'; }
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (statusTxt) statusTxt.textContent = 'Listen to this chapter';
+
+    // Show estimated read time
+    const textEl = document.getElementById('chapter-text-display');
+    const wordCountEl = document.getElementById('audio-word-count');
+    if (textEl && wordCountEl) {
+      const words = textEl.innerText.split(/\s+/).filter(Boolean).length;
+      const mins = Math.ceil(words / 150);
+      wordCountEl.textContent = `~${mins} min read · ${words} words`;
+    }
+
+    if (!window.speechSynthesis) {
+      const bar = document.getElementById('chapter-audio-bar');
+      if (bar) bar.innerHTML = '<p style="font-size:0.75rem;color:var(--muted);padding:0.25rem 0;">Audio not supported on this browser.</p>';
+    }
+  }
+
+  function toggleChapterAudio() {
+    if (!window.speechSynthesis) return;
+
+    if (_audioPaused) {
+      // Resume
+      window.speechSynthesis.resume();
+      _audioPaused = false;
+      _audioPlaying = true;
+      updateAudioUI('playing');
+      return;
+    }
+
+    if (_audioPlaying) {
+      // Pause
+      window.speechSynthesis.pause();
+      _audioPaused = true;
+      _audioPlaying = false;
+      updateAudioUI('paused');
+      return;
+    }
+
+    // Start fresh
+    const textEl = document.getElementById('chapter-text-display');
+    if (!textEl) return;
+    const text = textEl.innerText || textEl.textContent;
+    if (!text.trim()) return;
+
+    window.speechSynthesis.cancel();
+    _audioUtterance = new SpeechSynthesisUtterance(text);
+    _audioUtterance.rate = _audioRate;
+    _audioUtterance.pitch = 1;
+    _audioUtterance.lang = 'en-US';
+
+    // Pick a natural-sounding voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v =>
+      v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Google US') || v.name.includes('Karen') || v.name.includes('Daniel'))
+    ) || voices.find(v => v.lang.startsWith('en'));
+    if (preferred) _audioUtterance.voice = preferred;
+
+    _audioUtterance.onstart = () => { _audioPlaying = true; _audioPaused = false; updateAudioUI('playing'); };
+    _audioUtterance.onend = () => { _audioPlaying = false; _audioPaused = false; _audioUtterance = null; updateAudioUI('done'); };
+    _audioUtterance.onerror = () => { _audioPlaying = false; _audioPaused = false; updateAudioUI('idle'); };
+
+    window.speechSynthesis.speak(_audioUtterance);
+  }
+
+  function stopChapterAudio() {
+    window.speechSynthesis.cancel();
+    _audioPlaying = false;
+    _audioPaused = false;
+    _audioUtterance = null;
+    updateAudioUI('idle');
+  }
+
+  function changeAudioSpeed(val) {
+    _audioRate = parseFloat(val);
+    if (_audioPlaying || _audioPaused) {
+      // Restart with new speed from beginning
+      stopChapterAudio();
+      setTimeout(toggleChapterAudio, 100);
+    }
+  }
+
+  function updateAudioUI(state) {
+    const playBtn = document.getElementById('audio-play-btn');
+    const stopBtn = document.getElementById('audio-stop-btn');
+    const statusTxt = document.getElementById('audio-status-text');
+    if (!playBtn) return;
+    if (state === 'playing') {
+      playBtn.textContent = '⏸';
+      playBtn.style.background = 'var(--muted)';
+      if (stopBtn) stopBtn.style.display = 'block';
+      if (statusTxt) statusTxt.textContent = 'Reading aloud…';
+    } else if (state === 'paused') {
+      playBtn.textContent = '▶';
+      playBtn.style.background = 'var(--gold)';
+      if (statusTxt) statusTxt.textContent = 'Paused — tap to resume';
+    } else if (state === 'done') {
+      playBtn.textContent = '▶';
+      playBtn.style.background = 'var(--gold)';
+      if (stopBtn) stopBtn.style.display = 'none';
+      if (statusTxt) statusTxt.textContent = 'Done — tap to listen again';
+    } else {
+      playBtn.textContent = '▶';
+      playBtn.style.background = 'var(--gold)';
+      if (stopBtn) stopBtn.style.display = 'none';
+      if (statusTxt) statusTxt.textContent = 'Listen to this chapter';
+    }
+  }
+
+  // ── TRIVIA → BIBLE NAVIGATION ──
+
+  function openTriviaRef() {
+    const refEl = document.getElementById('trivia-ref');
+    if (!refEl) return;
+    const ref = refEl.textContent.trim();
+    if (!ref) return;
+
+    // Try to parse a book + chapter from the ref string
+    // Handles: "Genesis 6:9", "1 Corinthians 13", "Matthew 4:1–2", "Romans 3:28 / Galatians 2:16"
+    const match = ref.match(/^((?:\d\s)?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+
+    // For refs that don't map to a specific chapter (e.g. "Book of Psalms", "Biblical Canon")
+    // extract the first recognisable Bible book name and open chapter 1
+    const bookFallbacks = {
+      'Psalms': ['Psalm', 'Psalms', 'Book of Psalms'],
+      'Romans': ['Romans'],
+      'Matthew': ['Matthew', 'Sermon on the Mount', 'Olivet Discourse'],
+      'John': ['John', 'Johannine'],
+      'Genesis': ['Genesis', 'Creation'],
+      'Revelation': ['Revelation', 'Apocalypse'],
+      'Acts': ['Acts', 'Pentecost'],
+      'Hebrews': ['Hebrews'],
+      'Galatians': ['Galatians'],
+      'Ephesians': ['Ephesians'],
+      'Corinthians': ['Corinthians', 'New Testament'],
+      'Isaiah': ['Isaiah'],
+      'Daniel': ['Daniel'],
+      'Exodus': ['Exodus'],
+      'Deuteronomy': ['Deuteronomy'],
+      'James': ['James'],
+    };
+
+    let book, chapter;
+
+    if (match) {
+      book = match[1].trim();
+      chapter = parseInt(match[2]);
+    } else {
+      // Search for a recognisable book name in the ref text
+      let found = false;
+      for (const [bookName, patterns] of Object.entries(bookFallbacks)) {
+        if (patterns.some(p => ref.includes(p))) {
+          book = bookName === 'Corinthians' ? '1 Corinthians' : bookName;
+          chapter = 1;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        // Can't navigate — show a toast with the reference text instead
+        showToast('📍 ' + ref);
+        return;
+      }
+    }
+
+    // Save trivia state so we can return exactly where they left off
+    _triviaReturnState = {
+      screen: 'screen-trivia-question',
+      question: triviaState.current,
+      scrollY: document.querySelector('#screen-trivia-question .scroll-area')?.scrollTop || 0
+    };
+
+    // Show the back banner
+    const banner = document.getElementById('trivia-back-banner');
+    if (banner) banner.style.display = 'flex';
+
+    // Stop any audio that might be playing
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    _audioPlaying = false; _audioPaused = false;
+
+    // Navigate to chapter screen with this book/chapter
+    STATE.chapterBook = book;
+    STATE.chapterNum = chapter;
+    goTo('screen-chapter');
+  }
+
+  function returnToTrivia() {
+    // Stop audio
+    stopChapterAudio();
+
+    // Hide back banner
+    const banner = document.getElementById('trivia-back-banner');
+    if (banner) banner.style.display = 'none';
+
+    // Return to trivia question screen
+    const current = document.querySelector('.screen.active');
+    if (current) current.classList.remove('active');
+    const triviaScreen = document.getElementById('screen-trivia-question');
+    if (triviaScreen) triviaScreen.classList.add('active');
+    STATE.currentScreen = 'screen-trivia-question';
+
+    // Restore scroll position
+    if (_triviaReturnState?.scrollY) {
+      setTimeout(() => {
+        const sa = document.querySelector('#screen-trivia-question .scroll-area');
+        if (sa) sa.scrollTop = _triviaReturnState.scrollY;
+      }, 50);
+    }
+    _triviaReturnState = null;
+  }
+
+  function chapterBackNav() {
+    if (_triviaReturnState) {
+      // Came here from trivia — go back to trivia
+      returnToTrivia();
+    } else {
+      goTo('screen-home');
+    }
   }
 
   // ── WEEKLY QUIZ ──
@@ -3431,9 +3777,18 @@
     // Reset checkbox and button
     const chk = document.getElementById('chapter-checkbox');
     const btn = document.getElementById('chapter-continue-btn');
+    const checkRow = document.getElementById('chapter-check-row');
     if (chk) chk.classList.remove('checked');
-    if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
     readChecked = false;
+
+    // If opened from trivia, hide the daily habit completion elements
+    if (_triviaReturnState) {
+      if (checkRow) checkRow.style.display = 'none';
+      if (btn) btn.style.display = 'none';
+    } else {
+      if (checkRow) checkRow.style.display = '';
+      if (btn) { btn.style.display = ''; btn.disabled = true; btn.style.opacity = '0.4'; }
+    }
 
     // Fetch from BSB API
     const verses = await fetchChapter(book, chapter);
@@ -3443,6 +3798,8 @@
         textEl.innerHTML = verses.map(v =>
           `<p style="margin-bottom:0.85rem;line-height:1.85;"><sup style="color:var(--gold);font-size:0.68rem;margin-right:4px;font-weight:500;">${v.v}</sup>${v.t}</p>`
         ).join('');
+        // Init audio now that text is loaded
+        setTimeout(initChapterAudio, 50);
       } else {
         textEl.innerHTML = `
           <div style="text-align:center;padding:2rem 0;">
@@ -3450,6 +3807,9 @@
             <p style="font-size:0.85rem;color:var(--stone);line-height:1.7;margin-bottom:1rem;">This chapter isn't available offline. Try a fallback chapter like John 1, John 3, Psalm 23, Romans 8, Matthew 5, or Philippians 4 — or visit the live app for full access.</p>
             <button onclick="renderChapterScreen()" style="background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.5rem 1rem;font-size:0.78rem;color:var(--gold);cursor:pointer;">Try again</button>
           </div>`;
+        // Hide audio bar if no text loaded
+        const bar = document.getElementById('chapter-audio-bar');
+        if (bar) bar.style.display = 'none';
       }
     }
   }
