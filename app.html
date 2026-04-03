@@ -32,6 +32,7 @@
       --sans: 'DM Sans', sans-serif;
       --radius: 14px;
       --radius-sm: 8px;
+      --reading-scale: 1; /* 0.85 = Small, 1 = Medium, 1.2 = Large */
     }
 
     html {
@@ -343,12 +344,19 @@
     .verse-ref { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; }
     .verse-text {
       font-family: var(--serif);
-      font-size: 1.5rem;
+      font-size: calc(1.5rem * var(--reading-scale));
       font-style: italic;
-      font-weight: 300;
+      font-weight: var(--reading-weight, 300);
       line-height: 1.6;
       color: var(--ink);
       margin-bottom: 1rem;
+    }
+    .reading-text {
+      font-family: var(--serif);
+      font-size: calc(1rem * var(--reading-scale));
+      font-weight: var(--reading-weight, 400);
+      line-height: 1.9;
+      color: var(--ink);
     }
 
     /* ── STAT CARDS ── */
@@ -741,7 +749,7 @@
       <p class="eyebrow fade-up" style="margin-bottom:0.5rem;">Check your email</p>
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">Enter your<br><em>reset code.</em></div>
       <p class="body-text fade-up-3" style="margin-bottom:0.5rem;">We sent a 6-digit code to:</p>
-      <p style="font-weight:500;color:var(--gold);font-size:0.9rem;margin-bottom:1.5rem;" id="reset-email-display">you@email.com</p>
+      <p style="font-weight:500;color:var(--gold);font-size:0.9rem;margin-bottom:1.5rem;" id="reset-email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e1988e94a1848c80888dcf828e8c">[email&#160;protected]</a></p>
 
       <div class="fade-up-3">
         <div class="input-group">
@@ -898,10 +906,11 @@
       <!-- Today's mode selector -->
       <div style="margin-bottom:1rem;">
         <p class="eyebrow" style="margin-bottom:0.75rem;">Today's habit</p>
-        <div style="display:flex;gap:0.5rem;">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
           <button class="mode-pill active" id="pill-verse" onclick="setHomePill('verse')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--gold);background:var(--gold);color:var(--white);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">📖 Verse</button>
           <button class="mode-pill" id="pill-chapter" onclick="setHomePill('chapter')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">📜 Chapter</button>
           <button class="mode-pill" id="pill-memorize" onclick="setHomePill('memorize')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">✏️ Memorize</button>
+          <button class="mode-pill" id="pill-trivia" onclick="setHomePill('trivia')" style="flex:1;padding:0.6rem;border-radius:20px;border:1px solid var(--stone);background:transparent;color:var(--muted);font-size:0.7rem;font-weight:500;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">❓ Trivia</button>
         </div>
       </div>
 
@@ -914,7 +923,7 @@
       <!-- Today's verse preview -->
       <div class="card-warm" style="margin-bottom:1rem;cursor:pointer;" onclick="startTodayHabit()" id="today-card">
         <p class="verse-ref" id="home-verse-ref">Matthew 6:33 · ESV</p>
-        <p class="verse-text" style="font-size:1.05rem;line-height:1.7;overflow:visible;display:block;white-space:normal;" id="home-verse-preview">"But seek first the kingdom of God and his righteousness, and all these things will be added to you."</p>
+        <p class="verse-text" style="font-size:calc(1.05rem * var(--reading-scale));line-height:1.7;overflow:visible;display:block;white-space:normal;" id="home-verse-preview">"But seek first the kingdom of God and his righteousness, and all these things will be added to you."</p>
         <div style="display:flex;align-items:center;gap:6px;margin-top:0.75rem;">
           <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;"></div>
           <span style="font-size:0.75rem;color:var(--gold);font-weight:500;" id="today-status">Tap to begin today's reading →</span>
@@ -985,7 +994,7 @@
 
       <div class="scroll-area">
         <p class="verse-ref fade-up" id="chapter-ref-display">John 15 · ESV</p>
-        <div style="font-family:var(--serif);font-size:1rem;line-height:1.9;color:var(--ink);" id="chapter-text-display" class="fade-up-2"></div>
+        <div class="reading-text fade-up-2" id="chapter-text-display"></div>
         <div style="height:1rem;"></div>
         <div class="check-row" onclick="toggleReadCheck('chapter')" id="chapter-check-row" style="margin-top:1rem;">
           <div class="check-box" id="chapter-checkbox"></div>
@@ -1042,7 +1051,7 @@
         <p class="verse-ref fade-up" id="mem-verse-ref">Psalm 119:105 · ESV</p>
 
         <div class="card-warm fade-up-2" style="margin-bottom:1rem;text-align:center;padding:1.5rem;">
-          <p class="verse-text" style="font-size:1.2rem;margin-bottom:0;" id="mem-verse-full">"Your word is a lamp to my feet and a light to my path."</p>
+          <p class="verse-text" style="font-size:calc(1.2rem * var(--reading-scale));margin-bottom:0;" id="mem-verse-full">"Your word is a lamp to my feet and a light to my path."</p>
         </div>
 
         <div class="card fade-up-3" style="margin-bottom:1rem;">
@@ -1078,7 +1087,7 @@
 
         <div class="card fade-up-2" style="margin-bottom:1rem;text-align:center;padding:1.5rem;">
           <p class="eyebrow" style="margin-bottom:0.75rem;">Type the missing words</p>
-          <div style="line-height:2.8;font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--ink);" id="mem-test-exercise"></div>
+          <div style="line-height:2.8;font-family:var(--serif);font-style:italic;font-size:calc(1.05rem * var(--reading-scale));color:var(--ink);" id="mem-test-exercise"></div>
           <p style="font-size:0.7rem;color:var(--stone);margin-top:0.75rem;">The verse is hidden — recall it from memory</p>
         </div>
 
@@ -1121,6 +1130,120 @@
           <div class="empty-icon">✏️</div>
           <p class="empty-text">No verses memorized yet.<br>Start the Memorize habit to build your treasury.</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: TRIVIA — LEVEL SELECT
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-trivia-level">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;justify-content:center;">
+      <button class="btn-text" style="align-self:flex-start;padding:0;text-decoration:none;font-size:1.2rem;margin-bottom:1rem;" onclick="goTo('screen-home')">←</button>
+      <div style="font-size:2.5rem;margin-bottom:0.75rem;">✝️</div>
+      <div class="display fade-up" style="font-size:1.8rem;margin-bottom:0.5rem;">How well do you<br>know your <em>Bible?</em></div>
+      <p class="body-text fade-up-2" style="max-width:30ch;margin-bottom:2rem;">Choose your level and answer 5 questions. Every answer shows you exactly where to find it in scripture.</p>
+
+      <div style="display:flex;flex-direction:column;gap:0.75rem;width:100%;" class="fade-up-3">
+        <button onclick="startTrivia('beginner')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🌱 Beginner</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">People, places & basic stories</div>
+            </div>
+            <span style="color:var(--gold);font-size:1rem;">→</span>
+          </div>
+        </button>
+        <button onclick="startTrivia('intermediate')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);">📖 Intermediate</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Deeper teachings & theology</div>
+            </div>
+            <span style="color:var(--gold);font-size:1rem;">→</span>
+          </div>
+        </button>
+        <button onclick="startTrivia('expert')" style="width:100%;padding:1.1rem 1.25rem;border-radius:var(--radius);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;transition:all 0.2s;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);">🏆 Expert</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Prophecy, genealogy & obscure facts</div>
+            </div>
+            <span style="color:var(--gold);font-size:1rem;">→</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: TRIVIA — QUESTION
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-trivia-question">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="goTo('screen-trivia-level')">←</button>
+        <p class="eyebrow" id="trivia-eyebrow">Beginner · 1 of 5</p>
+        <div style="width:24px;"></div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="trivia-progress" style="width:20%;"></div></div>
+
+      <div class="scroll-area">
+        <div class="display fade-up" style="font-size:1.3rem;margin-bottom:1.25rem;line-height:1.4;" id="trivia-question">Who built the ark?</div>
+
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem;" id="trivia-options">
+          <!-- options injected by JS -->
+        </div>
+
+        <!-- Answer reveal (hidden until answered) -->
+        <div id="trivia-reveal" style="display:none;">
+          <div id="trivia-result-banner" style="padding:0.875rem;border-radius:var(--radius-sm);margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;">
+              <span id="trivia-result-icon" style="font-size:1.1rem;"></span>
+              <span id="trivia-result-label" style="font-weight:600;font-size:0.9rem;"></span>
+            </div>
+            <p id="trivia-correct-answer" style="font-size:0.82rem;color:var(--muted);"></p>
+          </div>
+          <div class="card" style="margin-bottom:1rem;">
+            <p class="eyebrow" style="margin-bottom:0.4rem;">📍 Find it in scripture</p>
+            <p style="font-family:var(--serif);font-size:0.95rem;color:var(--gold);font-weight:500;margin-bottom:0.3rem;" id="trivia-ref"></p>
+            <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;" id="trivia-context"></p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="trivia-next-btn" style="margin-top:1rem;display:none;" onclick="triviaNext()">Next Question →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN: TRIVIA — RESULTS
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-trivia-results">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner" style="align-items:center;text-align:center;">
+      <div style="font-size:3.5rem;margin-top:1rem;margin-bottom:0.5rem;" id="trivia-result-emoji">🎉</div>
+      <p class="eyebrow fade-up">Round complete</p>
+      <div class="display fade-up-2" style="font-size:2rem;margin-bottom:0.5rem;"><em id="trivia-score-display">4/5</em></div>
+      <p class="body-text fade-up-3" style="max-width:28ch;margin-bottom:2rem;" id="trivia-result-msg">Great job! Keep studying God's Word.</p>
+
+      <div class="stat-row fade-up-4" style="width:100%;margin-bottom:1.5rem;">
+        <div class="stat-card"><div class="stat-num" id="trivia-correct-num">4</div><div class="stat-label">Correct</div></div>
+        <div class="stat-card"><div class="stat-num" id="trivia-wrong-num">1</div><div class="stat-label">Missed</div></div>
+        <div class="stat-card"><div class="stat-num" id="trivia-level-display">🌱</div><div class="stat-label">Level</div></div>
+      </div>
+
+      <!-- Missed answers review -->
+      <div id="trivia-missed-review" style="width:100%;margin-bottom:1.5rem;text-align:left;"></div>
+
+      <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
+        <button class="btn-primary" onclick="startTrivia(window._triviaLevel)">Play Again →</button>
+        <button class="btn-ghost" onclick="goTo('screen-trivia-level')">Change Level</button>
+        <button class="btn-text" style="color:var(--muted);" onclick="goTo('screen-home')">Back to Home</button>
       </div>
     </div>
   </div>
@@ -1473,7 +1596,7 @@
         <div class="avatar" id="profile-avatar">JD</div>
         <div style="text-align:center;margin-bottom:1.25rem;">
           <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);" id="profile-name">John Doe</div>
-          <p style="font-size:0.78rem;color:var(--muted);" id="profile-email">john@email.com</p>
+          <p style="font-size:0.78rem;color:var(--muted);" id="profile-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa90959294ba9f979b9396d4999597">[email&#160;protected]</a></p>
           <p class="eyebrow" style="margin-top:0.25rem;">Member since today</p>
         </div>
 
@@ -1497,6 +1620,17 @@
           <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
             <span style="font-size:0.85rem;">Bible translation</span>
             <span style="font-size:0.78rem;color:var(--gold);">ESV</span>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+              <span style="font-size:0.85rem;">Reading text size</span>
+              <span style="font-size:0.78rem;color:var(--gold);" id="font-size-label">Medium</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+              <button onclick="setFontSize('small')" id="font-btn-small" style="flex:1;padding:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;cursor:pointer;font-family:var(--serif);font-size:0.85rem;color:var(--muted);transition:all 0.2s;">A</button>
+              <button onclick="setFontSize('medium')" id="font-btn-medium" style="flex:1;padding:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--gold);background:var(--gold);cursor:pointer;font-family:var(--serif);font-size:1rem;color:var(--white);transition:all 0.2s;">A</button>
+              <button onclick="setFontSize('large')" id="font-btn-large" style="flex:1;padding:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:transparent;cursor:pointer;font-family:var(--serif);font-size:1.2rem;color:var(--muted);transition:all 0.2s;">A</button>
+            </div>
           </div>
         </div>
 
@@ -1534,7 +1668,7 @@
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ── STATE ──
   const STATE = {
     user: null,
@@ -1617,7 +1751,42 @@
     setInterval(updateAllTimes, 60000);
     loadState();
     buildStreakRow();
+    applyFontSize(localStorage.getItem('sbs_font_size') || 'medium');
   });
+
+  // ── FONT SIZE ──
+  function applyFontSize(size) {
+    const scales  = { small: 0.85, medium: 1, large: 1.2 };
+    const weights = { small: 300, medium: 300, large: 600 };
+    const readingWeights = { small: 400, medium: 400, large: 600 };
+    document.documentElement.style.setProperty('--reading-scale', scales[size] || 1);
+    document.documentElement.style.setProperty('--reading-weight', weights[size] || 300);
+    localStorage.setItem('sbs_font_size', size);
+  }
+
+  function setFontSize(size) {
+    applyFontSize(size);
+    updateFontSizeUI(size);
+  }
+
+  function updateFontSizeUI(size) {
+    const labels = { small: 'Small', medium: 'Medium', large: 'Large' };
+    const labelEl = document.getElementById('font-size-label');
+    if (labelEl) labelEl.textContent = labels[size] || 'Medium';
+    ['small', 'medium', 'large'].forEach(s => {
+      const btn = document.getElementById('font-btn-' + s);
+      if (!btn) return;
+      if (s === size) {
+        btn.style.border = '1px solid var(--gold)';
+        btn.style.background = 'var(--gold)';
+        btn.style.color = 'var(--white)';
+      } else {
+        btn.style.border = '1px solid var(--stone)';
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--muted)';
+      }
+    });
+  }
 
   function loadState() {
     try {
@@ -1682,6 +1851,7 @@
       if (screenId === 'screen-chapter') setTimeout(renderChapterScreen, 80);
       if (screenId === 'screen-chapter-select') setTimeout(initChapterSelector, 80);
       if (screenId === 'screen-memorize-main' || screenId === 'screen-memorize-test') setTimeout(renderMemorizeScreens, 80);
+      if (screenId === 'screen-trivia-question') setTimeout(renderTriviaQuestion, 80);
     }, 50);
   }
 
@@ -1692,6 +1862,7 @@
     const next = document.getElementById(map[tab]);
     if (next) next.classList.add('active');
     STATE.currentScreen = map[tab];
+    if (tab === 'profile') updateFontSizeUI(localStorage.getItem('sbs_font_size') || 'medium');
   }
 
   // ── TIME ──
@@ -1911,6 +2082,14 @@
     const ref = document.getElementById('home-verse-ref');
     const preview = document.getElementById('home-verse-preview');
     const status = document.getElementById('today-status');
+
+    if (STATE.mode === 'trivia') {
+      if (ref) ref.textContent = 'Bible Trivia · 3 levels';
+      if (preview) preview.textContent = 'Test your knowledge of scripture — beginner, intermediate, or expert. Every answer shows you where to find it in the Bible.';
+      if (status) { status.textContent = 'Tap to start trivia →'; status.style.color = 'var(--gold)'; }
+      return;
+    }
+
     if (ref) ref.textContent = currentVerse.ref;
     if (preview) preview.textContent = currentVerse.text;
     if (status) {
@@ -1965,7 +2144,7 @@
     // Always allow reading regardless of todayComplete
     // todayComplete only prevents streak from incrementing again — not from reading
     window._extraSession = STATE.todayComplete;
-    const modeMap = { verse: 'screen-verse', chapter: 'screen-chapter', memorize: 'screen-memorize-main' };
+    const modeMap = { verse: 'screen-verse', chapter: 'screen-chapter', memorize: 'screen-memorize-main', trivia: 'screen-trivia-level' };
 
     // Reset the relevant screen's checkbox and button
     if (STATE.mode === 'verse') {
@@ -2425,6 +2604,206 @@
       }
     }
     goTo('screen-mem-recap');
+  }
+
+  // ── BIBLE TRIVIA ──
+  const TRIVIA_BANK = {
+    beginner: [
+      { q: "Who built the ark to survive the great flood?", options: ["Moses","Noah","Abraham","Solomon"], answer: 0, ref: "Genesis 6–9", context: "God instructed Noah to build an ark of cypress wood to save his family and two of every animal from the flood." },
+      { q: "How many days did Jesus fast in the wilderness?", options: ["20 days","30 days","40 days","7 days"], answer: 2, ref: "Matthew 4:1–2", context: "Jesus was led by the Spirit into the wilderness, where He fasted forty days and forty nights before being tempted by Satan." },
+      { q: "What city was Jesus born in?", options: ["Nazareth","Jerusalem","Bethlehem","Capernaum"], answer: 2, ref: "Luke 2:4–7", context: "Joseph and Mary traveled to Bethlehem, the city of David, where Jesus was born and laid in a manger." },
+      { q: "Who was swallowed by a large fish?", options: ["Elijah","Daniel","Jonah","Ezekiel"], answer: 2, ref: "Jonah 1:17", context: "After fleeing from God's call, Jonah was thrown overboard and swallowed by a great fish, where he remained three days and three nights." },
+      { q: "Which disciple denied Jesus three times?", options: ["John","Judas","Thomas","Peter"], answer: 3, ref: "Luke 22:54–62", context: "Before the rooster crowed, Peter denied knowing Jesus three times, just as Jesus had predicted at the Last Supper." },
+      { q: "What was the name of the garden where Jesus was arrested?", options: ["Eden","Gethsemane","Nazareth","Galilee"], answer: 1, ref: "Matthew 26:36–50", context: "After the Last Supper, Jesus went to the Garden of Gethsemane to pray before Judas arrived with soldiers to arrest Him." },
+      { q: "How many apostles did Jesus choose?", options: ["7","10","12","14"], answer: 2, ref: "Luke 6:12–16", context: "After a night of prayer, Jesus chose twelve disciples whom He also called apostles to travel with Him and continue His ministry." },
+      { q: "Which woman hid two Israelite spies in Jericho?", options: ["Deborah","Ruth","Esther","Rahab"], answer: 3, ref: "Joshua 2:1–6", context: "Rahab hid Joshua's two spies under stalks of flax on her roof, and later her household was spared when Jericho fell." },
+      { q: "What did God create on the first day?", options: ["Sun and moon","Animals","Light","Plants"], answer: 2, ref: "Genesis 1:1–5", context: "On the first day, God said 'Let there be light,' and separated the light from the darkness, calling the light 'day' and the darkness 'night.'" },
+      { q: "Who wrote most of the Psalms?", options: ["Solomon","Moses","David","Asaph"], answer: 2, ref: "Book of Psalms", context: "King David is credited with writing 73 of the 150 Psalms, making him the primary author, though others including Asaph and Moses contributed." },
+      { q: "What is the shortest verse in the Bible?", options: ['"God is love."','"Fear not."','"Jesus wept."','"Pray continually."'], answer: 2, ref: "John 11:35", context: "At the tomb of Lazarus, seeing Mary weeping, Jesus was deeply moved. 'Jesus wept' is the shortest verse in the English Bible." },
+      { q: "Which king of Israel built the first temple in Jerusalem?", options: ["David","Solomon","Saul","Rehoboam"], answer: 1, ref: "1 Kings 6:1–38", context: "Solomon built the first permanent temple for God in Jerusalem, a project that took seven years to complete." },
+      { q: "What did Samson's strength come from?", options: ["His armor","His prayers","His uncut hair","His faith"], answer: 2, ref: "Judges 16:17", context: "Samson revealed to Delilah that his power came from his hair — a Nazirite vow from birth that he had never cut it." },
+      { q: "Who interpreted Pharaoh's dream in Egypt?", options: ["Moses","Aaron","Joseph","Daniel"], answer: 2, ref: "Genesis 41:15–36", context: "Joseph, who had a God-given gift for interpreting dreams, correctly explained Pharaoh's dream as seven years of plenty followed by seven years of famine." },
+      { q: "On which day did God rest after creation?", options: ["Fifth","Sixth","Seventh","Eighth"], answer: 2, ref: "Genesis 2:2–3", context: "By the seventh day God had finished His work, and He rested, blessing and making the seventh day holy — the foundation of the Sabbath." }
+    ],
+    intermediate: [
+      { q: "What were the two great commandments Jesus named as the greatest?", options: ["Sabbath & tithing","Love God & love your neighbor","Honor parents & don't steal","Prayer & fasting"], answer: 1, ref: "Matthew 22:37–40", context: "Jesus declared that all the Law and the Prophets hang on two commands: love God with all your heart, and love your neighbor as yourself." },
+      { q: "Which fruit of the Spirit is listed first in Galatians 5?", options: ["Peace","Joy","Faithfulness","Love"], answer: 3, ref: "Galatians 5:22–23", context: "Paul lists nine fruits of the Spirit beginning with love, followed by joy, peace, forbearance, kindness, goodness, faithfulness, gentleness, and self-control." },
+      { q: "How many books are in the New Testament?", options: ["24","27","30","39"], answer: 1, ref: "The New Testament Canon", context: "The New Testament contains 27 books, from the four Gospels through Revelation, written by various apostles and their companions." },
+      { q: "What does the word 'gospel' mean?", options: ["Holy law","Good news","Sacred story","Divine truth"], answer: 1, ref: "Mark 1:1", context: "The Greek word 'euangelion' means good news. The Gospel is the good news of Jesus Christ — His life, death, and resurrection for our salvation." },
+      { q: "Who baptized Jesus in the Jordan River?", options: ["Peter","Andrew","John the Baptist","Elijah"], answer: 2, ref: "Matthew 3:13–17", context: "John the Baptist baptized Jesus in the Jordan River, after which the Spirit descended like a dove and God's voice declared 'This is my beloved Son.'" },
+      { q: "In the parable of the Prodigal Son, what did the father do when his son returned?", options: ["Scolded him first","Made him a servant","Ran to meet and embraced him","Sent him away"], answer: 2, ref: "Luke 15:20–24", context: "While the son was still far off, the father saw him, was filled with compassion, ran to him, threw his arms around him, and called for a celebration." },
+      { q: "What is the first book of the New Testament?", options: ["Mark","John","Matthew","Acts"], answer: 2, ref: "The New Testament Canon", context: "Matthew is the first book of the New Testament, written primarily for a Jewish audience to show Jesus as the fulfillment of Old Testament prophecy." },
+      { q: "Which apostle wrote the most books of the New Testament?", options: ["John","Peter","James","Paul"], answer: 3, ref: "New Testament Epistles", context: "Paul authored 13 epistles (Romans through Philemon), making him the most prolific New Testament writer, though John wrote five books including Revelation." },
+      { q: "What does 'Emmanuel' mean?", options: ["Son of God","King of kings","God with us","Lamb of God"], answer: 2, ref: "Matthew 1:23 / Isaiah 7:14", context: "The name Emmanuel, prophesied in Isaiah and fulfilled in Jesus' birth, means 'God with us' — the foundational truth of the incarnation." },
+      { q: "In Revelation, how many churches does Jesus address?", options: ["5","6","7","10"], answer: 2, ref: "Revelation 1–3", context: "Jesus dictated letters to seven specific churches in Asia Minor: Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, and Laodicea." },
+      { q: "Which Old Testament prophet predicted Jesus would be born of a virgin?", options: ["Jeremiah","Micah","Isaiah","Amos"], answer: 2, ref: "Isaiah 7:14", context: "Isaiah prophesied 'The virgin will conceive and give birth to a son, and will call him Immanuel,' fulfilled about 700 years later in the birth of Jesus." },
+      { q: "What is the longest book in the Bible?", options: ["Genesis","Jeremiah","Psalms","Isaiah"], answer: 2, ref: "Book of Psalms", context: "The Book of Psalms is the longest book in the Bible with 150 chapters. Psalm 119 is also the longest individual chapter." },
+      { q: "What armor piece does Paul say is 'the sword of the Spirit'?", options: ["Shield of faith","Belt of truth","Gospel of peace","Word of God"], answer: 3, ref: "Ephesians 6:17", context: "In describing the armor of God, Paul identifies the sword of the Spirit as the Word of God — the only offensive weapon in the spiritual armor." },
+      { q: "How many people did Jesus feed with five loaves and two fish?", options: ["2,000","4,000","5,000","10,000"], answer: 2, ref: "Matthew 14:13–21", context: "Jesus fed about five thousand men — plus women and children — with five loaves and two fish, with twelve basketfuls left over." },
+      { q: "What is justification by faith alone known as in theology?", options: ["Sanctification","Glorification","Sola Fide","Theosis"], answer: 2, ref: "Romans 3:28 / Galatians 2:16", context: "Sola Fide — 'faith alone' — is the doctrine that we are justified before God through faith in Jesus Christ, not by our works, central to Paul's letters." }
+    ],
+    expert: [
+      { q: "In which book does God appear to Moses in a burning bush?", options: ["Genesis","Leviticus","Numbers","Exodus"], answer: 3, ref: "Exodus 3:1–6", context: "While tending flocks at Horeb, Moses saw a bush that burned but was not consumed. God spoke from it, calling Moses to lead Israel out of Egypt." },
+      { q: "Who was the father of John the Baptist?", options: ["Joseph","Zechariah","Simeon","Aaron"], answer: 1, ref: "Luke 1:5–13", context: "Zechariah, a priest of the division of Abijah, was John the Baptist's father. An angel told him that his elderly wife Elizabeth would bear a son." },
+      { q: "What was the name of Abraham's wife before God renamed her Sarah?", options: ["Hagar","Sarai","Rebekah","Leah"], answer: 1, ref: "Genesis 17:15", context: "God changed Abram's name to Abraham and Sarai's name to Sarah as part of the covenant, promising to bless her with a son despite her old age." },
+      { q: "Which prophet was taken to heaven in a chariot of fire?", options: ["Elisha","Isaiah","Enoch","Elijah"], answer: 3, ref: "2 Kings 2:11", context: "Elijah was taken to heaven by a whirlwind as a chariot of fire and horses of fire appeared and separated him from Elisha, who watched and cried out." },
+      { q: "How many years did Israel wander in the wilderness?", options: ["20 years","30 years","40 years","50 years"], answer: 2, ref: "Numbers 14:33–34 / Deuteronomy 2:7", context: "Because of the people's unbelief when the spies returned, God decreed they would wander forty years in the wilderness until that generation passed." },
+      { q: "What was the name of the high priest who questioned Jesus before Pilate?", options: ["Annas","Caiaphas","Nicodemus","Gamaliel"], answer: 1, ref: "Matthew 26:57–68 / John 18:24", context: "Caiaphas was the high priest who questioned Jesus at His Jewish trial and declared that it was better for one man to die for the nation than for all to perish." },
+      { q: "In Daniel's vision, how many beasts rose from the sea?", options: ["Three","Four","Five","Seven"], answer: 1, ref: "Daniel 7:1–8", context: "Daniel saw four great beasts rise from a churning sea — a lion, a bear, a leopard, and a terrifying beast with iron teeth — representing four world kingdoms." },
+      { q: "Which tribe of Israel was the apostle Paul from?", options: ["Judah","Levi","Ephraim","Benjamin"], answer: 3, ref: "Philippians 3:5 / Romans 11:1", context: "Paul identifies himself as 'of the tribe of Benjamin, a Hebrew of Hebrews' — the same tribe as King Saul, for whom Paul was originally named." },
+      { q: "Who wrote the book of Hebrews?", options: ["Paul","Peter","Luke","Unknown"], answer: 3, ref: "Book of Hebrews (authorship uncertain)", context: "The author of Hebrews is unknown. Paul, Apollos, Priscilla, and others have been proposed, but the text itself doesn't name its author." },
+      { q: "What is the Hebrew word for the first five books of the Bible?", options: ["Mishnah","Torah","Talmud","Midrash"], answer: 1, ref: "Genesis through Deuteronomy", context: "The Torah (meaning 'instruction' or 'law') refers to the five books of Moses — Genesis, Exodus, Leviticus, Numbers, and Deuteronomy — also called the Pentateuch." },
+      { q: "In Revelation, what number is associated with the beast?", options: ["444","616","666","777"], answer: 2, ref: "Revelation 13:18", context: "Revelation 13:18 states that the number of the beast is 666, described as 'the number of a man,' which has been debated by theologians for centuries." },
+      { q: "Who was the first martyr of the Christian church?", options: ["James","Paul","Philip","Stephen"], answer: 3, ref: "Acts 7:54–60", context: "Stephen, a deacon chosen to serve the early church, was stoned to death after his bold sermon to the Sanhedrin, making him the first recorded Christian martyr." },
+      { q: "How many chapters are in the book of Revelation?", options: ["20","21","22","24"], answer: 2, ref: "The Book of Revelation", context: "Revelation contains 22 chapters, from John's vision on Patmos through the letters to the seven churches, the great tribulation, and the new creation." },
+      { q: "Which Old Testament figure had the most wives?", options: ["David","Abraham","Gideon","Solomon"], answer: 3, ref: "1 Kings 11:3", context: "King Solomon had 700 wives of royal birth and 300 concubines. His foreign wives turned his heart away from God in his later years." },
+      { q: "What is the meaning of the Hebrew name 'Israel'?", options: ["God's chosen","He who strives with God","Land of promise","Blessed nation"], answer: 1, ref: "Genesis 32:28", context: "After wrestling with God at Peniel, Jacob was renamed Israel — meaning 'one who strives with God' or 'God strives' — and it became the name of his descendants." }
+    ]
+  };
+
+  let triviaState = {
+    level: 'beginner',
+    questions: [],
+    current: 0,
+    score: 0,
+    answered: false,
+    missed: []
+  };
+
+  function startTrivia(level) {
+    window._triviaLevel = level;
+    triviaState.level = level;
+    triviaState.score = 0;
+    triviaState.current = 0;
+    triviaState.answered = false;
+    triviaState.missed = [];
+
+    // Shuffle and pick 5 questions from the chosen level
+    const pool = [...TRIVIA_BANK[level]];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    triviaState.questions = pool.slice(0, 5);
+
+    goTo('screen-trivia-question');
+    setTimeout(renderTriviaQuestion, 80);
+  }
+
+  function renderTriviaQuestion() {
+    const q = triviaState.questions[triviaState.current];
+    const idx = triviaState.current;
+    const total = triviaState.questions.length;
+    const levelLabels = { beginner: '🌱 Beginner', intermediate: '📖 Intermediate', expert: '🏆 Expert' };
+
+    document.getElementById('trivia-eyebrow').textContent = `${levelLabels[triviaState.level]} · ${idx + 1} of ${total}`;
+    document.getElementById('trivia-progress').style.width = `${((idx + 1) / total) * 100}%`;
+    document.getElementById('trivia-question').textContent = q.q;
+    document.getElementById('trivia-reveal').style.display = 'none';
+    document.getElementById('trivia-next-btn').style.display = 'none';
+    triviaState.answered = false;
+
+    // Build answer option buttons
+    const container = document.getElementById('trivia-options');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.style.cssText = 'width:100%;padding:0.9rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.9rem;color:var(--ink);transition:all 0.2s;font-family:var(--sans);';
+      btn.onclick = () => selectTriviaAnswer(i);
+      container.appendChild(btn);
+    });
+  }
+
+  function selectTriviaAnswer(chosenIdx) {
+    if (triviaState.answered) return;
+    triviaState.answered = true;
+
+    const q = triviaState.questions[triviaState.current];
+    const correct = chosenIdx === q.answer;
+    if (correct) triviaState.score++;
+    else triviaState.missed.push({ q: q.q, correct: q.options[q.answer], ref: q.ref });
+
+    // Style the buttons
+    const btns = document.querySelectorAll('#trivia-options button');
+    btns.forEach((btn, i) => {
+      btn.style.cursor = 'default';
+      if (i === q.answer) {
+        btn.style.background = '#EAF6EE';
+        btn.style.border = '1px solid var(--success)';
+        btn.style.color = 'var(--success)';
+        btn.style.fontWeight = '600';
+      } else if (i === chosenIdx && !correct) {
+        btn.style.background = '#FEF0EE';
+        btn.style.border = '1px solid #C0392B';
+        btn.style.color = '#C0392B';
+      } else {
+        btn.style.opacity = '0.45';
+      }
+    });
+
+    // Show reveal panel
+    const banner = document.getElementById('trivia-result-banner');
+    banner.style.background = correct ? '#EAF6EE' : '#FEF0EE';
+    document.getElementById('trivia-result-icon').textContent = correct ? '✅' : '❌';
+    document.getElementById('trivia-result-label').style.color = correct ? 'var(--success)' : '#C0392B';
+    document.getElementById('trivia-result-label').textContent = correct ? 'Correct!' : 'Not quite.';
+    document.getElementById('trivia-correct-answer').textContent = correct ? '' : `The answer is: ${q.options[q.answer]}`;
+    document.getElementById('trivia-ref').textContent = q.ref;
+    document.getElementById('trivia-context').textContent = q.context;
+    document.getElementById('trivia-reveal').style.display = 'block';
+
+    // Show next button
+    const nextBtn = document.getElementById('trivia-next-btn');
+    const isLast = triviaState.current === triviaState.questions.length - 1;
+    nextBtn.textContent = isLast ? 'See Results →' : 'Next Question →';
+    nextBtn.style.display = 'block';
+  }
+
+  function triviaNext() {
+    const isLast = triviaState.current === triviaState.questions.length - 1;
+    if (isLast) {
+      showTriviaResults();
+    } else {
+      triviaState.current++;
+      renderTriviaQuestion();
+    }
+  }
+
+  function showTriviaResults() {
+    const score = triviaState.score;
+    const total = triviaState.questions.length;
+    const levelEmojis = { beginner: '🌱', intermediate: '📖', expert: '🏆' };
+    const msgs = [
+      'Keep reading — every answer leads you deeper into God\'s Word.',
+      'Good effort! The more you read, the more it clicks.',
+      'Nice work! You\'re building a solid foundation.',
+      'Great job! God\'s Word is taking root in you.',
+      'Excellent! You really know your Bible!'
+    ];
+
+    document.getElementById('trivia-result-emoji').textContent = score === total ? '🏆' : score >= 3 ? '🎉' : '📖';
+    document.getElementById('trivia-score-display').textContent = `${score}/${total}`;
+    document.getElementById('trivia-result-msg').textContent = msgs[score] || msgs[3];
+    document.getElementById('trivia-correct-num').textContent = score;
+    document.getElementById('trivia-wrong-num').textContent = total - score;
+    document.getElementById('trivia-level-display').textContent = levelEmojis[triviaState.level];
+
+    // Show missed answers
+    const missedEl = document.getElementById('trivia-missed-review');
+    if (triviaState.missed.length === 0) {
+      missedEl.innerHTML = '';
+    } else {
+      missedEl.innerHTML = `<p class="eyebrow" style="margin-bottom:0.75rem;">Review missed questions</p>` +
+        triviaState.missed.map(m => `
+          <div class="card" style="margin-bottom:0.5rem;text-align:left;">
+            <p style="font-size:0.82rem;color:var(--ink);margin-bottom:0.3rem;font-weight:500;">${m.q}</p>
+            <p style="font-size:0.78rem;color:var(--success);margin-bottom:0.25rem;">✓ ${m.correct}</p>
+            <p style="font-size:0.72rem;color:var(--gold);">📍 ${m.ref}</p>
+          </div>`).join('');
+    }
+
+    goTo('screen-trivia-results');
   }
 
   // ── WEEKLY QUIZ ──
@@ -2982,21 +3361,15 @@
         if (parsed.user) {
           parsed.user.password = newPass;
           localStorage.setItem('sbs_state', JSON.stringify(parsed));
-          // Also update current STATE if it matches
-          if (STATE.user && STATE.user.email === _resetEmail) {
-            STATE.user.password = newPass;
-          }
+          // Also update current STATE user
+          if (STATE.user) STATE.user.password = newPass;
         }
       }
     } catch(e) {}
 
-    // Clear reset state
-    _resetCode = null;
-    _resetEmail = null;
-    _resetExpiry = null;
-
     goTo('screen-reset-success');
   }
+
 </script>
 </body>
 </html>
