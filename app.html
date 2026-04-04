@@ -199,6 +199,15 @@
           box-sizing: border-box;
     }
 
+    .mode-opt-btn {
+      width: 100%; padding: 0.6rem 0.75rem; background: var(--white);
+      border: 1px solid var(--stone); border-radius: var(--radius-sm);
+      font-family: var(--sans); font-size: 0.82rem; color: var(--muted);
+      text-align: left; cursor: pointer; transition: all 0.15s;
+    }
+    .mode-opt-btn.active { border-color: var(--gold); background: var(--warm); color: var(--gold); font-weight: 500; }
+    .mode-opt-btn:active { background: var(--warm); }
+
     /* ── INPUTS ── */
     .input-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
     .input-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; }
@@ -1049,22 +1058,29 @@
       </div>
 
       <!-- Audio player bar -->
-      <div id="chapter-audio-bar" style="display:flex;align-items:center;gap:0.6rem;background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.6rem 0.875rem;margin-bottom:0.875rem;">
-        <button id="audio-play-btn" onclick="toggleChapterAudio()" style="background:var(--gold);border:none;border-radius:50%;width:34px;height:34px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;">▶</button>
-        <div style="flex:1;min-width:0;">
-          <p style="font-size:0.7rem;font-weight:500;color:var(--ink);margin-bottom:1px;" id="audio-status-text">Listen to this chapter</p>
-          <p style="font-size:0.62rem;color:var(--muted);" id="audio-word-count"></p>
+      <div id="chapter-audio-bar" style="display:flex;flex-direction:column;background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius-sm);margin-bottom:0.875rem;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.875rem;">
+          <button id="audio-play-btn" onclick="toggleChapterAudio()" style="background:var(--gold);border:none;border-radius:50%;width:34px;height:34px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.2s;">▶</button>
+          <div style="flex:1;min-width:0;">
+            <p style="font-size:0.7rem;font-weight:500;color:var(--ink);margin-bottom:1px;" id="audio-status-text">Listen to this chapter</p>
+            <p style="font-size:0.62rem;color:var(--muted);" id="audio-word-count"></p>
+          </div>
+          <button onclick="stopChapterAudio()" id="audio-stop-btn" style="background:none;border:1px solid var(--stone);border-radius:var(--radius-sm);padding:3px 8px;font-size:0.65rem;color:var(--muted);cursor:pointer;display:none;">Stop</button>
+          <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" style="background:none;border:1px solid var(--stone);border-radius:var(--radius-sm);padding:3px 6px;font-size:0.65rem;color:var(--muted);cursor:pointer;">
+            <option value="0.8">0.8×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.2">1.2×</option>
+            <option value="1.5">1.5×</option>
+          </select>
         </div>
-        <button onclick="stopChapterAudio()" id="audio-stop-btn" style="background:none;border:1px solid var(--stone);border-radius:var(--radius-sm);padding:3px 8px;font-size:0.65rem;color:var(--muted);cursor:pointer;display:none;">Stop</button>
-        <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" style="background:none;border:1px solid var(--stone);border-radius:var(--radius-sm);padding:3px 6px;font-size:0.65rem;color:var(--muted);cursor:pointer;">
-          <option value="0.8">0.8×</option>
-          <option value="1" selected>1×</option>
-          <option value="1.2">1.2×</option>
-          <option value="1.5">1.5×</option>
-        </select>
+        <!-- Voice picker — shown when 2+ English voices available -->
+        <div id="audio-voice-row" style="display:none;align-items:center;gap:0.5rem;padding:0.3rem 0.875rem 0.5rem;border-top:1px solid var(--stone);">
+          <span style="font-size:0.62rem;color:var(--muted);white-space:nowrap;flex-shrink:0;">🎙 Voice:</span>
+          <select id="audio-voice-select" onchange="changeAudioVoice(this.value)" style="flex:1;background:none;border:none;padding:3px 4px;font-size:0.62rem;color:var(--muted);cursor:pointer;min-width:0;"></select>
+        </div>
       </div>
 
-      <div class="scroll-area">
+      <div class="scroll-area" id="chapter-scroll-area">
         <p class="verse-ref fade-up" id="chapter-ref-display">John 15 · BSB</p>
         <div class="reading-text fade-up-2" id="chapter-text-display"></div>
         <div style="height:1rem;"></div>
@@ -1606,6 +1622,21 @@
         </div>
       </div>
 
+      <!-- Scripture memory card — shown after Memorize or when user has memorized verses -->
+      <div class="card-warm fade-up-4" style="width:100%;margin-bottom:0.75rem;display:none;" id="complete-memory-card">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.625rem;">
+          <span style="font-size:1rem;">✏️</span>
+          <div style="flex:1;">
+            <p style="font-size:0.82rem;font-weight:500;color:var(--ink);" id="complete-memory-title">Keep building your treasury</p>
+            <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;" id="complete-memory-sub">Review or quiz the verses you've memorized</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button onclick="openRecap()" style="flex:1;padding:0.55rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);font-size:0.75rem;color:var(--ink);cursor:pointer;font-weight:500;">📚 My verses</button>
+          <button onclick="startWeeklyQuiz()" id="complete-quiz-btn" style="flex:1;padding:0.55rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);font-size:0.75rem;color:var(--ink);cursor:pointer;font-weight:500;display:none;">📝 Weekly quiz</button>
+        </div>
+      </div>
+
       <!-- Contextual feedback prompt — shown at days 3, 7, 14+ -->
       <div id="complete-feedback-nudge" style="display:none;width:100%;margin-bottom:0.75rem;">
         <div class="card" style="border-color:var(--gold);background:linear-gradient(135deg,#FDF6EC,#FAF7F2);">
@@ -1939,18 +1970,42 @@
         <p class="eyebrow" style="margin-bottom:0.75rem;">Settings</p>
 
         <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
-          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-            <span style="font-size:0.85rem;">Default habit mode</span>
-            <span style="font-size:0.78rem;color:var(--gold);" id="profile-mode">Daily Verse</span>
+
+          <!-- Default habit mode — interactive picker -->
+          <div class="card" id="profile-mode-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleModePickerProfile()">
+              <span style="font-size:0.85rem;">Default habit mode</span>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="font-size:0.78rem;color:var(--gold);" id="profile-mode">Daily Verse</span>
+                <span style="font-size:0.65rem;color:var(--stone);" id="profile-mode-chevron">▾</span>
+              </div>
+            </div>
+            <div id="profile-mode-picker" style="display:none;margin-top:0.75rem;">
+              <div style="display:flex;flex-direction:column;gap:0.4rem;">
+                <button onclick="setModeFromProfile('verse')"    class="mode-opt-btn" id="mopt-verse">📖 Daily Verse</button>
+                <button onclick="setModeFromProfile('chapter')"  class="mode-opt-btn" id="mopt-chapter">📜 Daily Chapter</button>
+                <button onclick="setModeFromProfile('memorize')" class="mode-opt-btn" id="mopt-memorize">✏️ Memorize</button>
+                <button onclick="setModeFromProfile('trivia')"   class="mode-opt-btn" id="mopt-trivia">❓ Trivia</button>
+              </div>
+            </div>
           </div>
-          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+
+          <!-- Morning reminder (placeholder) -->
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:0.85rem;">Morning reminder</span>
             <span style="font-size:0.78rem;color:var(--gold);">7:00 AM</span>
           </div>
-          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-            <span style="font-size:0.85rem;">Bible translation</span>
-            <span style="font-size:0.78rem;color:var(--gold);">ESV</span>
+
+          <!-- Bible translation — BSB -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.85rem;">Bible translation</span>
+              <span style="font-size:0.78rem;color:var(--gold);">BSB</span>
+            </div>
+            <p style="font-size:0.67rem;color:var(--stone);margin-top:0.4rem;">Berean Standard Bible · More translations coming soon</p>
           </div>
+
+          <!-- Reading text size -->
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
               <span style="font-size:0.85rem;">Reading text size</span>
@@ -1965,29 +2020,28 @@
         </div>
 
         <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:0.5rem;" onclick="openPrayerJournal()">
-            <div>
-              <span style="font-size:0.85rem;">🙏 Prayer journal</span>
-              <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;">Your morning prayers, day by day</p>
-            </div>
-            <span style="color:var(--gold);font-size:1rem;">→</span>
+          <div>
+            <span style="font-size:0.85rem;">🙏 Prayer journal</span>
+            <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;">Your morning prayers, day by day</p>
           </div>
+          <span style="color:var(--gold);font-size:1rem;">→</span>
+        </div>
 
+        <!-- Scripture memory — combined card -->
         <p class="eyebrow" style="margin-bottom:0.75rem;">Scripture memory</p>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
-          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="openRecap()">
-            <div>
-              <span style="font-size:0.85rem;">My verse treasury</span>
-              <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;">All verses you've memorized</p>
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+            <div style="width:36px;height:36px;border-radius:10px;background:var(--warm);border:1px solid var(--stone);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">✏️</div>
+            <div style="flex:1;">
+              <div style="font-size:0.85rem;font-weight:500;color:var(--ink);">Verse treasury</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-top:1px;" id="profile-treasury-note">All verses you've memorized</div>
             </div>
-            <span style="color:var(--gold);font-size:1rem;">→</span>
           </div>
-          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="startWeeklyQuiz()" id="quiz-card">
-            <div>
-              <span style="font-size:0.85rem;">Weekly quiz</span>
-              <p style="font-size:0.72rem;color:var(--muted);margin-top:1px;" id="quiz-availability-note">Test this week's verses</p>
-            </div>
-            <span style="color:var(--gold);font-size:1rem;">→</span>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="openRecap()" style="flex:1;padding:0.55rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--warm);font-size:0.75rem;color:var(--ink);cursor:pointer;font-weight:500;">📚 My verses →</button>
+            <button onclick="startWeeklyQuiz()" id="quiz-btn-profile" style="flex:1;padding:0.55rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--warm);font-size:0.75rem;color:var(--ink);cursor:pointer;font-weight:500;">📝 Weekly quiz →</button>
           </div>
+          <p style="font-size:0.67rem;color:var(--stone);margin-top:0.5rem;text-align:center;" id="quiz-availability-note">Complete Memorize sessions to unlock the weekly quiz</p>
         </div>
 
         <button class="btn-ghost" onclick="openFeedback('profile','How\'s the app feeling?')" style="margin-bottom:0.5rem;">💬 Share Feedback</button>
@@ -2261,7 +2315,24 @@
     const next = document.getElementById(map[tab]);
     if (next) next.classList.add('active');
     STATE.currentScreen = map[tab];
-    if (tab === 'profile') updateFontSizeUI(localStorage.getItem('sbs_font_size') || 'regular');
+    if (tab === 'profile') {
+      updateFontSizeUI(localStorage.getItem('sbs_font_size') || 'regular');
+      _syncModeOptButtons();
+      // Treasury note
+      const tn = document.getElementById('profile-treasury-note');
+      if (tn) {
+        const count = (STATE.memorizedRefs || []).length;
+        tn.textContent = count > 0 ? `${count} verse${count === 1 ? '' : 's'} memorized` : "All verses you've memorized";
+      }
+      // Quiz availability note
+      const qn = document.getElementById('quiz-availability-note');
+      if (qn) {
+        const weekCount = (STATE.weeklyMemRefs || []).length;
+        qn.textContent = weekCount > 0
+          ? `${weekCount} verse${weekCount === 1 ? '' : 's'} ready to quiz this week`
+          : 'Complete Memorize sessions to unlock the weekly quiz';
+      }
+    }
   }
 
   // ── TIME ──
@@ -2700,6 +2771,29 @@
 
     // Refresh home CTA label to reflect completion
     updateHomeCTA();
+
+    // Scripture memory card — always show after Memorize; show for other modes if user has memorized verses
+    const memCard = document.getElementById('complete-memory-card');
+    const memTitle = document.getElementById('complete-memory-title');
+    const memSub = document.getElementById('complete-memory-sub');
+    const quizBtn = document.getElementById('complete-quiz-btn');
+    if (memCard) {
+      const memCount = (STATE.memorizedRefs || []).length;
+      const weekCount = (STATE.weeklyMemRefs || []).length;
+      const isMemorizeMode = STATE.mode === 'memorize';
+      const shouldShow = isMemorizeMode || memCount > 0;
+      memCard.style.display = shouldShow ? 'block' : 'none';
+      if (shouldShow) {
+        if (isMemorizeMode) {
+          if (memTitle) memTitle.textContent = memCount > 0 ? `Treasury: ${memCount} verse${memCount === 1 ? '' : 's'} memorized` : 'Great work — keep going!';
+          if (memSub) memSub.textContent = weekCount > 0 ? "You have verses ready for this week's quiz." : "Review everything you've memorized so far.";
+        } else {
+          if (memTitle) memTitle.textContent = 'Your verse treasury';
+          if (memSub) memSub.textContent = `${memCount} verse${memCount === 1 ? '' : 's'} memorized — keep building.`;
+        }
+        if (quizBtn) quizBtn.style.display = weekCount > 0 ? 'block' : 'none';
+      }
+    }
   }
 
   function updateStats() {
@@ -2744,6 +2838,39 @@
     // Grace day token on profile
     const profileGrace = document.getElementById('profile-grace-card');
     if (profileGrace) profileGrace.style.display = hasGraceToken() ? 'block' : 'none';
+  }
+
+  function toggleModePickerProfile() {
+    const picker = document.getElementById('profile-mode-picker');
+    const chevron = document.getElementById('profile-mode-chevron');
+    if (!picker) return;
+    const open = picker.style.display === 'flex' || picker.style.display === 'block';
+    picker.style.display = open ? 'none' : 'flex';
+    picker.style.flexDirection = 'column';
+    if (chevron) chevron.textContent = open ? '▾' : '▴';
+    if (!open) _syncModeOptButtons();
+  }
+
+  function _syncModeOptButtons() {
+    ['verse','chapter','memorize','trivia'].forEach(m => {
+      const btn = document.getElementById('mopt-' + m);
+      if (btn) btn.classList.toggle('active', m === STATE.mode);
+    });
+  }
+
+  function setModeFromProfile(mode) {
+    STATE.mode = mode;
+    saveState();
+    syncModePills();
+    loadTodayVerse();
+    const modeLabels = { verse: 'Daily Verse', chapter: 'Daily Chapter', memorize: 'Memorize', trivia: 'Trivia' };
+    const modeEl = document.getElementById('profile-mode');
+    if (modeEl) modeEl.textContent = modeLabels[mode] || 'Daily Verse';
+    _syncModeOptButtons();
+    const picker = document.getElementById('profile-mode-picker');
+    const chevron = document.getElementById('profile-mode-chevron');
+    if (picker) picker.style.display = 'none';
+    if (chevron) chevron.textContent = '▾';
   }
 
   // ── DO MORE ──
@@ -3593,14 +3720,151 @@
   let _audioPlaying = false;
   let _audioPaused = false;
   let _audioRate = 1;
+  let _audioVoice = null;        // selected SpeechSynthesisVoice
+  let _audioVerseOffsets = [];   // [{charStart, charEnd, el, top}] for scroll sync
+  let _audioFullText = '';
+
+  // ── Smooth scroll engine ──
+  let _scrollRafId = null;
+  let _scrollFrom = 0;
+  let _scrollTo = 0;
+  let _scrollTimeStart = 0;
+  let _scrollDuration = 400;
+  let _lastBoundaryTime = 0;
+
+  function _stopScrollRaf() {
+    if (_scrollRafId) { cancelAnimationFrame(_scrollRafId); _scrollRafId = null; }
+  }
+
+  function _runScrollRaf() {
+    _stopScrollRaf();
+    const container = document.getElementById('chapter-scroll-area');
+    if (!container) return;
+    const startFrom = _scrollFrom, startTo = _scrollTo;
+    const startTime = _scrollTimeStart, dur = _scrollDuration;
+    function step(now) {
+      const t = Math.min((now - startTime) / dur, 1);
+      const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+      container.scrollTop = startFrom + (startTo - startFrom) * ease;
+      if (t < 1 && _audioPlaying) _scrollRafId = requestAnimationFrame(step);
+    }
+    _scrollRafId = requestAnimationFrame(step);
+  }
+
+  // ── Voice picker ──
+  function _populateVoicePicker() {
+    const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+    if (!voices.length) return;
+    const sel = document.getElementById('audio-voice-select');
+    const row = document.getElementById('audio-voice-row');
+    if (!sel || !row) return;
+    sel.innerHTML = voices.map((v, i) => {
+      const q = v.localService ? '⚡' : '🌐';
+      return `<option value="${i}">${q} ${v.name.replace(/\s*\(.*?\)\s*/g,'')}</option>`;
+    }).join('');
+    const preferred = ['Samantha','Karen','Moira','Tessa','Fiona',
+      'Google US English','Google UK English Female','Microsoft Aria','Microsoft Jenny',
+      'Microsoft Zira','Daniel','Aaron'];
+    let defaultIdx = voices.findIndex(v => v.localService);
+    if (defaultIdx < 0) defaultIdx = 0;
+    for (const name of preferred) {
+      const i = voices.findIndex(v => v.name.includes(name));
+      if (i !== -1) { defaultIdx = i; break; }
+    }
+    sel.value = String(defaultIdx);
+    _audioVoice = voices[defaultIdx];
+    row.style.display = voices.length > 1 ? 'flex' : 'none';
+  }
+
+  function changeAudioVoice(idxStr) {
+    const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+    _audioVoice = voices[parseInt(idxStr)] || null;
+    if (_audioPlaying || _audioPaused) { stopChapterAudio(); setTimeout(toggleChapterAudio, 120); }
+  }
+
+  // ── Verse offset map ──
+  function _buildVerseOffsets() {
+    _audioVerseOffsets = [];
+    const textEl = document.getElementById('chapter-text-display');
+    if (!textEl) return;
+    const paras = textEl.querySelectorAll('p[data-verse-p]');
+    let cursor = 0;
+    paras.forEach(p => {
+      // Must match exactly what toggleChapterAudio feeds to the utterance
+      let verseText = '';
+      p.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) verseText += node.textContent;
+        else if (node.nodeName !== 'SUP') verseText += node.textContent;
+      });
+      const txt = verseText.trim() + ' ';
+      _audioVerseOffsets.push({ charStart: cursor, charEnd: cursor + txt.length - 1, el: p, top: 0 });
+      cursor += txt.length;
+    });
+  }
+
+  function _cacheVerseTops() {
+    const container = document.getElementById('chapter-scroll-area');
+    if (!container) return;
+    const base = container.getBoundingClientRect().top;
+    _audioVerseOffsets.forEach(e => {
+      e.top = e.el.getBoundingClientRect().top - base + container.scrollTop;
+    });
+  }
+
+  let _lastHighlightedVerse = null;
+
+  function _clearVerseHighlight() {
+    _stopScrollRaf();
+    if (_lastHighlightedVerse) {
+      _lastHighlightedVerse.style.background = '';
+      _lastHighlightedVerse.style.borderRadius = '';
+      _lastHighlightedVerse.style.transition = '';
+      _lastHighlightedVerse = null;
+    }
+  }
+
+  function _syncScrollToChar(charIndex) {
+    if (!_audioVerseOffsets.length) return;
+    const now = performance.now();
+    let target = _audioVerseOffsets[_audioVerseOffsets.length - 1];
+    for (const e of _audioVerseOffsets) { if (charIndex <= e.charEnd) { target = e; break; } }
+
+    // Snap highlight on verse change
+    if (target.el !== _lastHighlightedVerse) {
+      if (_lastHighlightedVerse) {
+        _lastHighlightedVerse.style.background = '';
+        _lastHighlightedVerse.style.borderRadius = '';
+        _lastHighlightedVerse.style.transition = '';
+      }
+      target.el.style.transition = 'background 0.4s';
+      target.el.style.background = 'rgba(196,158,85,0.13)';
+      target.el.style.borderRadius = '4px';
+      _lastHighlightedVerse = target.el;
+    }
+
+    // Rolling duration estimate
+    const gap = _lastBoundaryTime ? now - _lastBoundaryTime : 350;
+    _lastBoundaryTime = now;
+    _scrollDuration = _scrollDuration * 0.65 + gap * 1.4 * 0.35;
+
+    // Smooth scroll to ~28% from top
+    const container = document.getElementById('chapter-scroll-area');
+    if (!container) return;
+    const desired = (target.top || 0) - container.clientHeight * 0.28;
+    const targetScroll = Math.max(0, desired);
+    if (Math.abs(targetScroll - _scrollTo) > 2) {
+      _scrollFrom = container.scrollTop;
+      _scrollTo = targetScroll;
+      _scrollTimeStart = now;
+      _runScrollRaf();
+    }
+  }
 
   function initChapterAudio() {
     _audioPlaying = false;
     _audioPaused = false;
-    if (_audioUtterance) {
-      window.speechSynthesis.cancel();
-      _audioUtterance = null;
-    }
+    if (_audioUtterance) { window.speechSynthesis.cancel(); _audioUtterance = null; }
+    _clearVerseHighlight();
     const playBtn = document.getElementById('audio-play-btn');
     const stopBtn = document.getElementById('audio-stop-btn');
     const statusTxt = document.getElementById('audio-status-text');
@@ -3612,12 +3876,16 @@
     const wordCountEl = document.getElementById('audio-word-count');
     if (textEl && wordCountEl) {
       const words = textEl.innerText.split(/\s+/).filter(Boolean).length;
-      const mins = Math.ceil(words / 150);
-      wordCountEl.textContent = `~${mins} min read · ${words} words`;
+      wordCountEl.textContent = `~${Math.ceil(words / 150)} min read · ${words} words`;
     }
     if (!window.speechSynthesis) {
       const bar = document.getElementById('chapter-audio-bar');
       if (bar) bar.innerHTML = '<p style="font-size:0.75rem;color:var(--muted);padding:0.25rem 0;">Audio not supported on this browser.</p>';
+      return;
+    }
+    _populateVoicePicker();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = _populateVoicePicker;
     }
   }
 
@@ -3625,56 +3893,77 @@
     if (!window.speechSynthesis) return;
     if (_audioPaused) {
       window.speechSynthesis.resume();
-      _audioPaused = false;
-      _audioPlaying = true;
-      updateAudioUI('playing');
-      return;
+      _audioPaused = false; _audioPlaying = true;
+      updateAudioUI('playing'); return;
     }
     if (_audioPlaying) {
       window.speechSynthesis.pause();
-      _audioPaused = true;
-      _audioPlaying = false;
-      updateAudioUI('paused');
-      return;
+      _audioPaused = true; _audioPlaying = false;
+      updateAudioUI('paused'); return;
     }
     const textEl = document.getElementById('chapter-text-display');
     if (!textEl) return;
-    const text = textEl.innerText || textEl.textContent;
-    if (!text.trim()) return;
+
+    // Build full text from verse paragraphs — skip <sup> verse numbers
+    const paras = textEl.querySelectorAll('p[data-verse-p]');
+    let fullText = '';
+    if (paras.length) {
+      paras.forEach(p => {
+        // Walk only text nodes, skipping the <sup> verse number
+        let verseText = '';
+        p.childNodes.forEach(node => {
+          if (node.nodeType === Node.TEXT_NODE) verseText += node.textContent;
+          else if (node.nodeName !== 'SUP') verseText += node.textContent;
+        });
+        fullText += verseText.trim() + ' ';
+      });
+    } else {
+      fullText = textEl.innerText || textEl.textContent;
+    }
+    if (!fullText.trim()) return;
+    _audioFullText = fullText;
+    _buildVerseOffsets();
+    setTimeout(_cacheVerseTops, 80);
+
+    // Reset scroll state
+    _lastBoundaryTime = 0; _scrollDuration = 400;
+    const c = document.getElementById('chapter-scroll-area');
+    _scrollFrom = c ? c.scrollTop : 0; _scrollTo = _scrollFrom;
 
     window.speechSynthesis.cancel();
-    _audioUtterance = new SpeechSynthesisUtterance(text);
+    _audioUtterance = new SpeechSynthesisUtterance(fullText);
     _audioUtterance.rate = _audioRate;
     _audioUtterance.pitch = 1;
     _audioUtterance.lang = 'en-US';
 
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-      v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Google US') || v.name.includes('Karen') || v.name.includes('Daniel'))
-    ) || voices.find(v => v.lang.startsWith('en'));
-    if (preferred) _audioUtterance.voice = preferred;
+    if (_audioVoice) {
+      _audioUtterance.voice = _audioVoice;
+    } else {
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v =>
+        v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Google US') || v.name.includes('Karen') || v.name.includes('Daniel'))
+      ) || voices.find(v => v.lang.startsWith('en'));
+      if (preferred) _audioUtterance.voice = preferred;
+    }
 
     _audioUtterance.onstart = () => { _audioPlaying = true; _audioPaused = false; updateAudioUI('playing'); };
-    _audioUtterance.onend = () => { _audioPlaying = false; _audioPaused = false; _audioUtterance = null; updateAudioUI('done'); };
-    _audioUtterance.onerror = () => { _audioPlaying = false; _audioPaused = false; updateAudioUI('idle'); };
+    _audioUtterance.onend = () => { _audioPlaying = false; _audioPaused = false; _audioUtterance = null; _clearVerseHighlight(); updateAudioUI('done'); };
+    _audioUtterance.onerror = () => { _audioPlaying = false; _audioPaused = false; _clearVerseHighlight(); updateAudioUI('idle'); };
+    _audioUtterance.onboundary = (e) => { if (e.name === 'word' && _audioVerseOffsets.length) _syncScrollToChar(e.charIndex); };
 
     window.speechSynthesis.speak(_audioUtterance);
   }
 
   function stopChapterAudio() {
     window.speechSynthesis.cancel();
-    _audioPlaying = false;
-    _audioPaused = false;
-    _audioUtterance = null;
+    _audioPlaying = false; _audioPaused = false; _audioUtterance = null;
+    _clearVerseHighlight();
     updateAudioUI('idle');
   }
 
   function changeAudioSpeed(val) {
     _audioRate = parseFloat(val);
-    if (_audioPlaying || _audioPaused) {
-      stopChapterAudio();
-      setTimeout(toggleChapterAudio, 100);
-    }
+    if (_audioPlaying || _audioPaused) { stopChapterAudio(); setTimeout(toggleChapterAudio, 100); }
   }
 
   function updateAudioUI(state) {
@@ -3683,22 +3972,18 @@
     const statusTxt = document.getElementById('audio-status-text');
     if (!playBtn) return;
     if (state === 'playing') {
-      playBtn.textContent = '⏸';
-      playBtn.style.background = 'var(--muted)';
+      playBtn.textContent = '⏸'; playBtn.style.background = 'var(--muted)';
       if (stopBtn) stopBtn.style.display = 'block';
       if (statusTxt) statusTxt.textContent = 'Reading aloud…';
     } else if (state === 'paused') {
-      playBtn.textContent = '▶';
-      playBtn.style.background = 'var(--gold)';
+      playBtn.textContent = '▶'; playBtn.style.background = 'var(--gold)';
       if (statusTxt) statusTxt.textContent = 'Paused — tap to resume';
     } else if (state === 'done') {
-      playBtn.textContent = '▶';
-      playBtn.style.background = 'var(--gold)';
+      playBtn.textContent = '▶'; playBtn.style.background = 'var(--gold)';
       if (stopBtn) stopBtn.style.display = 'none';
       if (statusTxt) statusTxt.textContent = 'Done — tap to listen again';
     } else {
-      playBtn.textContent = '▶';
-      playBtn.style.background = 'var(--gold)';
+      playBtn.textContent = '▶'; playBtn.style.background = 'var(--gold)';
       if (stopBtn) stopBtn.style.display = 'none';
       if (statusTxt) statusTxt.textContent = 'Listen to this chapter';
     }
@@ -4135,7 +4420,7 @@
     if (textEl) {
       if (verses && verses.length > 0) {
         textEl.innerHTML = verses.map(v =>
-          `<p style="margin-bottom:0.85rem;line-height:1.85;"><sup style="color:var(--gold);font-size:0.68rem;margin-right:4px;font-weight:500;">${v.v}</sup>${v.t}</p>`
+          `<p data-verse-p="${v.v}" style="margin-bottom:0.85rem;line-height:1.85;"><sup style="color:var(--gold);font-size:0.68rem;margin-right:4px;font-weight:500;">${v.v}</sup>${v.t}</p>`
         ).join('');
         // Init audio now that text is loaded
         setTimeout(initChapterAudio, 50);
