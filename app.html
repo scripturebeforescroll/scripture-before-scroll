@@ -3564,7 +3564,7 @@
     ],
   };
 
-  // ── REF PARSER — turns trivia ref strings into navigable {book, chapter, label} objects ──
+  // ── REF PARSER — turns trivia ref strings into navigable {book, chapter, verse, label} objects ──
   function parseRefs(refStr) {
     if (!refStr) return [];
     // Split on ' / ' to handle multiple refs like "Romans 16:22 / Galatians 6:11"
@@ -3590,14 +3590,14 @@
     };
 
     parts.forEach(part => {
-      // Strip verse ranges — keep just book + chapter
-      // e.g. "Matthew 4:1–2" → "Matthew 4", "Genesis 6–9" → "Genesis 6"
-      // Also handle non-navigable refs like "Biblical Canon", "Systematic Theology"
-      const match = part.match(/^((?:\d\s+)?[A-Za-z]+(?:\s+[A-Za-z]+)*)\s+(\d+)/);
+      // Match: Book Chapter[:Verse[-EndVerse]]
+      // e.g. "Matthew 4:1–2", "Genesis 6–9", "Romans 3:24–26", "1 Samuel 17:4"
+      const match = part.match(/^((?:\d\s+)?[A-Za-z]+(?:\s+[A-Za-z]+)*)\s+(\d+)(?::(\d+))?/);
       if (!match) return; // non-navigable ref (e.g. "Biblical Canon")
 
       const book = match[1].trim();
       const chapter = parseInt(match[2], 10);
+      const verse = match[3] ? parseInt(match[3], 10) : null;
       if (!book || isNaN(chapter)) return;
 
       // Validate book is known
@@ -3605,13 +3605,14 @@
       if (!maxChapters) return; // unknown book — skip
 
       const clampedChapter = Math.min(chapter, maxChapters);
-      results.push({ book, chapter: clampedChapter, label: `${book} ${clampedChapter}` });
+      const label = verse ? `${book} ${clampedChapter}:${verse}` : `${book} ${clampedChapter}`;
+      results.push({ book, chapter: clampedChapter, verse, label });
     });
 
-    // Deduplicate by book+chapter
+    // Deduplicate by book+chapter+verse
     const seen = new Set();
     return results.filter(r => {
-      const key = r.book + r.chapter;
+      const key = r.book + r.chapter + (r.verse || '');
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -3685,10 +3686,20 @@
     closeTriviaRefPicker();
     window._triviaPickerRefs = null;
 
+    // Shuffle options so correct answer lands in a random position each time
+    const correctText = q.options[q.answer];
+    const shuffled = [...q.options];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    triviaState.shuffledOptions = shuffled;
+    triviaState.shuffledAnswer = shuffled.indexOf(correctText);
+
     // Render answer options
     const container = document.getElementById('trivia-options');
     container.innerHTML = '';
-    q.options.forEach((opt, i) => {
+    shuffled.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.textContent = opt;
       btn.style.cssText = 'width:100%;padding:0.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.86rem;color:var(--ink);line-height:1.4;transition:all 0.2s;font-family:var(--sans);box-sizing:border-box;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;display:block;';
@@ -3704,15 +3715,15 @@
     const bank = TRIVIA_BANK[triviaState.level];
     const qIdx = triviaState.questions[triviaState.current];
     const q = bank[qIdx];
-    const correct = chosenIdx === q.answer;
+    const correct = chosenIdx === triviaState.shuffledAnswer;
 
     if (correct) {
       triviaState.score++;
     } else {
       triviaState.missed.push({
         q: q.q,
-        correctAnswer: q.options[q.answer],
-        yourAnswer: q.options[chosenIdx],
+        correctAnswer: triviaState.shuffledOptions[triviaState.shuffledAnswer],
+        yourAnswer: triviaState.shuffledOptions[chosenIdx],
         ref: q.ref,
         context: q.context,
       });
@@ -3723,7 +3734,7 @@
     btns.forEach((btn, i) => {
       btn.style.cursor = 'default';
       btn.onclick = null;
-      if (i === q.answer) {
+      if (i === triviaState.shuffledAnswer) {
         btn.style.background = '#EAF6EE';
         btn.style.border = '1px solid var(--success)';
         btn.style.color = 'var(--success)';
@@ -3757,7 +3768,7 @@
       iconEl.textContent = '❌';
       labelEl.textContent = 'Not quite!';
       labelEl.style.color = '#C0392B';
-      answerEl.textContent = `Correct answer: ${q.options[q.answer]}`;
+      answerEl.textContent = `Correct answer: ${triviaState.shuffledOptions[triviaState.shuffledAnswer]}`;
     }
     refEl.textContent = q.ref;
     ctxEl.textContent = q.context;
@@ -3852,7 +3863,7 @@
     }
     if (refs.length === 0) return;
     if (refs.length === 1) {
-      navigateToRef(refs[0].book, refs[0].chapter, 'solo');
+      navigateToRef(refs[0].book, refs[0].chapter, 'solo', refs[0].verse);
       return;
     }
     showTriviaRefPicker(refs);
@@ -3875,7 +3886,7 @@
     const refs = window._triviaPickerRefs;
     if (!refs || !refs[idx]) return;
     closeTriviaRefPicker();
-    navigateToRef(refs[idx].book, refs[idx].chapter, 'solo');
+    navigateToRef(refs[idx].book, refs[idx].chapter, 'solo', refs[idx].verse);
   }
 
   function closeTriviaRefPicker() {
@@ -3884,17 +3895,19 @@
   }
 
   // Navigate to chapter screen from a parsed ref, tracking return context
-  function navigateToRef(book, chapter, returnMode) {
+  function navigateToRef(book, chapter, returnMode, verse) {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     _audioPlaying = false; _audioPaused = false;
 
     STATE.chapterBook = book;
     STATE.chapterNum = chapter;
     window._fromTrivia = returnMode; // 'solo' or 'family'
+    window._triviaTargetVerse = verse || null; // verse to scroll to after render
 
     if (returnMode === 'family') {
       _familyReturnState = {
-        scrollY: document.querySelector('#screen-family-game .scroll-area')?.scrollTop || 0
+        scrollY: document.querySelector('#screen-family-game .scroll-area')?.scrollTop || 0,
+        fromTrivia: 'family'  // persist so chapterBackNav can detect it even if _fromTrivia clears
       };
       const banner = document.getElementById('trivia-back-banner');
       if (banner) {
@@ -3906,7 +3919,8 @@
       _triviaReturnState = {
         screen: 'screen-trivia-question',
         question: triviaState.current,
-        scrollY: document.querySelector('#screen-trivia-question .scroll-area')?.scrollTop || 0
+        scrollY: document.querySelector('#screen-trivia-question .scroll-area')?.scrollTop || 0,
+        fromTrivia: 'solo'
       };
       const banner = document.getElementById('trivia-back-banner');
       if (banner) {
@@ -3937,7 +3951,7 @@
 
     if (refs.length === 1) {
       closeFamilyRefPicker();
-      navigateToRef(refs[0].book, refs[0].chapter, 'family');
+      navigateToRef(refs[0].book, refs[0].chapter, 'family', refs[0].verse);
       return;
     }
 
@@ -3962,7 +3976,7 @@
     const refs = window._familyPickerRefs;
     if (!refs || !refs[idx]) return;
     closeFamilyRefPicker();
-    navigateToRef(refs[idx].book, refs[idx].chapter, 'family');
+    navigateToRef(refs[idx].book, refs[idx].chapter, 'family', refs[idx].verse);
   }
 
   function closeFamilyRefPicker() {
@@ -4309,10 +4323,10 @@
   }
 
   function chapterBackNav() {
-    const fromTrivia = window._fromTrivia;
+    const fromTrivia = window._fromTrivia || (_familyReturnState?.fromTrivia) || (_triviaReturnState?.fromTrivia);
     window._fromTrivia = null;
 
-    if (fromTrivia === 'family') {
+    if (fromTrivia === 'family' || _familyReturnState) {
       stopChapterAudio();
       const banner = document.getElementById('trivia-back-banner');
       if (banner) banner.style.display = 'none';
@@ -4695,6 +4709,24 @@
         ).join('');
         // Init audio now that text is loaded
         setTimeout(initChapterAudio, 50);
+        // Scroll to target verse if coming from trivia ref
+        if (window._triviaTargetVerse) {
+          const targetVerse = window._triviaTargetVerse;
+          window._triviaTargetVerse = null;
+          setTimeout(() => {
+            const scrollArea = document.getElementById('chapter-scroll-area');
+            const verseEl = scrollArea && scrollArea.querySelector(`[data-verse-p="${targetVerse}"]`);
+            if (verseEl && scrollArea) {
+              const offset = verseEl.offsetTop - scrollArea.clientHeight * 0.25;
+              scrollArea.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+              // Briefly highlight the verse
+              verseEl.style.transition = 'background 0.3s';
+              verseEl.style.background = 'rgba(176,125,58,0.12)';
+              verseEl.style.borderRadius = '6px';
+              setTimeout(() => { verseEl.style.background = ''; }, 2000);
+            }
+          }, 400); // wait for text to paint
+        }
       } else {
         textEl.innerHTML = `
           <div style="text-align:center;padding:2rem 0;">
@@ -4985,10 +5017,20 @@
     document.getElementById('family-reveal').style.display = 'none';
     document.getElementById('family-next-btn').style.display = 'none';
 
+    // Shuffle options so correct answer lands in a random position each time
+    const correctText = q.options[q.answer];
+    const shuffled = [...q.options];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    familyGame.shuffledOptions = shuffled;
+    familyGame.shuffledAnswer = shuffled.indexOf(correctText);
+
     // Answer buttons
     const container = document.getElementById('family-options');
     container.innerHTML = '';
-    q.options.forEach((opt, i) => {
+    shuffled.forEach((opt, i) => {
       const btn = document.createElement('button');
       btn.textContent = opt;
       btn.style.cssText = 'width:100%;padding:0.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.86rem;color:var(--ink);line-height:1.4;transition:all 0.2s;font-family:var(--sans);box-sizing:border-box;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;display:block;';
@@ -5005,7 +5047,7 @@
 
     const q = familyGame.currentQuestion;
     const team = familyGame.teams[familyGame.currentTeam];
-    const correct = chosenIdx === q.answer;
+    const correct = chosenIdx === familyGame.shuffledAnswer;
 
     if (correct) {
       team.score++;
@@ -5019,7 +5061,7 @@
     const btns = document.querySelectorAll('#family-options button');
     btns.forEach((btn, i) => {
       btn.style.cursor = 'default';
-      if (i === q.answer) {
+      if (i === familyGame.shuffledAnswer) {
         btn.style.background = '#EAF6EE';
         btn.style.border = '1px solid var(--success)';
         btn.style.color = 'var(--success)';
@@ -5054,7 +5096,7 @@
       iconEl.textContent = '❌';
       labelEl.textContent = 'Not quite!';
       labelEl.style.color = '#C0392B';
-      answerEl.textContent = `Correct answer: ${q.options[q.answer]}`;
+      answerEl.textContent = `Correct answer: ${familyGame.shuffledOptions[familyGame.shuffledAnswer]}`;
     }
     refEl.textContent = q.ref;
     ctxEl.textContent = q.context;
