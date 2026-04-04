@@ -3564,6 +3564,325 @@
     ],
   };
 
+  // ── REF PARSER — turns trivia ref strings into navigable {book, chapter, label} objects ──
+  function parseRefs(refStr) {
+    if (!refStr) return [];
+    // Split on ' / ' to handle multiple refs like "Romans 16:22 / Galatians 6:11"
+    const parts = refStr.split('/').map(s => s.trim()).filter(Boolean);
+    const results = [];
+
+    // Books with chapter counts for validation
+    const BOOK_CHAPTERS = {
+      'Genesis':50,'Exodus':40,'Leviticus':27,'Numbers':36,'Deuteronomy':34,
+      'Joshua':24,'Judges':21,'Ruth':4,'1 Samuel':31,'2 Samuel':24,
+      '1 Kings':22,'2 Kings':25,'1 Chronicles':29,'2 Chronicles':36,
+      'Ezra':10,'Nehemiah':13,'Esther':10,'Job':42,'Psalms':150,'Psalm':150,
+      'Proverbs':31,'Ecclesiastes':12,'Song of Solomon':8,'Isaiah':66,
+      'Jeremiah':52,'Lamentations':5,'Ezekiel':48,'Daniel':12,'Hosea':14,
+      'Joel':3,'Amos':9,'Obadiah':1,'Jonah':4,'Micah':7,'Nahum':3,
+      'Habakkuk':3,'Zephaniah':3,'Haggai':2,'Zechariah':14,'Malachi':4,
+      'Matthew':28,'Mark':16,'Luke':24,'John':21,'Acts':28,
+      'Romans':16,'1 Corinthians':16,'2 Corinthians':13,'Galatians':6,
+      'Ephesians':6,'Philippians':4,'Colossians':4,'1 Thessalonians':5,
+      '2 Thessalonians':3,'1 Timothy':6,'2 Timothy':4,'Titus':3,'Philemon':1,
+      'Hebrews':13,'James':5,'1 Peter':5,'2 Peter':3,'1 John':5,'2 John':1,
+      '3 John':1,'Jude':1,'Revelation':22,
+    };
+
+    parts.forEach(part => {
+      // Strip verse ranges — keep just book + chapter
+      // e.g. "Matthew 4:1–2" → "Matthew 4", "Genesis 6–9" → "Genesis 6"
+      // Also handle non-navigable refs like "Biblical Canon", "Systematic Theology"
+      const match = part.match(/^((?:\d\s+)?[A-Za-z]+(?:\s+[A-Za-z]+)*)\s+(\d+)/);
+      if (!match) return; // non-navigable ref (e.g. "Biblical Canon")
+
+      const book = match[1].trim();
+      const chapter = parseInt(match[2], 10);
+      if (!book || isNaN(chapter)) return;
+
+      // Validate book is known
+      const maxChapters = BOOK_CHAPTERS[book];
+      if (!maxChapters) return; // unknown book — skip
+
+      const clampedChapter = Math.min(chapter, maxChapters);
+      results.push({ book, chapter: clampedChapter, label: `${book} ${clampedChapter}` });
+    });
+
+    // Deduplicate by book+chapter
+    const seen = new Set();
+    return results.filter(r => {
+      const key = r.book + r.chapter;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // ── SOLO TRIVIA ──
+  window._triviaLevel = 'beginner';
+
+  const triviaState = {
+    level: 'beginner',
+    questions: [],   // shuffled indices into TRIVIA_BANK[level]
+    current: 0,      // index into questions[]
+    score: 0,
+    missed: [],      // { q, correctAnswer, yourAnswer, ref, context }
+    answered: false,
+  };
+
+  const TRIVIA_TOTAL = 5;
+
+  function startTrivia(level) {
+    window._triviaLevel = level;
+    triviaState.level = level;
+    triviaState.current = 0;
+    triviaState.score = 0;
+    triviaState.missed = [];
+    triviaState.answered = false;
+
+    // Build a no-repeat shuffled queue for this session using localStorage
+    const storageKey = 'sbs_trivia_queue_' + level;
+    let queue;
+    try { queue = JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch(e) { queue = null; }
+    const bank = TRIVIA_BANK[level];
+    if (!queue || queue.length < TRIVIA_TOTAL) {
+      // Rebuild: all indices shuffled
+      const indices = bank.map((_, i) => i);
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      queue = indices;
+    }
+    // Pull TRIVIA_TOTAL questions from front of queue
+    triviaState.questions = queue.splice(0, TRIVIA_TOTAL);
+    try { localStorage.setItem(storageKey, JSON.stringify(queue)); } catch(e) {}
+
+    goTo('screen-trivia-question');
+  }
+
+  function renderTriviaQuestion() {
+    if (!triviaState.questions.length) return;
+    triviaState.answered = false;
+
+    const level = triviaState.level;
+    const bank = TRIVIA_BANK[level];
+    const qIdx = triviaState.questions[triviaState.current];
+    const q = bank[qIdx];
+
+    const levelLabels = { beginner: '🌱 Beginner', intermediate: '📖 Intermediate', expert: '🏆 Expert' };
+    const eyebrow = document.getElementById('trivia-eyebrow');
+    if (eyebrow) eyebrow.textContent = `${levelLabels[level]} · ${triviaState.current + 1} of ${TRIVIA_TOTAL}`;
+
+    const progressBar = document.getElementById('trivia-progress');
+    if (progressBar) progressBar.style.width = `${((triviaState.current) / TRIVIA_TOTAL) * 100}%`;
+
+    document.getElementById('trivia-question').textContent = q.q;
+    document.getElementById('trivia-reveal').style.display = 'none';
+    document.getElementById('trivia-next-btn').style.display = 'none';
+
+    // Clear ref picker
+    closeTriviaRefPicker();
+    window._triviaPickerRefs = null;
+
+    // Render answer options
+    const container = document.getElementById('trivia-options');
+    container.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.style.cssText = 'width:100%;padding:0.7rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--white);cursor:pointer;text-align:left;font-size:0.86rem;color:var(--ink);line-height:1.4;transition:all 0.2s;font-family:var(--sans);box-sizing:border-box;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;display:block;';
+      btn.onclick = () => answerTrivia(i);
+      container.appendChild(btn);
+    });
+  }
+
+  function answerTrivia(chosenIdx) {
+    if (triviaState.answered) return;
+    triviaState.answered = true;
+
+    const bank = TRIVIA_BANK[triviaState.level];
+    const qIdx = triviaState.questions[triviaState.current];
+    const q = bank[qIdx];
+    const correct = chosenIdx === q.answer;
+
+    if (correct) {
+      triviaState.score++;
+    } else {
+      triviaState.missed.push({
+        q: q.q,
+        correctAnswer: q.options[q.answer],
+        yourAnswer: q.options[chosenIdx],
+        ref: q.ref,
+        context: q.context,
+      });
+    }
+
+    // Style buttons
+    const btns = document.querySelectorAll('#trivia-options button');
+    btns.forEach((btn, i) => {
+      btn.style.cursor = 'default';
+      btn.onclick = null;
+      if (i === q.answer) {
+        btn.style.background = '#EAF6EE';
+        btn.style.border = '1px solid var(--success)';
+        btn.style.color = 'var(--success)';
+      } else if (i === chosenIdx && !correct) {
+        btn.style.background = '#FDECEA';
+        btn.style.border = '1px solid #C0392B';
+        btn.style.color = '#C0392B';
+      } else {
+        btn.style.opacity = '0.45';
+      }
+    });
+
+    // Show result banner
+    const revealEl = document.getElementById('trivia-reveal');
+    revealEl.style.display = 'block';
+    const bannerEl = document.getElementById('trivia-result-banner');
+    const iconEl = document.getElementById('trivia-result-icon');
+    const labelEl = document.getElementById('trivia-result-label');
+    const answerEl = document.getElementById('trivia-correct-answer');
+    const refEl = document.getElementById('trivia-ref');
+    const ctxEl = document.getElementById('trivia-context');
+
+    if (correct) {
+      bannerEl.style.background = '#EAF6EE';
+      iconEl.textContent = '✅';
+      labelEl.textContent = 'Correct!';
+      labelEl.style.color = 'var(--success)';
+      answerEl.textContent = '';
+    } else {
+      bannerEl.style.background = '#FDECEA';
+      iconEl.textContent = '❌';
+      labelEl.textContent = 'Not quite!';
+      labelEl.style.color = '#C0392B';
+      answerEl.textContent = `Correct answer: ${q.options[q.answer]}`;
+    }
+    refEl.textContent = q.ref;
+    ctxEl.textContent = q.context;
+
+    // Pre-parse refs for "Find it in scripture" button
+    const parsedRefs = parseRefs(q.ref);
+    const refBtn = document.getElementById('trivia-ref-btn');
+    if (refBtn) {
+      if (parsedRefs.length === 0) {
+        refBtn.style.display = 'none';
+      } else if (parsedRefs.length === 1) {
+        refBtn.style.display = 'block';
+        const lastSpan = refBtn.querySelector('span:last-child');
+        if (lastSpan) lastSpan.textContent = '→ Read';
+      } else {
+        refBtn.style.display = 'block';
+        const lastSpan = refBtn.querySelector('span:last-child');
+        if (lastSpan) lastSpan.textContent = `→ ${parsedRefs.length} passages`;
+      }
+    }
+    window._triviaPickerRefs = parsedRefs.length > 1 ? parsedRefs : null;
+
+    // Show next button
+    const nextBtn = document.getElementById('trivia-next-btn');
+    if (triviaState.current + 1 >= TRIVIA_TOTAL) {
+      nextBtn.textContent = 'See Results →';
+      nextBtn.onclick = showTriviaResults;
+    } else {
+      nextBtn.textContent = 'Next Question →';
+      nextBtn.onclick = triviaNext;
+    }
+    nextBtn.style.display = 'block';
+  }
+
+  function triviaNext() {
+    triviaState.current++;
+    renderTriviaQuestion();
+    const sa = document.querySelector('#screen-trivia-question .scroll-area');
+    if (sa) sa.scrollTop = 0;
+  }
+
+  function showTriviaResults() {
+    const score = triviaState.score;
+    const total = TRIVIA_TOTAL;
+    const level = triviaState.level;
+    const levelEmojis = { beginner: '🌱', intermediate: '📖', expert: '🏆' };
+
+    document.getElementById('trivia-score-display').textContent = `${score}/${total}`;
+    document.getElementById('trivia-correct-num').textContent = score;
+    document.getElementById('trivia-wrong-num').textContent = total - score;
+    document.getElementById('trivia-level-display').textContent = levelEmojis[level] || '📖';
+
+    const pct = score / total;
+    let emoji = '🎉', msg = 'Great job! Keep studying God\'s Word.';
+    if (pct === 1)        { emoji = '🏆'; msg = 'Perfect score! You know your Bible well.'; }
+    else if (pct >= 0.8)  { emoji = '🎉'; msg = 'Excellent! God\'s Word is sinking in.'; }
+    else if (pct >= 0.6)  { emoji = '📖'; msg = 'Good effort! Keep reading and it\'ll click.'; }
+    else if (pct >= 0.4)  { emoji = '🙏'; msg = 'Keep going — every question teaches you something.'; }
+    else                   { emoji = '✝️'; msg = 'The Word is a lifelong journey. Try again!'; }
+
+    document.getElementById('trivia-result-emoji').textContent = emoji;
+    document.getElementById('trivia-result-msg').textContent = msg;
+
+    // Missed answers review
+    const reviewEl = document.getElementById('trivia-missed-review');
+    if (triviaState.missed.length > 0) {
+      reviewEl.innerHTML = triviaState.missed.map(m => `
+        <div class="card" style="margin-bottom:0.75rem;text-align:left;">
+          <p style="font-size:0.82rem;font-weight:500;color:var(--ink);margin-bottom:0.5rem;line-height:1.4;">${m.q}</p>
+          <p style="font-size:0.78rem;color:var(--success);margin-bottom:2px;">✓ ${m.correctAnswer}</p>
+          <p style="font-size:0.75rem;color:var(--muted);">📍 ${m.ref}</p>
+        </div>`).join('');
+    } else {
+      reviewEl.innerHTML = '';
+    }
+
+    // Record completion for habit
+    if (!window._extraSession) {
+      STATE.mode = 'trivia';
+      completeHabit();
+    } else {
+      goTo('screen-trivia-results');
+    }
+  }
+
+  function openTriviaRef() {
+    let refs = window._triviaPickerRefs;
+    if (!refs) {
+      const refEl = document.getElementById('trivia-ref');
+      if (!refEl) return;
+      refs = parseRefs(refEl.textContent.trim());
+    }
+    if (refs.length === 0) return;
+    if (refs.length === 1) {
+      navigateToRef(refs[0].book, refs[0].chapter, 'solo');
+      return;
+    }
+    showTriviaRefPicker(refs);
+  }
+
+  function showTriviaRefPicker(refs) {
+    const picker = document.getElementById('trivia-ref-picker');
+    const list = document.getElementById('trivia-ref-picker-list');
+    if (!picker || !list) return;
+    list.innerHTML = refs.map((r, i) => `
+      <button onclick="triviaPickerNav(${i})" style="width:100%;text-align:left;background:var(--white);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.65rem 0.875rem;cursor:pointer;transition:all 0.15s;box-sizing:border-box;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
+        <span style="font-family:var(--serif);font-size:0.95rem;color:var(--gold);font-weight:500;">${r.label}</span>
+        <span style="font-size:0.68rem;color:var(--muted);margin-left:0.4rem;">→ Read</span>
+      </button>`).join('');
+    window._triviaPickerRefs = refs;
+    picker.style.display = 'block';
+  }
+
+  function triviaPickerNav(idx) {
+    const refs = window._triviaPickerRefs;
+    if (!refs || !refs[idx]) return;
+    closeTriviaRefPicker();
+    navigateToRef(refs[idx].book, refs[idx].chapter, 'solo');
+  }
+
+  function closeTriviaRefPicker() {
+    const picker = document.getElementById('trivia-ref-picker');
+    if (picker) picker.style.display = 'none';
+  }
+
   // Navigate to chapter screen from a parsed ref, tracking return context
   function navigateToRef(book, chapter, returnMode) {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
@@ -3659,55 +3978,7 @@
     }
   }
 
-  // ── SOLO TRIVIA REF ──
-  function openTriviaRef() {
-    let refs = window._triviaPickerRefs;
-    if (!refs) {
-      const refEl = document.getElementById('trivia-ref');
-      if (!refEl) return;
-      refs = parseRefs(refEl.textContent.trim());
-      if (!refs || refs.length === 0) {
-        const refEl2 = document.getElementById('trivia-ref');
-        showToast('📖 ' + (refEl2 ? refEl2.textContent.trim() : ''));
-        return;
-      }
-    }
-
-    if (refs.length === 0) return;
-
-    if (refs.length === 1) {
-      closeTriviaRefPicker();
-      navigateToRef(refs[0].book, refs[0].chapter, 'solo');
-      return;
-    }
-
-    showTriviaRefPicker(refs);
-  }
-
-  function showTriviaRefPicker(refs) {
-    const picker = document.getElementById('trivia-ref-picker');
-    const list = document.getElementById('trivia-ref-picker-list');
-    if (!picker || !list) return;
-    list.innerHTML = refs.map((r, i) => `
-      <button onclick="triviaPickerNav(${i})" style="width:100%;text-align:left;background:var(--white);border:1px solid var(--stone);border-radius:var(--radius-sm);padding:0.65rem 0.875rem;cursor:pointer;transition:all 0.15s;box-sizing:border-box;" onmousedown="this.style.background='var(--warm)'" onmouseup="this.style.background='var(--white)'">
-        <span style="font-family:var(--serif);font-size:0.95rem;color:var(--gold);font-weight:500;">${r.label}</span>
-        <span style="font-size:0.68rem;color:var(--muted);margin-left:0.4rem;">→ Read</span>
-      </button>`).join('');
-    window._triviaPickerRefs = refs;
-    picker.style.display = 'block';
-  }
-
-  function triviaPickerNav(idx) {
-    const refs = window._triviaPickerRefs;
-    if (!refs || !refs[idx]) return;
-    closeTriviaRefPicker();
-    navigateToRef(refs[idx].book, refs[idx].chapter, 'solo');
-  }
-
-  function closeTriviaRefPicker() {
-    const picker = document.getElementById('trivia-ref-picker');
-    if (picker) picker.style.display = 'none';
-  }
+  // solo trivia ref functions defined earlier in ── SOLO TRIVIA ──
 
   function maybeReopenTriviaPicker() {
     if (window._triviaPickerRefs && window._triviaPickerRefs.length > 1) {
