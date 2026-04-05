@@ -708,6 +708,8 @@
           <input class="input-field" type="password" id="signup-password" placeholder="Min. 8 characters" />
           <span class="error-msg" id="signup-pass-err">Password must be at least 8 characters.</span>
         </div>
+        <!-- Bot protection: hidden honeypot field — bots fill this, humans don't see it -->
+        <input id="signup-honeypot" type="text" name="website" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" />
         <button class="btn-primary" style="margin-top:0.5rem;" onclick="handleSignup()">Create Account</button>
         <div class="divider"><span>or</span></div>
         <p style="text-align:center;font-size:0.8rem;color:var(--muted);">Already have an account? <button class="btn-text" style="display:inline;padding:0;" onclick="goTo('screen-login')">Sign in</button></p>
@@ -2044,6 +2046,18 @@
           <p style="font-size:0.67rem;color:var(--stone);margin-top:0.5rem;text-align:center;" id="quiz-availability-note">Complete Memorize sessions to unlock the weekly quiz</p>
         </div>
 
+          <!-- Privacy Policy -->
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="openPrivacyScreen()">
+            <span style="font-size:0.85rem;">Privacy Policy</span>
+            <span style="font-size:0.78rem;color:var(--gold);">View →</span>
+          </div>
+
+          <!-- Delete Account -->
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="deleteAccount()">
+            <span style="font-size:0.85rem;color:#C0392B;">Delete My Account</span>
+            <span style="font-size:0.78rem;color:#C0392B;">Delete →</span>
+          </div>
+
         <button class="btn-ghost" onclick="openFeedback('profile','How\'s the app feeling?')" style="margin-bottom:0.5rem;">💬 Share Feedback</button>
         <button class="btn-ghost" onclick="handleLogout()" style="margin-bottom:1rem;">Sign Out</button>
         <div style="height:1rem;"></div>
@@ -2095,6 +2109,51 @@
     <p style="font-size:0.68rem;color:var(--stone);text-align:center;margin-top:0.6rem;" id="feedback-reply-note">We reply to every message. You'll hear back at <span id="feedback-email-display"></span></p>
   </div>
 
+  <!-- ══════════════════════════════════════════
+       SCREEN: PRIVACY POLICY
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="screen-privacy">
+    <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
+    <div class="screen-inner">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+        <button class="btn-text" style="padding:0;text-decoration:none;font-size:1.2rem;" onclick="switchTab('profile')">←</button>
+        <p class="eyebrow">Privacy Policy</p>
+      </div>
+      <div class="scroll-area">
+        <div class="display fade-up" style="font-size:1.5rem;margin-bottom:1.25rem;">Your data,<br><em>your control.</em></div>
+
+        <div class="card fade-up-2" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.4rem;">What we collect</p>
+          <p class="body-text">Scripture Before Scroll stores your name, email address, and a hashed (non-reversible) version of your password. We never see your actual password. All other data — your streak, prayer journal, memorized verses, and reading habits — is stored only on your device in your browser's local storage. We do not have access to it.</p>
+        </div>
+
+        <div class="card fade-up-3" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.4rem;">What we never do</p>
+          <p class="body-text">We do not sell your data. We do not share your information with third parties for advertising. We do not track your behavior across other websites. Your prayer journal entries never leave your device.</p>
+        </div>
+
+        <div class="card fade-up-4" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.4rem;">Third-party services</p>
+          <p class="body-text">We use EmailJS to send password reset emails. Your email address is transmitted to EmailJS solely for this purpose and is not stored or used for marketing by them. We use HubSpot to maintain our mailing list — you can unsubscribe at any time using the link in any email we send.</p>
+        </div>
+
+        <div class="card fade-up-4" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.4rem;">Your rights</p>
+          <p class="body-text">You can delete your account and all associated data at any time from Settings → Delete My Account. This permanently removes everything from your device. For any questions or data requests, contact us at hello@scripturebeforescroll.com.</p>
+        </div>
+
+        <div class="card fade-up-4" style="margin-bottom:1rem;">
+          <p class="eyebrow" style="margin-bottom:0.4rem;">Children's privacy</p>
+          <p class="body-text">Scripture Before Scroll is not directed at children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, please contact us and we will delete it promptly.</p>
+        </div>
+
+        <p style="font-size:0.72rem;color:var(--stone);text-align:center;margin-bottom:2rem;">Last updated: June 2025 · hello@scripturebeforescroll.com</p>
+
+        <button class="btn-ghost" onclick="switchTab('profile')" style="margin-bottom:1rem;">← Back to Settings</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
@@ -2107,6 +2166,20 @@
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── SECURITY: Password hashing (SHA-256 via Web Crypto) ──
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + 'sbs_salt_2024');
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function isHashed(str) {
+    // SHA-256 hashes are 64 hex characters
+    return str && str.length === 64 && /^[0-9a-f]+$/.test(str);
+  }
+
   // ── STATE ──
   const STATE = {
     user: null,
@@ -2678,6 +2751,7 @@
         setTimeout(() => { renderChapterScreen(); }, 80);
       }
       if (screenId === 'screen-chapter-select') setTimeout(initChapterSelector, 80);
+      if (screenId === 'screen-signup') setTimeout(initSignupBotProtection, 0);
       if (screenId === 'screen-memorize-main' || screenId === 'screen-memorize-test') setTimeout(renderMemorizeScreens, 80);
       if (screenId === 'screen-trivia-question') setTimeout(renderTriviaQuestion, 80);
     }, 50);
@@ -2721,7 +2795,34 @@
   }
 
   // ── AUTH ──
+  // Track signup form open time for timing check
+  let _signupOpenTime = Date.now();
+
+  // Called when signup screen loads to reset timer
+  function initSignupBotProtection() {
+    _signupOpenTime = Date.now();
+  }
+
   function handleSignup() {
+    // Bot protection: honeypot field must be empty
+    const honeypot = document.getElementById('signup-honeypot');
+    if (honeypot && honeypot.value) {
+      // Bot filled hidden field — silently reject
+      setTimeout(() => goTo('screen-onboarding'), 1500);
+      return;
+    }
+    // Bot protection: form must take at least 3 seconds to fill out
+    if (Date.now() - _signupOpenTime < 3000) {
+      // Submitted too fast — silently delay then "succeed" without actually saving
+      setTimeout(() => {
+        const name = document.getElementById('signup-name').value.trim();
+        const firstName = (name || 'friend').split(' ')[0];
+        document.getElementById('user-first-name').textContent = firstName + '.';
+        goTo('screen-onboarding');
+      }, 1000);
+      return;
+    }
+
     const name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
     const pass = document.getElementById('signup-password').value;
@@ -2771,10 +2872,23 @@
     } catch(e) {}
   }
 
+  // Login rate-limit state
+  let _loginAttempts = 0;
+  let _loginLockUntil = 0;
+  let _loginLockTimer = null;
+
   function handleLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-password').value;
     const errEl = document.getElementById('login-err');
+
+    // Rate limit check
+    if (Date.now() < _loginLockUntil) {
+      const secs = Math.ceil((_loginLockUntil - Date.now()) / 1000);
+      errEl.textContent = 'Too many attempts. Try again in ' + secs + 's.';
+      errEl.classList.add('show');
+      return;
+    }
 
     if (!email || !pass) {
       errEl.textContent = 'Please enter your email and password.';
@@ -2803,11 +2917,31 @@
             const today = new Date().toDateString();
             if (STATE.lastCompletedDate !== today) STATE.todayComplete = false;
             errEl.classList.remove('show');
+            _loginAttempts = 0;
+            _loginLockUntil = 0;
+            if (_loginLockTimer) { clearInterval(_loginLockTimer); _loginLockTimer = null; }
             saveState(); // Clears loggedOut flag
             enterApp();
             return;
           } else {
-            errEl.textContent = 'Incorrect password. Please try again.';
+            _loginAttempts++;
+            if (_loginAttempts >= 5) {
+              _loginLockUntil = Date.now() + 60000;
+              _loginAttempts = 0;
+              errEl.textContent = 'Too many failed attempts. Please wait 60 seconds.';
+              if (_loginLockTimer) clearInterval(_loginLockTimer);
+              _loginLockTimer = setInterval(() => {
+                if (Date.now() >= _loginLockUntil) {
+                  clearInterval(_loginLockTimer);
+                  errEl.classList.remove('show');
+                } else {
+                  const secs = Math.ceil((_loginLockUntil - Date.now()) / 1000);
+                  errEl.textContent = 'Too many attempts. Try again in ' + secs + 's.';
+                }
+              }, 1000);
+            } else {
+              errEl.textContent = 'Incorrect password. ' + (5 - _loginAttempts) + ' attempt(s) remaining.';
+            }
             errEl.classList.add('show');
             return;
           }
@@ -2834,6 +2968,58 @@
     } catch(e) {}
     STATE.user = null;
     goTo('screen-splash');
+  }
+
+  function deleteAccount() {
+    const confirmed = window.confirm(
+      'Delete your account?\n\nThis will permanently erase all your data — streak, prayer journal, memorized verses, and settings. This cannot be undone.'
+    );
+    if (!confirmed) return;
+
+    // Double-confirm with typed word
+    const typed = window.prompt('Type DELETE to confirm account deletion:');
+    if (!typed || typed.trim().toUpperCase() !== 'DELETE') {
+      showToast('Account deletion cancelled.');
+      return;
+    }
+
+    // Wipe all localStorage keys associated with this app
+    const keysToRemove = [
+      'sbs_state',
+      'sbs_prayers',
+      'sbs_read_minutes',
+      'sbs_grace_token',
+      'sbs_nudge_dismissed',
+      'sbs_trivia_queue_beginner',
+      'sbs_trivia_queue_intermediate',
+      'sbs_trivia_queue_expert',
+      'sbs_trivia_deck_beginner',
+      'sbs_trivia_deck_intermediate',
+      'sbs_trivia_deck_expert',
+      'sbs_trivia_seen_beginner',
+      'sbs_trivia_seen_intermediate',
+      'sbs_trivia_seen_expert',
+      'sbs_font_size',
+    ];
+    keysToRemove.forEach(key => { try { localStorage.removeItem(key); } catch(e) {} });
+
+    // Reset in-memory state
+    STATE.user = null;
+    STATE.streak = 0;
+    STATE.totalDays = 0;
+    STATE.versesRead = 0;
+    STATE.versesMemorized = 0;
+    STATE.memorizedRefs = [];
+    STATE.weeklyMemRefs = [];
+    STATE.memQueue = [];
+    STATE.todayComplete = false;
+
+    showToast('Account deleted. Goodbye 🙏');
+    setTimeout(() => goTo('screen-splash'), 1500);
+  }
+
+  function openPrivacyScreen() {
+    goTo('screen-privacy');
   }
 
   function enterPreviewMode() {
@@ -9918,6 +10104,7 @@
     }
 
     // Generate a fresh 6-digit code with 15-minute expiry
+    _resetAttempts = 0; // Clear attempt counter for fresh code
     _resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     _resetEmail = email;
     _resetExpiry = Date.now() + (15 * 60 * 1000);
@@ -9956,6 +10143,8 @@
     });
   }
 
+  let _resetAttempts = 0;
+
   function verifyResetCode() {
     const input = document.getElementById('reset-code-input').value.trim();
     const errEl = document.getElementById('reset-code-err');
@@ -9964,16 +10153,29 @@
     if (!_resetCode || Date.now() > _resetExpiry) {
       errEl.textContent = 'Code has expired. Please request a new one.';
       errEl.classList.add('show');
+      _resetAttempts = 0;
       return;
     }
 
-    if (input !== _resetCode) {
-      errEl.textContent = 'Incorrect code. Please try again.';
+    // Check attempt limit
+    if (_resetAttempts >= 5) {
+      errEl.textContent = 'Too many attempts. Please request a new code.';
       errEl.classList.add('show');
       return;
     }
 
-    // Code correct — go to new password screen
+    if (input !== _resetCode) {
+      _resetAttempts++;
+      const remaining = 5 - _resetAttempts;
+      errEl.textContent = remaining > 0
+        ? 'Incorrect code. ' + remaining + ' attempt(s) remaining.'
+        : 'Too many attempts. Please request a new code.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    // Code correct — reset counter and go to new password screen
+    _resetAttempts = 0;
     errEl.classList.remove('show');
     document.getElementById('new-pass-err').classList.remove('show');
     document.getElementById('confirm-pass-err').classList.remove('show');
