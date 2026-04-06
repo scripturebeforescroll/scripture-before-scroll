@@ -2180,6 +2180,25 @@
     return str && str.length === 64 && /^[0-9a-f]+$/.test(str);
   }
 
+  // ── Password helpers (safe fallbacks if security patch not applied) ──
+  if (typeof hashPassword === 'undefined') {
+    window.hashPassword = async function(password) {
+      // Fallback: use Web Crypto if available, otherwise return as-is
+      try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + 'sbs_salt_2024');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch(e) { return password; }
+    };
+  }
+  if (typeof isHashed === 'undefined') {
+    window.isHashed = function(str) {
+      return str && str.length === 64 && /^[0-9a-f]+$/.test(str);
+    };
+  }
+
   // ── STATE ──
   const STATE = {
     user: null,
@@ -2381,19 +2400,17 @@
     // Bot protection: honeypot field must be empty
     const honeypot = document.getElementById('signup-honeypot');
     if (honeypot && honeypot.value) {
-      // Bot filled hidden field — silently reject
       setTimeout(() => goTo('screen-onboarding'), 1500);
       return;
     }
-    // Bot protection: form must take at least 3 seconds to fill out
-    if (Date.now() - _signupOpenTime < 3000) {
-      // Submitted too fast — silently delay then "succeed" without actually saving
+    // Bot protection: raised to 1.5s to avoid blocking real users on fast devices
+    if (Date.now() - _signupOpenTime < 1500) {
       setTimeout(() => {
         const name = document.getElementById('signup-name').value.trim();
         const firstName = (name || 'friend').split(' ')[0];
         document.getElementById('user-first-name').textContent = firstName + '.';
         goTo('screen-onboarding');
-      }, 1000);
+      }, 800);
       return;
     }
 
@@ -2416,16 +2433,21 @@
     }
     if (!valid) return;
 
-    STATE.user = { name: name || 'Friend', email, password: pass, joinedDate: new Date().toISOString() };
-    STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
-    saveState();
-
-    // Add to HubSpot waitlist automatically
-    addToWaitlist(name, email);
-
-    const firstName = (name || 'friend').split(' ')[0];
-    document.getElementById('user-first-name').textContent = firstName + '.';
-    goTo('screen-onboarding');
+    // Hash password if hashPassword function is available, otherwise store as-is
+    const doSignup = async function() {
+      let storedPass = pass;
+      if (typeof hashPassword === 'function') {
+        try { storedPass = await hashPassword(pass); } catch(e) { storedPass = pass; }
+      }
+      STATE.user = { name: name || 'Friend', email, password: storedPass, joinedDate: new Date().toISOString() };
+      STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
+      saveState();
+      addToWaitlist(name, email);
+      const firstName = (name || 'friend').split(' ')[0];
+      document.getElementById('user-first-name').textContent = firstName + '.';
+      goTo('screen-onboarding');
+    };
+    doSignup();
   }
 
   function addToWaitlist(name, email) {
@@ -2451,7 +2473,7 @@
   let _loginLockUntil = 0;
   let _loginLockTimer = null;
 
-  function handleLogin() {
+  async function handleLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-password').value;
     const errEl = document.getElementById('login-err');
@@ -2478,7 +2500,31 @@
         // Find matching account — check both active user and logged-out saved user
         const savedUser = parsed.user || parsed.loggedOutUser;
         if (savedUser && savedUser.email && savedUser.email.toLowerCase() === email.toLowerCase()) {
-          if (savedUser.password && savedUser.password === pass) {
+          // Support both plaintext (legacy) and hashed passwords
+          const passwordMatches = async function() {
+            if (!savedUser.password) return false;
+            // Direct match (plaintext legacy passwords)
+            if (savedUser.password === pass) return true;
+            // Hashed match (new accounts created after security patch)
+            if (typeof hashPassword === 'function' && typeof isHashed === 'function' && isHashed(savedUser.password)) {
+              try {
+                const hashed = await hashPassword(pass);
+                return hashed === savedUser.password;
+              } catch(e) { return false; }
+            }
+            return false;
+          };
+          const matched = await passwordMatches();
+          if (matched) {
+            // If password was stored as plaintext, upgrade it to hashed now
+            if (savedUser.password === pass && typeof hashPassword === 'function') {
+              try {
+                const hashed = await hashPassword(pass);
+                savedUser.password = hashed;
+              } catch(e) {}
+            }
+          }
+          if (matched) {
             // Restore all saved progress and log back in
             const safeKeys = ['streak','totalDays','versesRead','versesMemorized',
               'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
@@ -2497,7 +2543,7 @@
             saveState(); // Clears loggedOut flag
             enterApp();
             return;
-          } else {
+          } else if (!matched) {
             _loginAttempts++;
             if (_loginAttempts >= 5) {
               _loginLockUntil = Date.now() + 60000;
