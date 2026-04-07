@@ -2679,18 +2679,18 @@
     });
   }
 
-  function enterApp() {
-    // Don't reset todayComplete here — loadState already resets it at midnight
-    updateHomeGreeting();
-    buildStreakRow();
-    updateStats();
-    updateProfileUI();
-    loadTodayVerse();
-    syncModePills();
-    saveState();
-    switchTab('home');
-    setTimeout(renderMemorizeScreens, 200);
-  }
+window.enterApp = function() {
+  // Don't reset todayComplete here — loadState already resets it at midnight
+  updateHomeGreeting();
+  buildStreakRow();
+  updateStats();
+  updateProfileUI();
+  loadTodayVerse();
+  syncModePills();
+  saveState();
+  switchTab('home');
+  setTimeout(renderMemorizeScreens, 200);
+};
 
   // ── HOME ──
   function updateHomeGreeting() {
