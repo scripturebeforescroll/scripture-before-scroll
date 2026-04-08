@@ -2454,16 +2454,6 @@
       setTimeout(() => goTo('screen-onboarding'), 1500);
       return;
     }
-    // Bot protection: raised to 1.5s to avoid blocking real users on fast devices
-    if (Date.now() - _signupOpenTime < 1500) {
-      setTimeout(() => {
-        const name = document.getElementById('signup-name').value.trim();
-        const firstName = (name || 'friend').split(' ')[0];
-        document.getElementById('user-first-name').textContent = firstName + '.';
-        goTo('screen-onboarding');
-      }, 800);
-      return;
-    }
 
     const name = document.getElementById('signup-name').value.trim();
     const email = document.getElementById('signup-email').value.trim();
