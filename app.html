@@ -9764,7 +9764,7 @@ window.enterApp = function() {
   // Schedule a local notification via the SW for today/tomorrow
   function scheduleLocalReminder() {
     if (!window._swReg || !window._swReg.active) return;
-    if (Notification.permission !== 'granted') return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
     const time = STATE.reminderTime || '07:00';
     const [h, m] = time.split(':').map(Number);
@@ -9786,7 +9786,7 @@ window.enterApp = function() {
     STATE.reminderTime = time;
     saveState();
     saveNotifPrefs();
-    if (Notification.permission === 'granted') {
+    if ('Notification' in window && Notification.permission === 'granted') {
       scheduleLocalReminder();
       showToast('Reminder set for ' + formatReminderTime(time));
     } else {
@@ -9811,9 +9811,9 @@ window.enterApp = function() {
     if (input) input.value = time;
     const permEl = document.getElementById('profile-reminder-perm');
     if (permEl) {
-      const perm = Notification.permission;
-      permEl.textContent = perm === 'granted' ? '' : perm === 'denied' ? '(blocked — enable in device settings)' : '(tap to enable)';
-      permEl.style.color = perm === 'denied' ? 'var(--stone)' : 'var(--gold)';
+      const perm = ('Notification' in window) ? Notification.permission : 'unavailable';
+      permEl.textContent = perm === 'granted' ? '' : perm === 'denied' ? '(blocked — enable in device settings)' : perm === 'unavailable' ? '(not supported on this browser)' : '(tap to enable)';
+      permEl.style.color = (perm === 'denied' || perm === 'unavailable') ? 'var(--stone)' : 'var(--gold)';
     }
   }
 
