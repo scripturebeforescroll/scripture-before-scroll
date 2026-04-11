@@ -1339,6 +1339,7 @@
   <div class="screen" id="screen-trivia-results">
     <div class="status-bar"><span class="status-time"></span><span class="status-icons"></span></div>
     <div class="screen-inner" style="align-items:center;text-align:center;width:100%;">
+      <div class="scroll-area" style="padding-bottom:1rem;">
       <div style="font-size:3.5rem;margin-top:1rem;margin-bottom:0.5rem;" id="trivia-result-emoji">🎉</div>
       <p class="eyebrow fade-up">Round complete</p>
       <div class="display fade-up-2" style="font-size:2rem;margin-bottom:0.5rem;"><em id="trivia-score-display">4/5</em></div>
@@ -1358,6 +1359,7 @@
         <button class="btn-ghost" onclick="goTo('screen-trivia-level')">Change Level</button>
         <button onclick="openFeedback('trivia','How was the trivia?')" style="background:none;border:none;color:var(--stone);font-size:0.75rem;cursor:pointer;padding:0.25rem;text-decoration:underline;text-underline-offset:3px;">💬 Give feedback on trivia</button>
         <button class="btn-text" style="color:var(--muted);" onclick="goTo('screen-home')">Back to Home</button>
+      </div>
       </div>
     </div>
   </div>
@@ -7471,6 +7473,8 @@ window.enterApp = function() {
     triviaState.score = 0;
     triviaState.missed = [];
     triviaState.answered = false;
+    const reviewEl = document.getElementById('trivia-missed-review');
+    if (reviewEl) reviewEl.innerHTML = '';
 
     // Build a no-repeat shuffled queue for this session using localStorage
     const storageKey = 'sbs_trivia_queue_' + level;
