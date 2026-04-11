@@ -9502,6 +9502,11 @@ window.enterApp = function() {
     _origEnterApp.apply(this, arguments);
     checkGraceDayProtection();
     updateReadingTimeUI();
+    // Reschedule reminder every time the app opens — the SW loses its setTimeout
+    // when killed by the OS, so we must re-register it on each launch.
+    if ('Notification' in window && Notification.permission === 'granted') {
+      setTimeout(scheduleLocalReminder, 1500);
+    }
   };
 
   // Patch updateCompleteScreen to show grace day card
@@ -9833,21 +9838,28 @@ window.enterApp = function() {
   async function saveNotifPrefs() {
     if (!('indexedDB' in window)) return;
     const time = STATE.reminderTime || '07:00';
-    const prefs = {
-      reminderTime: time,
-      lastCompletedDate: STATE.lastCompletedDate || null,
-      lastNudgeDate: null
-    };
     try {
       await new Promise((res, rej) => {
         const req = indexedDB.open('sbs-prefs', 1);
         req.onupgradeneeded = ev => ev.target.result.createObjectStore('prefs');
         req.onsuccess = ev => {
           const db = ev.target.result;
-          const tx = db.transaction('prefs', 'readwrite');
-          tx.objectStore('prefs').put(prefs, 'data');
-          tx.oncomplete = res;
-          tx.onerror = () => rej(tx.error);
+          // Read existing prefs first so we preserve lastNudgeDate (set by SW after sending)
+          const readTx = db.transaction('prefs', 'readonly');
+          const readReq = readTx.objectStore('prefs').get('data');
+          readReq.onsuccess = () => {
+            const existing = readReq.result || {};
+            const prefs = {
+              reminderTime: time,
+              lastCompletedDate: STATE.lastCompletedDate || null,
+              lastNudgeDate: existing.lastNudgeDate || null,
+            };
+            const tx = db.transaction('prefs', 'readwrite');
+            tx.objectStore('prefs').put(prefs, 'data');
+            tx.oncomplete = res;
+            tx.onerror = () => rej(tx.error);
+          };
+          readReq.onerror = () => rej(readReq.error);
         };
         req.onerror = () => rej(req.error);
       });
