@@ -2183,7 +2183,7 @@
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
-  <!-- PWA install banner — shown after first habit completion -->
+  <!-- PWA install banner — Android/Chrome: native prompt -->
   <div id="pwa-install-banner" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--ink);padding:1rem 1.25rem;z-index:300;flex-direction:column;gap:0.5rem;border-top:2px solid var(--gold);">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;">
       <div>
@@ -2196,6 +2196,23 @@
       <button onclick="triggerInstallPrompt()" style="flex:1;background:var(--gold);border:none;border-radius:var(--radius-sm);padding:0.65rem;font-size:0.85rem;color:var(--white);font-weight:500;cursor:pointer;">Add to Home Screen</button>
       <button onclick="hidePwaBanner()" style="background:rgba(255,255,255,0.08);border:none;border-radius:var(--radius-sm);padding:0.65rem 1rem;font-size:0.85rem;color:rgba(255,255,255,0.6);cursor:pointer;">Not now</button>
     </div>
+  </div>
+
+  <!-- PWA install banner — iOS Safari: manual instructions -->
+  <div id="pwa-ios-banner" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--ink);padding:1rem 1.25rem;z-index:300;flex-direction:column;gap:0.75rem;border-top:2px solid var(--gold);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;">
+      <div style="font-family:var(--serif);font-size:1.05rem;color:var(--white);">Add to your home screen</div>
+      <button onclick="hideIosBanner()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:1.3rem;cursor:pointer;padding:0;line-height:1;flex-shrink:0;">✕</button>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+      <div style="font-size:1.4rem;flex-shrink:0;">1.</div>
+      <p style="font-size:0.78rem;color:rgba(255,255,255,0.8);line-height:1.5;">Tap the <strong style="color:var(--gold-lt);">Share</strong> button at the bottom of Safari <span style="font-size:1rem;">⎋</span></p>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+      <div style="font-size:1.4rem;flex-shrink:0;">2.</div>
+      <p style="font-size:0.78rem;color:rgba(255,255,255,0.8);line-height:1.5;">Scroll down and tap <strong style="color:var(--gold-lt);">"Add to Home Screen"</strong></p>
+    </div>
+    <button onclick="hideIosBanner()" style="background:rgba(255,255,255,0.08);border:none;border-radius:var(--radius-sm);padding:0.6rem;font-size:0.82rem;color:rgba(255,255,255,0.6);cursor:pointer;width:100%;">Got it</button>
   </div>
 
   <!-- Trivia back banner — shown when reading Bible from trivia -->
@@ -2784,16 +2801,20 @@
   }
 
 window.enterApp = function() {
-  // Don't reset todayComplete here — loadState already resets it at midnight
-  updateHomeGreeting();
-  buildStreakRow();
-  updateStats();
-  updateProfileUI();
-  loadTodayVerse();
-  syncModePills();
-  saveState();
-  switchTab('home');
-  setTimeout(renderMemorizeScreens, 200);
+  try {
+    updateHomeGreeting();
+    buildStreakRow();
+    updateStats();
+    updateProfileUI();
+    loadTodayVerse();
+    syncModePills();
+    saveState();
+    switchTab('home');
+    setTimeout(renderMemorizeScreens, 200);
+  } catch(e) {
+    console.error('[SBS] enterApp error:', e);
+    try { switchTab('home'); } catch(e2) {}
+  }
 };
 
   // ── HOME ──
@@ -9693,16 +9714,33 @@ window.enterApp = function() {
     _deferredInstallPrompt = e;
   });
 
-  // Called after habit completion — show install prompt on day 1 or 3 if not yet installed
+  function _isIos() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
+  function _isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+  }
+
+  // Called after habit completion — show the right install prompt
   function maybePromptInstall() {
-    if (!_deferredInstallPrompt) return;
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    // Already installed as PWA
+    if (_isStandalone()) return;
+    // Only nudge on day 1 or day 3
     if (STATE.totalDays !== 1 && STATE.totalDays !== 3) return;
+    // Don't show if dismissed before
+    if (localStorage.getItem('sbs_install_dismissed')) return;
 
     setTimeout(() => {
-      const banner = document.getElementById('pwa-install-banner');
-      if (banner) banner.style.display = 'flex';
-    }, 1200);
+      if (_isIos()) {
+        const banner = document.getElementById('pwa-ios-banner');
+        if (banner) banner.style.display = 'flex';
+      } else if (_deferredInstallPrompt) {
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.style.display = 'flex';
+      }
+    }, 1500);
   }
 
   function triggerInstallPrompt() {
@@ -9715,6 +9753,13 @@ window.enterApp = function() {
   function hidePwaBanner() {
     const banner = document.getElementById('pwa-install-banner');
     if (banner) banner.style.display = 'none';
+    localStorage.setItem('sbs_install_dismissed', '1');
+  }
+
+  function hideIosBanner() {
+    const banner = document.getElementById('pwa-ios-banner');
+    if (banner) banner.style.display = 'none';
+    localStorage.setItem('sbs_install_dismissed', '1');
   }
 
   // Request notification permission and save prefs to IndexedDB for the SW
