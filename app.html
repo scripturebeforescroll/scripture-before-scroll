@@ -17,6 +17,14 @@
   <script>
     (function() { emailjs.init({ publicKey: 'mhxDvFbwQp6PFzUAF' }); })();
   </script>
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="Ii init Di qi Sr Bi Zi Pi capture calculateEventProperties Yi register register_once register_for_session unregister unregister_for_session Xi getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Ji identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wi Vi createPersonProfile setInternalOrTestUser Gi Fi tn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $i debug Tr Ui getPageViewId captureTraceFeedback captureTraceMetric Ri".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_soNzYGFqexWYFaspY3NiHocTLASRY6LBqDnmKMG4ThzV', {
+        api_host: 'https://us.i.posthog.com',
+        defaults: '2026-01-30',
+        person_profiles: 'identified_only',
+    });
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -2562,6 +2570,7 @@
       STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
       saveState();
       addToWaitlist(name, email);
+      try { posthog.capture('signed_up', { name: name || '', email }); } catch(e) {}
       const firstName = (name || 'friend').split(' ')[0];
       document.getElementById('user-first-name').textContent = firstName + '.';
       goTo('screen-onboarding');
@@ -2708,6 +2717,7 @@
       }
     } catch(e) {}
     STATE.user = null;
+    try { posthog.reset(); } catch(e) {}
     goTo('screen-splash');
   }
 
@@ -2755,6 +2765,7 @@
     STATE.memQueue = [];
     STATE.todayComplete = false;
 
+    try { posthog.capture('account_deleted'); posthog.reset(); } catch(e) {}
     showToast('Account deleted. Goodbye 🙏');
     setTimeout(() => goTo('screen-splash'), 1500);
   }
@@ -2811,6 +2822,22 @@ window.enterApp = function() {
     saveState();
     switchTab('home');
     setTimeout(renderMemorizeScreens, 200);
+    // Identify user and log session in PostHog
+    if (STATE.user && STATE.user.email && STATE.user.email !== 'preview@test.com') {
+      try {
+        posthog.identify(STATE.user.email, {
+          name:       STATE.user.name || '',
+          email:      STATE.user.email,
+          joined:     STATE.user.joinedDate || '',
+          streak:     STATE.streak || 0,
+          total_days: STATE.totalDays || 0,
+        });
+        posthog.capture('app_opened', {
+          streak: STATE.streak || 0,
+          mode:   STATE.mode || 'verse',
+        });
+      } catch(pe) {}
+    }
   } catch(e) {
     console.error('[SBS] enterApp error:', e);
     try { switchTab('home'); } catch(e2) {}
@@ -3042,6 +3069,17 @@ window.enterApp = function() {
     maybePromptInstall();
     // Update IndexedDB so SW knows habit is done today (suppresses notification)
     saveNotifPrefs();
+    // Analytics
+    try {
+      posthog.capture('habit_completed', {
+        mode:       STATE.mode || 'verse',
+        streak:     STATE.streak,
+        total_days: STATE.totalDays,
+      });
+      if ([7, 30, 60, 90, 180, 365].includes(STATE.streak)) {
+        posthog.capture('streak_milestone', { streak: STATE.streak });
+      }
+    } catch(e) {}
   }
 
   function updateCompleteScreen() {
@@ -7426,6 +7464,7 @@ window.enterApp = function() {
   const TRIVIA_TOTAL = 5;
 
   function startTrivia(level) {
+    try { posthog.capture('trivia_started', { level }); } catch(e) {}
     window._triviaLevel = level;
     triviaState.level = level;
     triviaState.current = 0;
@@ -7606,6 +7645,7 @@ window.enterApp = function() {
     const score = triviaState.score;
     const total = TRIVIA_TOTAL;
     const level = triviaState.level;
+    try { posthog.capture('trivia_completed', { level, score, total, pct: Math.round(score / total * 100) }); } catch(e) {}
     const levelEmojis = { beginner: '🌱', intermediate: '📖', expert: '🏆' };
 
     document.getElementById('trivia-score-display').textContent = `${score}/${total}`;
@@ -9276,6 +9316,7 @@ window.enterApp = function() {
     prayers.unshift(newPrayer);
     // Keep only last N prayers
     if (prayers.length > MAX_PRAYERS_STORED) prayers.length = MAX_PRAYERS_STORED;
+    try { posthog.capture('prayer_saved', { total_prayers: prayers.length }); } catch(e) {}
     savePrayers(prayers);
 
     // Track reading time: prayer = +1 min equivalent
@@ -9874,6 +9915,7 @@ window.enterApp = function() {
     if (chevron) chevron.textContent = open ? '▴' : '▾';
     if (open) updateReminderUI();
   }
+
 
 </script>
 </body>
