@@ -2411,9 +2411,9 @@
         if (parsed[key] !== undefined) STATE[key] = parsed[key];
       });
 
-      // Reset todayComplete if it's a new calendar day
+      // Reset todayComplete if it's a new calendar day, or if state is corrupted (no history)
       const today = new Date().toDateString();
-      if (STATE.lastCompletedDate !== today) {
+      if (STATE.lastCompletedDate !== today || STATE.totalDays === 0) {
         STATE.todayComplete = false;
       }
 
@@ -2946,7 +2946,8 @@ window.enterApp = function() {
   }
 
   function startTodayHabit() {
-    window._extraSession = STATE.todayComplete;
+    // Only treat as extra session if today is genuinely complete AND we have a real history
+    window._extraSession = STATE.todayComplete && STATE.totalDays > 0;
     window._fromTrivia = null; // ensure chapter screen shows daily reading UI
     const modeMap = { verse: 'screen-verse', chapter: 'screen-chapter', memorize: 'screen-memorize-main', trivia: 'screen-trivia-level' };
 
@@ -9727,10 +9728,11 @@ window.enterApp = function() {
   function maybePromptInstall() {
     // Already installed as PWA
     if (_isStandalone()) return;
-    // Only nudge on day 1 or day 3
-    if (STATE.totalDays !== 1 && STATE.totalDays !== 3) return;
-    // Don't show if dismissed before
-    if (localStorage.getItem('sbs_install_dismissed')) return;
+    // Only nudge on first 5 days (gives multiple chances if user dismisses)
+    if (STATE.totalDays < 1 || STATE.totalDays > 5) return;
+    // Don't show more than once per calendar day
+    const today = new Date().toDateString();
+    if (localStorage.getItem('sbs_install_dismissed') === today) return;
 
     setTimeout(() => {
       if (_isIos()) {
@@ -9753,13 +9755,14 @@ window.enterApp = function() {
   function hidePwaBanner() {
     const banner = document.getElementById('pwa-install-banner');
     if (banner) banner.style.display = 'none';
-    localStorage.setItem('sbs_install_dismissed', '1');
+    // Only suppress for today, not forever
+    localStorage.setItem('sbs_install_dismissed', new Date().toDateString());
   }
 
   function hideIosBanner() {
     const banner = document.getElementById('pwa-ios-banner');
     if (banner) banner.style.display = 'none';
-    localStorage.setItem('sbs_install_dismissed', '1');
+    localStorage.setItem('sbs_install_dismissed', new Date().toDateString());
   }
 
   // Request notification permission and save prefs to IndexedDB for the SW
