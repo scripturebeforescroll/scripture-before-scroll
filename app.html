@@ -2217,11 +2217,13 @@
   }
 
   // salt param: per-user random salt (stored in STATE.user.salt).
-  // Falls back to legacy static salt for accounts created before this patch.
+  // Legacy accounts (no salt stored) use the original format so existing passwords still work.
   async function hashPassword(password, salt) {
     const encoder = new TextEncoder();
-    const s = salt || 'sbs_salt_2024'; // legacy fallback only
-    const data = encoder.encode(s + password + s); // sandwich: harder to precompute
+    // New accounts: sandwich format with their unique salt (harder to precompute)
+    // Legacy accounts: original format — must match how their password was first stored
+    const input = salt ? (salt + password + salt) : (password + 'sbs_salt_2024');
+    const data = encoder.encode(input);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -2503,15 +2505,9 @@
   }
 
   function handleSignup() {
-    // Bot protection: honeypot field must be empty
     // Bot protection: honeypot field (bots fill it, humans don't see it)
     const honeypot = document.getElementById('signup-honeypot');
     if (honeypot && honeypot.value) {
-      setTimeout(() => goTo('screen-onboarding'), 1500);
-      return;
-    }
-    // Bot protection: timing check (real humans take > 3 seconds to fill a form)
-    if (window._signupLoadTime && Date.now() - window._signupLoadTime < 3000) {
       setTimeout(() => goTo('screen-onboarding'), 1500);
       return;
     }
