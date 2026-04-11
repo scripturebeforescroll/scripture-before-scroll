@@ -7,6 +7,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Scripture Before Scroll" />
   <meta name="theme-color" content="#FAF7F2" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <title>Scripture Before Scroll</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -921,7 +923,7 @@
       <div class="display fade-up-2" style="font-size:1.8rem;margin-bottom:0.75rem;">A gentle<br><em>morning reminder.</em></div>
       <p class="body-text fade-up-3" style="margin-bottom:2rem;max-width:30ch;">We'll send one notification each morning to remind you to open Scripture Before Scroll — not a guilt trip, just a nudge.</p>
       <div style="width:100%;display:flex;flex-direction:column;gap:0.75rem;" class="fade-up-4">
-        <button class="btn-primary" onclick="goTo('screen-onboard3')">Allow Notifications</button>
+        <button class="btn-primary" onclick="requestNotificationPermission().then(()=>goTo('screen-onboard3'))">Allow Notifications</button>
         <button class="btn-ghost" onclick="goTo('screen-onboard3')">Maybe Later</button>
       </div>
     
@@ -2004,10 +2006,22 @@
             </div>
           </div>
 
-          <!-- Morning reminder (placeholder) -->
-          <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:0.85rem;">Morning reminder</span>
-            <span style="font-size:0.78rem;color:var(--gold);">7:00 AM</span>
+          <!-- Morning reminder — interactive time picker -->
+          <div class="card" id="profile-reminder-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleReminderPicker()">
+              <span style="font-size:0.85rem;">Morning reminder</span>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <span style="font-size:0.78rem;color:var(--gold);" id="profile-reminder-label">7:00 AM</span>
+                <span style="font-size:0.65rem;color:var(--stone);" id="profile-reminder-chevron">▾</span>
+              </div>
+            </div>
+            <div id="profile-reminder-picker" style="display:none;margin-top:0.75rem;">
+              <p style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;">Pick a time for your daily scripture nudge:</p>
+              <input type="time" id="profile-reminder-input" value="07:00"
+                onchange="setReminderTime(this.value)"
+                style="width:100%;padding:0.55rem 0.75rem;border-radius:var(--radius-sm);border:1px solid var(--stone);background:var(--warm);font-family:var(--sans);font-size:0.9rem;color:var(--ink);outline:none;cursor:pointer;" />
+              <p style="font-size:0.7rem;margin-top:0.4rem;" id="profile-reminder-perm"></p>
+            </div>
           </div>
 
           <!-- Bible translation — BSB -->
@@ -2169,6 +2183,21 @@
   <!-- Toast notification -->
   <div class="toast" id="toast"></div>
 
+  <!-- PWA install banner — shown after first habit completion -->
+  <div id="pwa-install-banner" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--ink);padding:1rem 1.25rem;z-index:300;flex-direction:column;gap:0.5rem;border-top:2px solid var(--gold);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.75rem;">
+      <div>
+        <div style="font-family:var(--serif);font-size:1.05rem;color:var(--white);margin-bottom:0.2rem;">Add to your home screen</div>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.65);line-height:1.4;max-width:26ch;">Open Scripture Before Scroll like a real app — no browser, daily reminders, works offline.</p>
+      </div>
+      <button onclick="hidePwaBanner()" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:1.3rem;cursor:pointer;padding:0;line-height:1;flex-shrink:0;">✕</button>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="triggerInstallPrompt()" style="flex:1;background:var(--gold);border:none;border-radius:var(--radius-sm);padding:0.65rem;font-size:0.85rem;color:var(--white);font-weight:500;cursor:pointer;">Add to Home Screen</button>
+      <button onclick="hidePwaBanner()" style="background:rgba(255,255,255,0.08);border:none;border-radius:var(--radius-sm);padding:0.65rem 1rem;font-size:0.85rem;color:rgba(255,255,255,0.6);cursor:pointer;">Not now</button>
+    </div>
+  </div>
+
   <!-- Trivia back banner — shown when reading Bible from trivia -->
   <div id="trivia-back-banner" style="display:none;position:absolute;bottom:0;left:0;right:0;width:100%;background:var(--ink);padding:0.75rem 1.25rem;z-index:200;display:none;align-items:center;justify-content:space-between;gap:1rem;">
     <span style="font-size:0.78rem;color:var(--white);opacity:0.85;">Reading from Trivia</span>
@@ -2179,9 +2208,20 @@
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ── SECURITY: Password hashing (SHA-256 via Web Crypto) ──
-  async function hashPassword(password) {
+
+  // Generate a cryptographically random 32-char hex salt (unique per account)
+  function generateSalt() {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // salt param: per-user random salt (stored in STATE.user.salt).
+  // Falls back to legacy static salt for accounts created before this patch.
+  async function hashPassword(password, salt) {
     const encoder = new TextEncoder();
-    const data = encoder.encode(password + 'sbs_salt_2024');
+    const s = salt || 'sbs_salt_2024'; // legacy fallback only
+    const data = encoder.encode(s + password + s); // sandwich: harder to precompute
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -2192,13 +2232,13 @@
     return str && str.length === 64 && /^[0-9a-f]+$/.test(str);
   }
 
-  // ── Password helpers (safe fallbacks if security patch not applied) ──
+  // ── Legacy fallback (dead code path — hashPassword is defined above) ──
   if (typeof hashPassword === 'undefined') {
-    window.hashPassword = async function(password) {
-      // Fallback: use Web Crypto if available, otherwise return as-is
+    window.hashPassword = async function(password, salt) {
       try {
         const encoder = new TextEncoder();
-        const data = encoder.encode(password + 'sbs_salt_2024');
+        const s = salt || 'sbs_salt_2024';
+        const data = encoder.encode(s + password + s);
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -2228,7 +2268,9 @@
     todayComplete: false,
     currentScreen: 'screen-splash',
     verseIndex: 0,
-    extraVerseIndex: 0
+    extraVerseIndex: 0,
+    reminderTime: '07:00',
+    notificationsEnabled: false
   };
 
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -2393,6 +2435,7 @@
       const next = document.getElementById(screenId);
       if (next) next.classList.add('active');
       STATE.currentScreen = screenId;
+      if (screenId === 'screen-signup') window._signupLoadTime = Date.now();
 
       // Hide trivia back banner whenever we land somewhere that isn't chapter (from normal nav)
       if (screenId !== 'screen-chapter' && !_triviaReturnState) {
@@ -2461,8 +2504,14 @@
 
   function handleSignup() {
     // Bot protection: honeypot field must be empty
+    // Bot protection: honeypot field (bots fill it, humans don't see it)
     const honeypot = document.getElementById('signup-honeypot');
     if (honeypot && honeypot.value) {
+      setTimeout(() => goTo('screen-onboarding'), 1500);
+      return;
+    }
+    // Bot protection: timing check (real humans take > 3 seconds to fill a form)
+    if (window._signupLoadTime && Date.now() - window._signupLoadTime < 3000) {
       setTimeout(() => goTo('screen-onboarding'), 1500);
       return;
     }
@@ -2486,13 +2535,17 @@
     }
     if (!valid) return;
 
-    // Hash password if hashPassword function is available, otherwise store as-is
+    // Hash password with a unique per-user salt
     const doSignup = async function() {
       let storedPass = pass;
+      let salt = null;
       if (typeof hashPassword === 'function') {
-        try { storedPass = await hashPassword(pass); } catch(e) { storedPass = pass; }
+        try {
+          salt = generateSalt();
+          storedPass = await hashPassword(pass, salt);
+        } catch(e) { storedPass = pass; salt = null; }
       }
-      STATE.user = { name: name || 'Friend', email, password: storedPass, joinedDate: new Date().toISOString() };
+      STATE.user = { name: name || 'Friend', email, password: storedPass, salt, joinedDate: new Date().toISOString() };
       STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
       saveState();
       addToWaitlist(name, email);
@@ -2553,15 +2606,15 @@
         // Find matching account — check both active user and logged-out saved user
         const savedUser = parsed.user || parsed.loggedOutUser;
         if (savedUser && savedUser.email && savedUser.email.toLowerCase() === email.toLowerCase()) {
-          // Support both plaintext (legacy) and hashed passwords
+          // Support plaintext (legacy), old static-salt hash, and new per-user-salt hash
           const passwordMatches = async function() {
             if (!savedUser.password) return false;
-            // Direct match (plaintext legacy passwords)
+            // Direct match (plaintext legacy passwords — upgrade on success)
             if (savedUser.password === pass) return true;
-            // Hashed match (new accounts created after security patch)
+            // Hashed match — use per-user salt if present, otherwise legacy static salt
             if (typeof hashPassword === 'function' && typeof isHashed === 'function' && isHashed(savedUser.password)) {
               try {
-                const hashed = await hashPassword(pass);
+                const hashed = await hashPassword(pass, savedUser.salt || null);
                 return hashed === savedUser.password;
               } catch(e) { return false; }
             }
@@ -2569,11 +2622,13 @@
           };
           const matched = await passwordMatches();
           if (matched) {
-            // If password was stored as plaintext, upgrade it to hashed now
+            // Upgrade plaintext password to hashed with a fresh per-user salt
             if (savedUser.password === pass && typeof hashPassword === 'function') {
               try {
-                const hashed = await hashPassword(pass);
+                const newSalt = generateSalt();
+                const hashed = await hashPassword(pass, newSalt);
                 savedUser.password = hashed;
+                savedUser.salt = newSalt;
               } catch(e) {}
             }
           }
@@ -2966,6 +3021,9 @@ window.enterApp = function() {
     updateCompleteScreen();
     goTo('screen-complete');
     readChecked = false;
+    maybePromptInstall();
+    // Update IndexedDB so SW knows habit is done today (suppresses notification)
+    saveNotifPrefs();
   }
 
   function updateCompleteScreen() {
@@ -3072,6 +3130,8 @@ window.enterApp = function() {
     // Grace day token on profile
     const profileGrace = document.getElementById('profile-grace-card');
     if (profileGrace) profileGrace.style.display = hasGraceToken() ? 'block' : 'none';
+
+    updateReminderUI();
   }
 
   function toggleModePickerProfile() {
@@ -9402,6 +9462,17 @@ window.enterApp = function() {
   let _resetExpiry = null;
   let _resetName = null;
 
+  // ── Reset-code guard: persisted so a page refresh can't bypass the limit ──
+  function _getResetGuard() {
+    try { return JSON.parse(localStorage.getItem('sbs_reset_guard') || '{}'); } catch { return {}; }
+  }
+  function _setResetGuard(data) {
+    try { localStorage.setItem('sbs_reset_guard', JSON.stringify(data)); } catch {}
+  }
+  function _clearResetGuard() {
+    try { localStorage.removeItem('sbs_reset_guard'); } catch {}
+  }
+
   function startForgotPassword() {
     // Pre-fill email if already typed on login screen
     const loginEmail = document.getElementById('login-email').value.trim();
@@ -9445,11 +9516,19 @@ window.enterApp = function() {
       return;
     }
 
+    // Rate-limit: one code request per 60 seconds (persisted across page refreshes)
+    const guard = _getResetGuard();
+    if (guard.sentAt && Date.now() < guard.sentAt + 60000) {
+      const secs = Math.ceil((guard.sentAt + 60000 - Date.now()) / 1000);
+      showToast(`Please wait ${secs}s before requesting another code.`);
+      return;
+    }
+
     // Generate a fresh 6-digit code with 15-minute expiry
-    _resetAttempts = 0; // Clear attempt counter for fresh code
     _resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     _resetEmail = email;
     _resetExpiry = Date.now() + (15 * 60 * 1000);
+    _setResetGuard({ sentAt: Date.now(), attempts: 0, lockUntil: 0 });
 
     // Show sending state on button
     const sendBtn = document.querySelector('#screen-forgot-pw .btn-primary');
@@ -9485,39 +9564,53 @@ window.enterApp = function() {
     });
   }
 
-  let _resetAttempts = 0;
-
   function verifyResetCode() {
     const input = document.getElementById('reset-code-input').value.trim();
     const errEl = document.getElementById('reset-code-err');
+    const guard = _getResetGuard();
+
+    // Check persistent lockout (survives page refresh)
+    if (guard.lockUntil && Date.now() < guard.lockUntil) {
+      const mins = Math.ceil((guard.lockUntil - Date.now()) / 60000);
+      errEl.textContent = `Too many attempts. Try again in ${mins} min or request a new code.`;
+      errEl.classList.add('show');
+      return;
+    }
 
     // Check expiry
     if (!_resetCode || Date.now() > _resetExpiry) {
       errEl.textContent = 'Code has expired. Please request a new one.';
       errEl.classList.add('show');
-      _resetAttempts = 0;
+      _clearResetGuard();
       return;
     }
 
+    const attempts = guard.attempts || 0;
+
     // Check attempt limit
-    if (_resetAttempts >= 5) {
+    if (attempts >= 5) {
+      _setResetGuard({ ...guard, lockUntil: Date.now() + 15 * 60 * 1000 });
       errEl.textContent = 'Too many attempts. Please request a new code.';
       errEl.classList.add('show');
       return;
     }
 
     if (input !== _resetCode) {
-      _resetAttempts++;
-      const remaining = 5 - _resetAttempts;
-      errEl.textContent = remaining > 0
-        ? 'Incorrect code. ' + remaining + ' attempt(s) remaining.'
-        : 'Too many attempts. Please request a new code.';
+      const newAttempts = attempts + 1;
+      const remaining = 5 - newAttempts;
+      if (remaining <= 0) {
+        _setResetGuard({ ...guard, attempts: newAttempts, lockUntil: Date.now() + 15 * 60 * 1000 });
+        errEl.textContent = 'Too many attempts. Please request a new code.';
+      } else {
+        _setResetGuard({ ...guard, attempts: newAttempts });
+        errEl.textContent = `Incorrect code. ${remaining} attempt(s) remaining.`;
+      }
       errEl.classList.add('show');
       return;
     }
 
-    // Code correct — reset counter and go to new password screen
-    _resetAttempts = 0;
+    // Code correct — clear guard and proceed
+    _clearResetGuard();
     errEl.classList.remove('show');
     document.getElementById('new-pass-err').classList.remove('show');
     document.getElementById('confirm-pass-err').classList.remove('show');
@@ -9526,7 +9619,7 @@ window.enterApp = function() {
     goTo('screen-new-password');
   }
 
-  function saveNewPassword() {
+  async function saveNewPassword() {
     const newPass = document.getElementById('new-password').value;
     const confirmPass = document.getElementById('confirm-password').value;
     const newPassErr = document.getElementById('new-pass-err');
@@ -9549,21 +9642,193 @@ window.enterApp = function() {
 
     if (!valid) return;
 
-    // Update password in localStorage
+    // Hash new password with existing per-user salt (or generate one if missing)
     try {
       const saved = localStorage.getItem('sbs_state');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.user) {
-          parsed.user.password = newPass;
+          const salt = parsed.user.salt || generateSalt();
+          let hashed = newPass;
+          if (typeof hashPassword === 'function') {
+            try { hashed = await hashPassword(newPass, salt); } catch(e) {}
+          }
+          parsed.user.password = hashed;
+          parsed.user.salt = salt;
           localStorage.setItem('sbs_state', JSON.stringify(parsed));
-          // Also update current STATE user
-          if (STATE.user) STATE.user.password = newPass;
+          if (STATE.user) { STATE.user.password = hashed; STATE.user.salt = salt; }
         }
       }
     } catch(e) {}
 
     goTo('screen-reset-success');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PWA — Service Worker, Install Prompt, Notifications
+  // ═══════════════════════════════════════════════════════════════════
+
+  let _deferredInstallPrompt = null;
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => {
+          console.log('[SBS] SW registered', reg.scope);
+          window._swReg = reg;
+          // Register periodic background sync if supported
+          if ('periodicSync' in reg) {
+            navigator.permissions.query({ name: 'periodic-background-sync' })
+              .then(status => {
+                if (status.state === 'granted') {
+                  reg.periodicSync.register('sbs-daily-reminder', { minInterval: 12 * 60 * 60 * 1000 });
+                }
+              }).catch(() => {});
+          }
+        })
+        .catch(err => console.warn('[SBS] SW registration failed', err));
+    });
+  }
+
+  // Capture beforeinstallprompt — show it at the right moment
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+  });
+
+  // Called after habit completion — show install prompt on day 1 or 3 if not yet installed
+  function maybePromptInstall() {
+    if (!_deferredInstallPrompt) return;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (STATE.totalDays !== 1 && STATE.totalDays !== 3) return;
+
+    setTimeout(() => {
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'flex';
+    }, 1200);
+  }
+
+  function triggerInstallPrompt() {
+    hidePwaBanner();
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    _deferredInstallPrompt.userChoice.then(() => { _deferredInstallPrompt = null; });
+  }
+
+  function hidePwaBanner() {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'none';
+  }
+
+  // Request notification permission and save prefs to IndexedDB for the SW
+  async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+      showToast('Notifications are not supported on this device.');
+      return;
+    }
+    const result = await Notification.requestPermission();
+    if (result === 'granted') {
+      STATE.notificationsEnabled = true;
+      saveState();
+      await saveNotifPrefs();
+      scheduleLocalReminder();
+      showToast('Reminders are on — see you tomorrow morning. 🙏');
+    } else {
+      showToast('You can enable reminders in your device settings anytime.');
+    }
+    return result;
+  }
+
+  // Save notification prefs to IndexedDB so the SW can read them
+  async function saveNotifPrefs() {
+    if (!('indexedDB' in window)) return;
+    const time = STATE.reminderTime || '07:00';
+    const prefs = {
+      reminderTime: time,
+      lastCompletedDate: STATE.lastCompletedDate || null,
+      lastNudgeDate: null
+    };
+    try {
+      await new Promise((res, rej) => {
+        const req = indexedDB.open('sbs-prefs', 1);
+        req.onupgradeneeded = ev => ev.target.result.createObjectStore('prefs');
+        req.onsuccess = ev => {
+          const db = ev.target.result;
+          const tx = db.transaction('prefs', 'readwrite');
+          tx.objectStore('prefs').put(prefs, 'data');
+          tx.oncomplete = res;
+          tx.onerror = () => rej(tx.error);
+        };
+        req.onerror = () => rej(req.error);
+      });
+    } catch(e) { console.warn('[SBS] saveNotifPrefs failed', e); }
+  }
+
+  // Schedule a local notification via the SW for today/tomorrow
+  function scheduleLocalReminder() {
+    if (!window._swReg || !window._swReg.active) return;
+    if (Notification.permission !== 'granted') return;
+
+    const time = STATE.reminderTime || '07:00';
+    const [h, m] = time.split(':').map(Number);
+    const now = new Date();
+    let target = new Date();
+    target.setHours(h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1); // schedule for tomorrow if past
+
+    const delayMs = target - now;
+    window._swReg.active.postMessage({
+      type: 'SCHEDULE_REMINDER',
+      delayMs,
+      body: 'Your daily scripture is waiting. Take a moment before you scroll. 🙏'
+    });
+  }
+
+  // Called by time picker in settings
+  function setReminderTime(time) {
+    STATE.reminderTime = time;
+    saveState();
+    saveNotifPrefs();
+    if (Notification.permission === 'granted') {
+      scheduleLocalReminder();
+      showToast('Reminder set for ' + formatReminderTime(time));
+    } else {
+      requestNotificationPermission();
+    }
+    updateReminderUI();
+  }
+
+  function formatReminderTime(time) {
+    const [h, m] = time.split(':').map(Number);
+    const suffix = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    const min = m.toString().padStart(2, '0');
+    return `${hour}:${min} ${suffix}`;
+  }
+
+  function updateReminderUI() {
+    const time = STATE.reminderTime || '07:00';
+    const el = document.getElementById('profile-reminder-label');
+    if (el) el.textContent = formatReminderTime(time);
+    const input = document.getElementById('profile-reminder-input');
+    if (input) input.value = time;
+    const permEl = document.getElementById('profile-reminder-perm');
+    if (permEl) {
+      const perm = Notification.permission;
+      permEl.textContent = perm === 'granted' ? '' : perm === 'denied' ? '(blocked — enable in device settings)' : '(tap to enable)';
+      permEl.style.color = perm === 'denied' ? 'var(--stone)' : 'var(--gold)';
+    }
+  }
+
+  function toggleReminderPicker() {
+    const picker = document.getElementById('profile-reminder-picker');
+    const chevron = document.getElementById('profile-reminder-chevron');
+    if (!picker) return;
+    const open = picker.style.display === 'none' || picker.style.display === '';
+    picker.style.display = open ? 'block' : 'none';
+    if (chevron) chevron.textContent = open ? '▴' : '▾';
+    if (open) updateReminderUI();
   }
 
 </script>
