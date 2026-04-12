@@ -2417,7 +2417,8 @@
       // Merge saved state into STATE carefully
       const safeKeys = ['user','streak','totalDays','versesRead','chaptersRead','versesMemorized',
         'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
-        'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex'];
+        'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex',
+        'reminderTime','notificationsEnabled'];
       safeKeys.forEach(key => {
         if (parsed[key] !== undefined) STATE[key] = parsed[key];
       });
@@ -2661,7 +2662,8 @@
             // Restore all saved progress and log back in
             const safeKeys = ['streak','totalDays','versesRead','chaptersRead','versesMemorized',
               'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
-              'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex'];
+              'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex',
+              'reminderTime','notificationsEnabled'];
             safeKeys.forEach(key => {
               if (parsed[key] !== undefined) STATE[key] = parsed[key];
             });
