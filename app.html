@@ -9522,10 +9522,14 @@ window.enterApp = function() {
     // Reschedule reminder every time the app opens — the SW loses its setTimeout
     // when killed by the OS, so we must re-register it on each launch.
     // Also refresh the push subscription with the Worker in case it expired.
-    if ('Notification' in window && Notification.permission === 'granted') {
-      setTimeout(scheduleLocalReminder, 1500);
-      setTimeout(subscribeToPush, 2000);
-    }
+    setTimeout(() => {
+      const perm = ('Notification' in window) ? Notification.permission : 'API unavailable';
+      showToast('Notif permission: ' + perm);
+      if (perm === 'granted') {
+        scheduleLocalReminder();
+        subscribeToPush();
+      }
+    }, 2000);
   };
 
   // Patch updateCompleteScreen to show grace day card
