@@ -9847,11 +9847,18 @@ window.enterApp = function() {
 
   // Subscribe this device to Web Push and register it with the Worker
   async function subscribeToPush() {
-    if (!('PushManager' in window)) return; // not supported (e.g. iOS < 16.4)
-    if (!STATE.user?.email) return;
-    if (PUSH_WORKER_URL === 'YOUR_WORKER_URL') return; // not configured yet
+    if (!('PushManager' in window)) {
+      console.warn('[SBS] PushManager not available on this device/context');
+      showToast('Push: PushManager unavailable');
+      return;
+    }
+    if (!STATE.user?.email) {
+      console.warn('[SBS] subscribeToPush: no user email');
+      return;
+    }
     try {
       const reg = await navigator.serviceWorker.ready;
+      showToast('Push: SW ready, subscribing…');
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
         sub = await reg.pushManager.subscribe({
@@ -9859,9 +9866,12 @@ window.enterApp = function() {
           applicationServerKey: vapidKeyToUint8Array(VAPID_PUBLIC_KEY),
         });
       }
+      showToast('Push: subscription obtained, sending to server…');
       await sendSubscriptionToWorker(sub);
+      showToast('Push: registered with server ✓');
     } catch(e) {
       console.warn('[SBS] Push subscription failed', e);
+      showToast('Push error: ' + e.message);
     }
   }
 
