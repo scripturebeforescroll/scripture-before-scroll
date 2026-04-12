@@ -9857,7 +9857,7 @@ window.enterApp = function() {
       return;
     }
     if (!STATE.user?.email) {
-      console.warn('[SBS] subscribeToPush: no user email');
+      showToast('Push: no user email — user=' + JSON.stringify(STATE.user));
       return;
     }
     try {
