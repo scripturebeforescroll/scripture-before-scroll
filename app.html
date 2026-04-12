@@ -9519,6 +9519,9 @@ window.enterApp = function() {
     _origEnterApp.apply(this, arguments);
     checkGraceDayProtection();
     updateReadingTimeUI();
+    // DIAGNOSTIC: always show permission state so we know the patch runs
+    const _perm = ('Notification' in window) ? Notification.permission : 'unavailable';
+    showToast('Patch running. Notif: ' + _perm);
     // Reschedule reminder every time the app opens — the SW loses its setTimeout
     // when killed by the OS, so we must re-register it on each launch.
     // Also refresh the push subscription with the Worker in case it expired.
@@ -9847,31 +9850,31 @@ window.enterApp = function() {
 
   // Subscribe this device to Web Push and register it with the Worker
   async function subscribeToPush() {
-    if (!('PushManager' in window)) {
-      console.warn('[SBS] PushManager not available');
-      return;
-    }
-    if (!STATE.user?.email) {
-      console.warn('[SBS] subscribeToPush: no user email');
-      return;
-    }
+    showToast('Push step 1: starting');
+    if (!('PushManager' in window)) { showToast('Push: no PushManager'); return; }
+    showToast('Push step 2: PushManager ok, email=' + (STATE.user?.email || 'MISSING'));
+    if (!STATE.user?.email) { showToast('Push: no email'); return; }
+    showToast('Push step 3: getting reg, _swReg=' + (window._swReg ? 'set' : 'null'));
     try {
-      // Use stored registration directly — navigator.serviceWorker.ready can
-      // hang on iOS after a SW update if the new SW hasn't claimed the page yet.
       const reg = window._swReg || await navigator.serviceWorker.getRegistration();
-      if (!reg) { console.warn('[SBS] No SW registration found'); return; }
+      showToast('Push step 4: reg=' + (reg ? 'found' : 'NULL'));
+      if (!reg) { showToast('Push: no SW reg — cannot subscribe'); return; }
+      showToast('Push step 5: getting existing sub…');
       let sub = await reg.pushManager.getSubscription();
+      showToast('Push step 6: existing sub=' + (sub ? 'yes' : 'no'));
       if (!sub) {
+        showToast('Push step 7: calling subscribe()…');
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: vapidKeyToUint8Array(VAPID_PUBLIC_KEY),
         });
+        showToast('Push step 8: subscribed ok');
       }
+      showToast('Push step 9: sending to server…');
       await sendSubscriptionToWorker(sub);
-      showToast('Reminders registered ✓');
+      showToast('Push: registered ✓');
     } catch(e) {
-      console.warn('[SBS] Push subscription failed', e);
-      showToast('Push setup failed: ' + e.message);
+      showToast('Push error: ' + (e.message || String(e)));
     }
   }
 
