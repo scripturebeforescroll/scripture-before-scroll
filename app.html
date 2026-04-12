@@ -1610,7 +1610,7 @@
       <!-- Stat row -->
       <div class="stat-row fade-up-4" style="width:100%;margin-bottom:0.75rem;">
         <div class="stat-card"><div class="stat-num" id="stat-streak">1</div><div class="stat-label">Day streak</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-verses">1</div><div class="stat-label">Verses read</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-verses">1</div><div class="stat-label" id="stat-verses-label">Verses read</div></div>
         <div class="stat-card"><div class="stat-num" id="stat-days">1</div><div class="stat-label">Total days</div></div>
       </div>
 
@@ -2286,6 +2286,7 @@
     streak: 0,
     totalDays: 0,
     versesRead: 0,
+    chaptersRead: 0,
     versesMemorized: 0,
     memorizedRefs: [],
     weeklyMemRefs: [],
@@ -2414,7 +2415,7 @@
       if (parsed.loggedOut === true || !parsed.user) return;
 
       // Merge saved state into STATE carefully
-      const safeKeys = ['user','streak','totalDays','versesRead','versesMemorized',
+      const safeKeys = ['user','streak','totalDays','versesRead','chaptersRead','versesMemorized',
         'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
         'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex'];
       safeKeys.forEach(key => {
@@ -2569,7 +2570,7 @@
         } catch(e) { storedPass = pass; salt = null; }
       }
       STATE.user = { name: name || 'Friend', email, password: storedPass, salt, joinedDate: new Date().toISOString() };
-      STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0;
+      STATE.streak = 0; STATE.totalDays = 0; STATE.versesRead = 0; STATE.chaptersRead = 0;
       saveState();
       addToWaitlist(name, email);
       try { posthog.capture('signed_up', { name: name || '', email }); } catch(e) {}
@@ -2658,7 +2659,7 @@
           }
           if (matched) {
             // Restore all saved progress and log back in
-            const safeKeys = ['streak','totalDays','versesRead','versesMemorized',
+            const safeKeys = ['streak','totalDays','versesRead','chaptersRead','versesMemorized',
               'memorizedRefs','weeklyMemRefs','lastQuizDate','memQueue','chapterBook',
               'chapterNum','mode','todayComplete','lastCompletedDate','verseIndex','extraVerseIndex'];
             safeKeys.forEach(key => {
@@ -2761,6 +2762,7 @@
     STATE.streak = 0;
     STATE.totalDays = 0;
     STATE.versesRead = 0;
+    STATE.chaptersRead = 0;
     STATE.versesMemorized = 0;
     STATE.memorizedRefs = [];
     STATE.weeklyMemRefs = [];
@@ -3034,7 +3036,7 @@ window.enterApp = function() {
       window._extraSession = false;
       STATE.versesRead += 1;
       if (STATE.mode === 'memorize') STATE.versesMemorized += 1;
-      if (STATE.mode === 'chapter') advanceChapter();
+      if (STATE.mode === 'chapter') { STATE.chaptersRead += 1; advanceChapter(); }
       saveState();
       updateStats();
       updateProfileUI();
@@ -3050,6 +3052,7 @@ window.enterApp = function() {
     STATE.totalDays += 1;
     STATE.versesRead += 1;
     if (STATE.mode === 'memorize') STATE.versesMemorized += 1;
+    if (STATE.mode === 'chapter') STATE.chaptersRead += 1;
 
     // Advance verse index for next day's reading
     if (!STATE.verseIndex) STATE.verseIndex = 0;
@@ -3097,8 +3100,20 @@ window.enterApp = function() {
     document.getElementById('complete-verse-note').textContent = note;
 
     document.getElementById('stat-streak').textContent = STATE.streak;
-    document.getElementById('stat-verses').textContent = STATE.versesRead;
     document.getElementById('stat-days').textContent = STATE.totalDays;
+    // Show the count + label that matches what was just completed
+    const statNum = document.getElementById('stat-verses');
+    const statLabel = document.getElementById('stat-verses-label');
+    if (STATE.mode === 'chapter') {
+      if (statNum) statNum.textContent = STATE.chaptersRead || 0;
+      if (statLabel) statLabel.textContent = 'Chapters read';
+    } else if (STATE.mode === 'memorize') {
+      if (statNum) statNum.textContent = STATE.versesMemorized || 0;
+      if (statLabel) statLabel.textContent = 'Memorized';
+    } else {
+      if (statNum) statNum.textContent = STATE.versesRead || 0;
+      if (statLabel) statLabel.textContent = 'Verses read';
+    }
     document.getElementById('unlock-day-note').textContent = `See you tomorrow for Day ${STATE.totalDays + 1} 🙏`;
 
     // Check milestone
@@ -9504,8 +9519,10 @@ window.enterApp = function() {
     updateReadingTimeUI();
     // Reschedule reminder every time the app opens — the SW loses its setTimeout
     // when killed by the OS, so we must re-register it on each launch.
+    // Also refresh the push subscription with the Worker in case it expired.
     if ('Notification' in window && Notification.permission === 'granted') {
       setTimeout(scheduleLocalReminder, 1500);
+      setTimeout(subscribeToPush, 2000);
     }
   };
 
@@ -9736,6 +9753,10 @@ window.enterApp = function() {
   // PWA — Service Worker, Install Prompt, Notifications
   // ═══════════════════════════════════════════════════════════════════
 
+  // ── Push notification config ─────────────────────────────────────────────
+  const VAPID_PUBLIC_KEY = 'BGrjSTCrI975B5ctCcrKsXJgS0pFAKZQ_2DtBj6C88deXhHbZew3z2PaafhQOB4gYIQUvJcf41wWqc4VjfY-85A';
+  const PUSH_WORKER_URL  = 'https://sbs-push.scripturebeforescroll.workers.dev';
+
   let _deferredInstallPrompt = null;
 
   // Register service worker
@@ -9815,6 +9836,69 @@ window.enterApp = function() {
     localStorage.setItem('sbs_install_dismissed', new Date().toDateString());
   }
 
+  // Convert VAPID public key to Uint8Array (required by pushManager.subscribe)
+  function vapidKeyToUint8Array(b64urlKey) {
+    const padding = '='.repeat((4 - b64urlKey.length % 4) % 4);
+    const raw = atob((b64urlKey + padding).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(raw, c => c.charCodeAt(0));
+  }
+
+  // Subscribe this device to Web Push and register it with the Worker
+  async function subscribeToPush() {
+    if (!('PushManager' in window)) return; // not supported (e.g. iOS < 16.4)
+    if (!STATE.user?.email) return;
+    if (PUSH_WORKER_URL === 'YOUR_WORKER_URL') return; // not configured yet
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidKeyToUint8Array(VAPID_PUBLIC_KEY),
+        });
+      }
+      await sendSubscriptionToWorker(sub);
+    } catch(e) {
+      console.warn('[SBS] Push subscription failed', e);
+    }
+  }
+
+  // Send (or refresh) the subscription record to the Cloudflare Worker
+  async function sendSubscriptionToWorker(sub) {
+    if (!STATE.user?.email || PUSH_WORKER_URL === 'YOUR_WORKER_URL') return;
+    try {
+      await fetch(PUSH_WORKER_URL + '/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:                  STATE.user.email,
+          subscription:           sub.toJSON(),
+          reminderTime:           STATE.reminderTime || '07:00',
+          timezoneOffsetMinutes:  new Date().getTimezoneOffset(),
+        }),
+      });
+    } catch(e) {
+      console.warn('[SBS] Failed to register push subscription with Worker', e);
+    }
+  }
+
+  // Remove this device's subscription from the Worker
+  async function unsubscribeFromPush() {
+    if (!STATE.user?.email || PUSH_WORKER_URL === 'YOUR_WORKER_URL') return;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+      await fetch(PUSH_WORKER_URL + '/subscribe', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: STATE.user.email }),
+      });
+    } catch(e) {
+      console.warn('[SBS] Unsubscribe failed', e);
+    }
+  }
+
   // Request notification permission and save prefs to IndexedDB for the SW
   async function requestNotificationPermission() {
     if (!('Notification' in window)) {
@@ -9827,6 +9911,7 @@ window.enterApp = function() {
       saveState();
       await saveNotifPrefs();
       scheduleLocalReminder();
+      subscribeToPush(); // register with Worker for server-side delivery
       showToast('Reminders are on — see you tomorrow morning. 🙏');
     } else {
       showToast('You can enable reminders in your device settings anytime.');
@@ -9893,6 +9978,7 @@ window.enterApp = function() {
     saveNotifPrefs();
     if ('Notification' in window && Notification.permission === 'granted') {
       scheduleLocalReminder();
+      subscribeToPush(); // update Worker with new reminder time
       showToast('Reminder set for ' + formatReminderTime(time));
     } else {
       requestNotificationPermission();
