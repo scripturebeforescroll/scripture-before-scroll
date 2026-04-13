@@ -3355,6 +3355,7 @@ window.enterApp = function() {
 
   function openApp(name) {
     showToast(`Opening ${name}… scroll with purpose! 🙏`);
+    try { posthog.capture('social_app_opened', { app: name }); } catch(e) {}
   }
 
   // ── TOAST ──
